@@ -1,0 +1,37 @@
+#CISCO IOS/IOS-XE BGP show
+show run | sec router bgp #Display config
+show ip bgp summary #Display Nieghbor Summary 
+show ip bgp # BGP routing table
+show ip bgp all # All address families
+show ip bgp x.x.x.x # BGP routing table specific to x.x.x.x
+show ip bgp 10.92.0.0 255.255.0.0 longer-prefixes # BGP routing table specific to 10.92.0.0/16 le 32
+show ip bgp route-map LEARNED_PATH #BGP routes after applying route-map LEARNED_PATH
+show ip bgp ipv4 [unicast|multicast] [vpnv4 all | vpnv6 unicast all] 
+show ip bgp neighbor x.x.x.x 
+show ip bgp neighbor x.x.x.x advertised-routes #Routes being advertised to neighbor x.x.x.x
+show ip bgp neighbor x.x.x.x recieved-routes #Routes being recieved to neighbor x.x.x.x
+#CISCO IOS-XR BGP show
+show run router bgp #Display config
+show bgp summary #Display Nieghbor Summary
+show bgp # BGP routing table
+show bgp x.x.x.x # BGP routing table specific to x.x.x.x
+show bgp advertised neighbor x.x..x.x summary #Routes being advertised to neighbor x.x.x.x *pre policy*
+show bgp advertised neighbor x.x.x.x #More detailed information for the advertised route pre policy. 
+show bgp neighbors x.x.x.x routes # Routes being recieved to neighbor x.x.x.x
+show bgp policy summary #Display route policies 
+show bgp community 1820:1 exact-match # Display routes belonging to that community 
+show bgp dampened-paths #If dampening is enabled. 
+clear bgp dampening #For above
+show bgp flap-statistics #Display BGP routes that have flapped. 
+show bgp neighbors 10.0.101.1 flap-statistics #Flap stats 
+show bgp neighbors #Display information about the TCP and BGP connections to neighbors. 
+show bgp inconsistent-as #Routes from inconsistent as paths
+show bgp regexp "^3 " #Show all routes with AS Path starting from 3 in this case
+show bgp route-policy p1 #Show routes after applying the policy p1 
+show bgp vrf vrf-1 ipv6 unicast imported-routes # Display routes imported from default VRF into vrf-1 in this case
+show protocols bgp #Display BGP distance etc related config 
+#CISCO NXOS BGP show
+#JUNOS BGP show
+#FORTIOS BGP show
+#PAN BGP show
+#Cumulus FRR show

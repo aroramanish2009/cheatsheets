@@ -1,0 +1,16 @@
+#mtr without names resolution 
+mtr -n x.x.x.x
+#mtr with Drop column
+mtr x.x.x.x -o "SDRL"
+mtr -o "LSDR NBAW JMXI" google.com
+#Display both name and ip 
+mtr -b x.x.x.x
+#Number of probes to be used.
+mtr -c [n] x.x.x.x 
+#Report Mode 
+mtr -r -c 10 google.com >mtr-report-google
+#Packet Size 
+mtr –r -s [packetsize] “domainName/IP”
+#Using TCP/UDP Probes
+mtr –tcp “domainName/IP”
+mtr –udp “domainName/IP”
