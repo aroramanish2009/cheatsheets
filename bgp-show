@@ -1,37 +1,72 @@
 #CISCO IOS/IOS-XE BGP show
-show run | sec router bgp #Display config
-show ip bgp summary #Display Nieghbor Summary 
-show ip bgp # BGP routing table
-show ip bgp all # All address families
-show ip bgp x.x.x.x # BGP routing table specific to x.x.x.x
-show ip bgp 10.92.0.0 255.255.0.0 longer-prefixes # BGP routing table specific to 10.92.0.0/16 le 32
-show ip bgp route-map LEARNED_PATH #BGP routes after applying route-map LEARNED_PATH
-show ip bgp ipv4 [unicast|multicast] [vpnv4 all | vpnv6 unicast all] 
-show ip bgp neighbor x.x.x.x 
-show ip bgp neighbor x.x.x.x advertised-routes #Routes being advertised to neighbor x.x.x.x
-show ip bgp neighbor x.x.x.x recieved-routes #Routes being recieved to neighbor x.x.x.x
+ISO - show run | sec router bgp #Display config
+ISO - show ip bgp summary #Display Neighbor Summary 
+ISO - show ip bgp # BGP routing table
+ISO - show ip bgp all # All address families
+ISO - show ip bgp x.x.x.x # BGP routing table specific to x.x.x.x
+ISO - show ip bgp 10.92.0.0 255.255.0.0 longer-prefixes # BGP routing table specific to 10.92.0.0/16 le 32
+ISO - show ip bgp route-map LEARNED_PATH #BGP routes after applying route-map LEARNED_PATH
+ISO - show ip bgp ipv4 [unicast|multicast] [vpnv4 all | vpnv6 unicast all] 
+ISO - show ip bgp neighbor x.x.x.x 
+ISO - show ip bgp neighbor x.x.x.x advertised-routes #Routes being advertised to neighbor x.x.x.x
+ISO - show ip bgp neighbor x.x.x.x recieved-routes #Routes being recieved to neighbor x.x.x.x
 #CISCO IOS-XR BGP show
-show run router bgp #Display config
-show bgp summary #Display Nieghbor Summary
-show bgp # BGP routing table
-show bgp x.x.x.x # BGP routing table specific to x.x.x.x
-show bgp advertised neighbor x.x..x.x summary #Routes being advertised to neighbor x.x.x.x *pre policy*
-show bgp advertised neighbor x.x.x.x #More detailed information for the advertised route pre policy. 
-show bgp neighbors x.x.x.x routes # Routes being recieved to neighbor x.x.x.x
-show bgp policy summary #Display route policies 
-show bgp community 1820:1 exact-match # Display routes belonging to that community 
-show bgp dampened-paths #If dampening is enabled. 
-clear bgp dampening #For above
-show bgp flap-statistics #Display BGP routes that have flapped. 
-show bgp neighbors 10.0.101.1 flap-statistics #Flap stats 
-show bgp neighbors #Display information about the TCP and BGP connections to neighbors. 
-show bgp inconsistent-as #Routes from inconsistent as paths
-show bgp regexp "^3 " #Show all routes with AS Path starting from 3 in this case
-show bgp route-policy p1 #Show routes after applying the policy p1 
-show bgp vrf vrf-1 ipv6 unicast imported-routes # Display routes imported from default VRF into vrf-1 in this case
-show protocols bgp #Display BGP distance etc related config 
+XR - show run router bgp #Display config
+XR - show bgp summary #Display Neighbor Summary
+XR - show bgp # BGP routing table
+XR - show bgp x.x.x.x # BGP routing table specific to x.x.x.x
+XR - show bgp advertised neighbor x.x..x.x summary #Routes being advertised to neighbor x.x.x.x *pre policy*
+XR - show bgp advertised neighbor x.x.x.x #More detailed information for the advertised route pre policy. 
+XR - show bgp neighbors x.x.x.x routes # Routes being recieved to neighbor x.x.x.x
+XR - show bgp policy summary #Display route policies 
+XR - show bgp community 1820:1 exact-match # Display routes belonging to that community 
+XR - show bgp dampened-paths #If dampening is enabled. 
+XR - clear bgp dampening #For above
+XR - show bgp flap-statistics #Display BGP routes that have flapped. 
+XR - show bgp neighbors 10.0.101.1 flap-statistics #Flap stats 
+XR - show bgp neighbors #Display information about the TCP and BGP connections to neighbors. 
+XR - show bgp inconsistent-as #Routes from inconsistent as paths
+XR - show bgp regexp "^3 " #Show all routes with AS Path starting from 3 in this case
+XR - show bgp route-policy p1 #Show routes after applying the policy p1 
+XR - show bgp vrf vrf-1 ipv6 unicast imported-routes # Display routes imported from default VRF into vrf-1 in this case
+XR - show protocols bgp #Display BGP distance etc related config 
 #CISCO NXOS BGP show
+NXOS - show bgp all [summary] #Display Neighbor Summary
+NXOS - show running-configuration bgp  #Display BGP Config 
+NXOS - show bgp convergence [vrf] #Display BGP Information 
+NXOS - show bgp {ipv4|ipv6} {unicast|multicast}[ip-address|ipv6-prefix community[regexp expression|[community ] } [vrf] #Display BGP Routes based on community
+NXOS - show bgp {ipv4 | ipv6 } {unicast | multicast } {dampening dampened-paths[Regex]} [vrf] #Display BGP route dampening info, use "clear bgp dampening" to reset info. 
+NXOS - show bgp {ipv4 | ipv6 } {unicast | multicast } [ip-address | ipv6-prefix history-paths [regexp expression] [vrf] #BGP Route historical path 
+NXOS - show bgp ipv4 unicast filter-list xxx vrf yyy #Display information for the BGP filter list. 
+NXOS - show bgp paths 
+NXOS - show bgp {ipv4 | ipv6 } {unicast | multicast } [ip-address | ipv6-prefix] regexp expression [vrf vrf-name]  #Display based on AS Path RegEx 
 #JUNOS BGP show
+JUNOS - show route protocol bgp #Display routes in BGP, similar "show ip bgp" in Cisco 
+JUNOS - show route community #Display routes based on community tag 
+JUNOS - show route damping decayed #Display Damped routes 
+JUNOS - show bgp neighbor #Display BGP Neighbors
+JUNOS - show route advertising-protocol bgp x.x.x.x #Routes advertised to Neighbor
+JUNOS - show route receive-protocol bgp x.x.x.x #Routes learned from a Neighbor
+JUNOS - show bgp group #Peer group info 
+JUNOS - show route aspath-regex XXX #Routes based on as-path RegEx
+JUNOS - show bgp summary #BGP Neighbor summary 
+JUNOS - show route destination-prefix < detail > #Examine BGP Attributes 
+JUNOS - show route forwarding-table #Examine Route in Forwarding-Table 
+JUNOS - show route x.x.x.x detail #Examine next-hop and interface 
 #FORTIOS BGP show
-#PAN BGP show
+FORTI - get router info protocols #Similar to "show ip protocols"
+FORTI - get router info routing-table bgp #"show ip route bgp"
+FORTI - get router info bgp summary #"show ip bgp summary"
+FORTI - get router info bgp neighbors #BGP neighbor information 
+FORTI - get router info bgp neighbors x.x.x.x advertised-routes #Routes Advertised to BGP Neighbor
+FORTI - get router info bgp neighbors x.x.x.x received-routes #Routes recieved from BGP Neighbor
+FORTI - show router bgp #Display BGP Config 
+FORTI - get router info bgp network x.x.x.x #BGP Neighbor information
 #Cumulus FRR show
+CUMU - net show bgp #"show ip bgp"
+CUMU - net show route x.x.x.x #"show ip route"
+CUMU - net show bgp ipv4 unicast [summary] #Display unicast neighbor summary 
+CUMU - net show bgp neighbor #BGP Neighbor Display
+CUMU - net show bgp 1.1.1.1/32 #BGP info specific to that route
+CUMU - net show bgp neighbor swp1 #If using BGP unnumbered
+#PAN BGP show
