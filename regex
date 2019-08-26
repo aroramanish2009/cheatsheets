@@ -1,0 +1,47 @@
+#dot and asterisk
+ . Matches any Single Character, * matches 0 or more of the preceeding characters
+
+#RegEx
+--> Anchors
+^ = Beginning of the line
+$ = End of the Line
+
+--> Character sets
+[0-9] = Matches any single digit from 0..9
+[a-z] = Matches lowercase characters
+[A-Z] = Matches uppercare Characters
+[A-Za-z0-9] = Matches any uppercase and lowercase letter and single digit
+
+--> Modifiers: A modifier changes the meaning of the character preceding it.
+* = Matches 0 or more of the preceeding characters
+abc*        matches a string that has ab followed by zero or more c
+abc+        matches a string that has ab followed by one or more c
+abc?        matches a string that has ab followed by zero or one c
+abc{2}      matches a string that has ab followed by 2 c
+abc{2,}     matches a string that has ab followed by 2 or more c
+abc{2,5}    matches a string that has ab followed by 2 up to 5 c
+a(bc)*      matches a string that has a followed by zero or more copies of the sequence bc
+a(bc){2,5}  matches a string that has a followed by 2 up to 5 copies of the sequence bc
+
+--> OR Operator
+a(b|c)     matches a string that has a followed by b or c
+a[bc]      same as previous
+
+--> Character Classes
+\d         matches a single character that is a digit 
+\w         matches a word character (alphanumeric character plus underscore)
+\s         matches a whitespace character (includes tabs and line breaks)
+.          matches any character
+
+--> Flags
+g = Global
+m = Multi Line 
+i = Case Insensitive 
+
+https://medium.com/factory-mind/regex-tutorial-a-simple-cheatsheet-by-examples-649dc1c3f285
+
+Examples:
+1> Grep any line starting with a digit
+$ grep "^[0-9]" grep.txt
+1234 this is a test post please ignore.
+

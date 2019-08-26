@@ -1,4 +1,68 @@
 #CISCO IOS/IOS-XE BGP Config
+IOS - router bgp xxxxx #Initialize BGP AS
+IOS -  no bgp default ipv4-unicast #Disables the default ipv4 family 
+IOS -  bgp log-neighbor-changes #Log neighbor UP/DOWN 
+IOS -  neighbor y.y.y.y remote-as #Static neighbor configuration
+IOS -  bgp always-compare-med #MED comparison for paths from neighbors in different autonomous systems
+IOS -  bgp deterministic-med  #MED comparison for paths from same AS 
+IOS -  bgp bestpath med missing-as-worst #Set missing MED as worst 
+IOS -  bgp aggregate-timer [seconds] #default is 30 sec, should be changed to 0 if you are using aggregates other specifics will be advertised and withdrawn on listed timer
+IOS -  bgp bestpath as-path ignore #Not consider as-path during best path calculation
+IOS -  bgp bestpath compare-routerid #Consider lower RID as better path. 
+IOS -  bgp bestpath cost-community ignore #Not to evaluate extended cost-community in best path selection 
+IOS -  bgp bestpath med confed [missing-as-worst]  #Compare MED from confedration peers
+IOS -  bgp client-to-client reflection  #Enabled by default where RR reflects routes form Client to Client but we can disable it by negating this command
+IOS -  bgp cluster-id x.x.x.x #To set the cluster ID on a route reflector in a route reflector cluster
+IOS -  bgp consistency-checker [auto-repair] [error-message] #A low priority bgp process checking route/aggregation validation 
+IOS -  bgp dampening [half-life reuse suppress max-suppress-time | route-map map-name] # BGP dampening is disabled by default. 
+IOS -  bgp default local-preference [xxx] #Default LP for all routes
+IOS -  bgp dmzlink-bw #Used for Load Balacing traffic propotion over unequal bandwidth links, dmzlink-bw is required on neighbor as well
+IOS -  bgp fast-external-fallover #Enabled by default, kill neighborship if link connection to neighbor goes down
+IOS -  bgp graceful-restart [restart-time seconds | stalepath-time seconds] [all] #Enables gracefull restart of process 
+IOS -  bgp listen range 192.168.0.0/16 peer-group group192 #Will Listen bgp neighbor source 192.168.0.0/16, multihop 255 and remote AS 40000 or 50000
+IOS -  neighbor group192 ebgp-multihop 255 # Above 
+IOS -  neighbor group192 remote-as 40000 alternate-as 50000 # Above
+IOS -
+IOS -
+IOS -
+IOS -
+IOS -  address-family [ipv4|ipv6|vpnv4] [unicast|multicast]
+IOS -   neighbor y.y.y.y activate #Activate the BGP neighbor 
+IOS -   neighbor y.y.y.y default-originate #define policy associated with the neighbor
+IOS -   neighbor y.y.y.y route-map yyyyy [in|out] #Apply Route-map one per direction 
+IOS -   aggregate-address y.y.0.0 255.255.0.0 [as-set] [advertise-map]
+IOS -   bgp additional-paths install #Additional Paths are installed in RIB and FIB 
+IOS -   bgp bestpath igp-metric ignore #Ignores the IGP Metrics in best path selection
+IOS -   bgp additional-paths select {best-external [backup] | backup} #best-external on PE or RR to calculate 2 bst paths recieved from External Nieighbors
+IOS -   bgp inject-map ORIGINATE exist-map LEARNED_PATH copy-attributes #Conditional Route Injection, based on routes and route source in RIB
+IOS -   maximum-paths ebgp #Enables multipath for ebgp 
+IOS -   maximum-paths ibgp #Enables multipath for ibgp
+IOS -   maximum-paths eibgp #This command installs ibgp route as multipath with ebgp routes by lowering AD for ibgp to 20 
+IOS -   neighbor group192 activate # Listen command above 
+IOS -   
+IOS -
+IOS -
+IOS -
+IOS -
+IOS -
+IOS -
+IOS -
+IOS -
+IOS -
+IOS -
+IOS -
+IOS -
+IOS -
+IOS -
+IOS -
+IOS -
+IOS -
+IOS -
+IOS -
+IOS -
+IOS -
+IOS -
+IOS -
 #CISCO IOS-XR BGP Config
 #CISCO NXOS BGP Config
 #JUNOS BGP Config
