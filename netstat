@@ -1,0 +1,9 @@
+#Netstat 
+1. netstat -a = List all ports listening or not listing. use -at and -au for tcp and udp.
+2. netstat -l = list all listening ports, use -lt or lu for listening and non listening.
+3. netstat -s = For statistics on all protocols, use -st and -su for tcp and udp.
+4. netstat -p = use for associating PID with listening port. for ex netstat -lpt = listening PID and TCP 
+5. netstat -an = n option will not try to resolve DNS 
+6. netstat -nr = displaing the routing table.
+7. netstat -ic = continuosly display interface usage.
+8. netstat -ie = extended information for the interface.

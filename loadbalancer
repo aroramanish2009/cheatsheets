@@ -1,0 +1,29 @@
+#A10 Commands 
+A10 - axdebug - show axdebug config
+A10 - axdebug - show axdebug status 
+A10 - axdebug - show axdebug filter 
+A10 - axdebug - show axdebug capture 
+A10 - axdebug - export axdebug XXXX; better to use web gui for export
+A10 - axdebug - Config Below 
+TH1030S#no debug packet
+TH1030S#no axdebug
+TH1030S#debug cpu
+TH1030S#debug tcp stack level 4
+TH1030S#debug aflex
+TH1030S#debug http-proxy
+TH1030S#show axdebug filter
+*****************************************************************
+If there are any filters, please remove them by the following commands:
+TH1030S#axdebug
+TH1030S(axdebug)#no filter 1 <------ Keep repeating until all filters are removed by changing the filter #
+TH1030S(axdebug)#exit   
+TH1030S#show axdebug filter <-- confirm that there are no filters shown
+*****************************************************************
+TH1030S(axdebug)# filter1
+TH1030S(axdebug-filter:1)#ip <real server ip address /32> 
+TH1030S(axdebug-filter:1)#exit 
+TH1030S(axdebug)#timeout 0 
+TH1030S(axdebug)#count 0 
+TH1030S(axdebug)#capture brief save a10request1
+A10 - axdebug - Type "exit" to leave axdebug mode.
+A10 - axdebug - Type "no axdebug" to stop the capture.

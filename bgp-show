@@ -52,7 +52,8 @@ JUNOS - show route aspath-regex XXX #Routes based on as-path RegEx
 JUNOS - show bgp summary #BGP Neighbor summary 
 JUNOS - show route destination-prefix < detail > #Examine BGP Attributes 
 JUNOS - show route forwarding-table #Examine Route in Forwarding-Table 
-JUNOS - show route x.x.x.x detail #Examine next-hop and interface 
+JUNOS - show route x.x.x.x detail #Examine next-hop and interface
+JUNOS -  show route x.x.x.x extensive #Will show forwarding interface as well as protocol next-hop
 #FORTIOS BGP show
 FORTI - get router info protocols #Similar to "show ip protocols"
 FORTI - get router info routing-table bgp #"show ip route bgp"
