@@ -7,3 +7,8 @@
 6. netstat -nr = displaing the routing table.
 7. netstat -ic = continuosly display interface usage.
 8. netstat -ie = extended information for the interface.
+9. netstat -g = Multicast Related information  
+10. netstat -anp | grep :80 | grep ESTABLISHED  = Displays ESTABLISHED on port 80
+11. netstat -ant | awk '{print $6}' | sort | uniq -c | sort -n = List Number of different connection types
+12. netstat -ltnp | grep ':22'  = Displays associated process with LISTEN Port
+13. 
