@@ -1,0 +1,124 @@
+#Cisco eVPN Commands
+## VRF Verification
+show run vrf 
+show interface vrf
+show ip route vrf $VRF_NAME
+show ip bgp vrf $VRF_NAME
+
+##eVPN Control Plane Verification 
+show vxlan                       ## Look for L3VNI and VXLAN vn-seg here 
+show mac address-table vlan 124  ## Shows mac learned over NVE 
+show l2route evpn mac evi 124    ## Shows mac installed in route table with next-hop 
+show l2route evpn mac-ip evi 124 ## Show mac-ip combination and next-hop
+EXAMPLE: 
+SWITCH1# show l2route evpn mac-ip evi 124
+Flags -(Rmac):Router MAC (Stt):Static (L):Local (R):Remote (V):vPC link
+(Dup):Duplicate (Spl):Split (Rcv):Recv(D):Del Pending (S):Stale (C):Clear
+(Ps):Peer Sync (Ro):Re-Originated
+Topology    Mac Address    Prod   Flags         Seq No     Host IP         Next-Hops
+----------- -------------- ------ ---------- --------------- ---------------
+124         5XXb.XX09.XXd4 BGP    --            0          10.X.19.10  10.X.0.205
+124         XXXb.XX09.XX14 BGP    --            0          10.X.19.11  10.X.0.217
+
+show bgp l2vpn evpn vni-id 12400  ## Shows bgp l2vpn routes for a vn-segment
+show bgp l2vpn evpn vni-id 100000 ## Using L3 vn-id
+show bgp l2vpn evpn summary       ## eVPN neighbors - If using RR, all VTEPs will peer with RR
+show bgp l2vpn evpn neighbors 10.x.0.5 advertised-routes  ## Routes you are sending out
+show bgp l2vpn evpn neighbors 10.x.0.5 routes             ## Routes that you are getting from rr 
+EXAMPLE:
+SWITCH# show bgp l2vpn evpn neighbors 10.x.0.5 routes
+
+Peer 10.x.0.5 routes for address family L2VPN EVPN:
+BGP table version is 28482, Local Router ID is 10.x.0.19
+Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
+Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
+Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
+
+   Network            Next Hop            Metric     LocPrf     Weight Path
+Route Distinguisher: 10.x.0.17:4
+*>i[5]:[0]:[0]:[32]:[10.x.0.195]:[0.0.0.0]/224
+                      10.x.0.205 <--SHOWS WHERE THE ROUTE WAS LEARNED FROM   4294967295        100          0 i
+
+Route Distinguisher: 10.x.0.17:32891
+*>i[2]:[0]:[0]:[48]:[5xxb.4xx9.5xxc]:[0]:[0.0.0.0]/216
+                      10.x.0.205    4294967295        100          0 i
+*>i[2]:[0]:[0]:[48]:[50xx.4xx9.5xxd]:[0]:[0.0.0.0]/216
+                      10.x.0.205    4294967295        100          0 i
+					  Route Distinguisher: 10.x.0.19:5    (L3VNI 100001)
+*>i[5]:[0]:[0]:[0]:[0.0.0.0]:[0.0.0.0]/224
+                      10.x.0.202           200        100          0 65011 57976 i
+* i                   10.x.0.202           200        100          0 65011 57976 i  <-- External ROUTE
+
+show bgp l2vpn evpn neighbors 10.x.0.5 routes | be 'L2VNI 12400' ##start from vn-segment 12400 
+EXAMPLE: 
+SWITCH# show bgp l2vpn evpn neighbors 10.x.0.5 routes | be 'L3VNI 100001' ## Tenant  
+Route Distinguisher: 10.x.0.19:5    (L3VNI 100001)
+*>i[5]:[0]:[0]:[0]:[0.0.0.0]:[0.0.0.0]/224
+                      10.x.0.202           200        100          0 65081 27871 i
+* i                   10.x.0.202           200        100          0 65081 27871 i
+* i[5]:[0]:[0]:[26]:[x7.2x.43.192]:[0.0.0.0]/224
+                      10.x.0.202    4294967295        100          0 i
+*>i                   10.x.0.202    4294967295        100          0 i
+*>i[5]:[0]:[0]:[32]:[x7.2x.40.8]:[0.0.0.0]/224
+                      10.x.0.202    4294967295        100          0 i
+*>i[5]:[0]:[0]:[32]:[x7.2x.40.9]:[0.0.0.0]/224
+                      10.x.0.202    4294967295        100          0 i
+
+SWITCH# show ip bgp vrf $Tenant-NAME
+BGP routing table information for VRF Tenant-NAME, address family IPv4 Unicast
+BGP table version is 1139, Local Router ID is 10.X.0.197
+Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
+Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
+Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
+
+   Network            Next Hop            Metric     LocPrf     Weight Path
+*>i0.0.0.0/0          10.x.0.202           200        100          0 65081 27871 i
+* i                   10.x.0.202           200        100          0 65081 27871 i
+*>i10.x.192.0/22    10.x.0.202                      100          0 i
+* i                   10.x.0.202                      100          0 i
+* i10.x.192.10/32   10.x.0.205                      100          0 i
+*>i                   10.x.0.205                      100          0 i
+* i10.x.192.11/32   10.x.0.217                      100          0 i
+*>i                   10.x.0.217                      100          0 i
+* i10.x.192.12/32   10.x.0.205                      100          0 i
+*>i                   10.x.0.205                      100          0 i
+* i10.x.192.13/32   10.x.0.217                      100          0 i
+*>i                   10.x.0.217                      100          0 i
+
+
+##Troubleshooting Cisco eVPN
+1. CHECK NVE INTERFACE IS UP, Sending/Recieving Traffic
+SWITCH# sho interface nve 1
+nve1 is up
+admin state is up,  Hardware: NVE
+  MTU 9216 bytes
+  Encapsulation VXLAN
+  Auto-mdix is turned off
+  RX
+    ucast: 21415664 pkts, 30692759761 bytes - mcast: 54863857 pkts, 27533841530 bytes
+  TX
+    ucast: 9200697 pkts, 1434794369 bytes - mcast: 458493 pkts, 56199951 bytes
+
+2. Local VTEP MAC ADD: 
+SWITCH# show nve interface
+Interface: nve1, State: Up, encapsulation: VXLAN
+ VPC Capability: VPC-VIP-Only [notified]
+ Local Router MAC: 00ea.bd4e.cadd
+ Host Learning Mode: Control-Plane
+ Source-Interface: loopback50 (primary: 10.x.0.206, secondary: 10.x.0.208)
+ 
+3. sh nve internal platform interface nve1 detail ## Remote vtep mac and state of peering 
+4. show nve peer detail                           ## CHECK PEERING TIME AND VNI Info per Peer 
+5. sh bgp internal evi 12400                      ## To check how BGP interacts with EVI and internal information is built. Example of vlan 124 mapped to VNI 12400 is shown here. 
+6. show bgp l2vpn evpn 10.xx.192.10               ## Check from where it is learned from, correct RTs associated etc. 
+7. show bgp l2vpn evpn 5xxb.4xx9.cxx4             ## Can be check for MAC Add as well. 
+8. show ip arp suppression-cache detail           ## Will show ip-mac binding switch is returning to host. 
+
+##Configuration Cisco eVPN
+a. Use MP-BGP for host-reachability
+b. Use APR Suppression
+c. Use Anycast Gateway
+d. Use Ingress Replication with BGP 
+e. Example uses 2 Tenant, one with single VNI other with 2 VNIs 
+T1= L3VNI 100001 - vni 6000
+T2= L3VNI 100002 - vni 5000 and 5005
