@@ -46,8 +46,8 @@ Route Distinguisher: 10.x.0.17:32891
                       10.x.0.205    4294967295        100          0 i
 					  Route Distinguisher: 10.x.0.19:5    (L3VNI 100001)
 *>i[5]:[0]:[0]:[0]:[0.0.0.0]:[0.0.0.0]/224
-                      10.x.0.202           200        100          0 65011 57976 i
-* i                   10.x.0.202           200        100          0 65011 57976 i  <-- External ROUTE
+                      10.x.0.202           200        100          0 65081 78454 i
+* i                   10.x.0.202           200        100          0 65081 78454 i  <-- External ROUTE
 
 show bgp l2vpn evpn neighbors 10.x.0.5 routes | be 'L2VNI 12400' ##start from vn-segment 12400 
 EXAMPLE: 
