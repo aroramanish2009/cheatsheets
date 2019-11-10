@@ -1,0 +1,12 @@
+#SSL Handshake Explained
+1. Client sends Hello, Cipher Suite and Client Random
+  - If server can't see this the supported cipher suite then it will send failure alert and close the connection. 
+2. Server responds back by sending the Server Random and SSL Certificate (Public Key)
+  - Server will select highest supported TLS version.
+  - Server will select cipher suite from the list sent by client. 
+  - server will also send the certificate of the server with the certificate chain.
+3. Client Verifies the SSL Certificate Information 
+4. Client sends Pre-Master Key generated using the Public Key 
+5. Server verifies Client Certificare (if required) 
+6. Server decrypts Pre-Master Key using Private Key 
+7. Master-Secret or Master-Key is established between Client and Server which will be used for Encryt/Decryt

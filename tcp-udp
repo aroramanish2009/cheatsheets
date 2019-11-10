@@ -1,0 +1,80 @@
+#Headers 
+IPv4 - 0100 
+  - 20 bytes 
+  - 14 fields of which 13 are required, can skip options 
+  - 32 bit address space
+IPv6 - 0110 
+  - 40 bytes 
+  - 8 fields 
+    - version 0110
+    - traffic class TOS and ECN
+    - Flow Label used to maintain the sequential flow of the packets belonging to a communication.
+    - Payload Length
+    - Next Header
+    - Hop Limit aka TTL in IPv4 
+    - src addr - 128 bits 
+    - dst addr - 128 bits  
+#Transport Headers 
+TCP
+  - 20-60 bytes, optional data is 0-40 bytes 
+  - 10 required fields
+    - src port num
+    - dst port num 
+    - sequence num 
+    - ack num 
+    - data offset field stores the total size of a TCP header in multiples of four bytes.
+    - reserved data in TCP headers always has a value of zero.
+    - control flags 
+    - window size - determines how much data can be sent before requiring an ACK. 
+    - checksum 
+    - urgent pointer 
+  - Usages of optional TCP data include support for special acknowledgment and window scaling algorithms.
+UDP
+  - 8 bytes divided into 4 four fields 
+    - src port 
+    - dst port 
+    - length of data, ranges from value of minimum 8 bytes to 65000 bytes.
+    - udp checksum 
+## TCP Connection Management 
+#TCP Initial Handshake 
+1. Client is CLOSED and Server is CLOSED/LISTEN
+2. Client (SYN-SENT) -- SYN --> Server (SYN-RECEIVED)
+3. Client (ESTABLISHED) <-- SYN/ACK -- Server (SYN-RECEIVED)
+4. Client (ESTABLISHED) -- ACK --> Server (ESTABLISHED)
+  -- Sequence num and ack are used to tranfer 
+#TCP Session Close
+1. Client (FIN_WAIT_1) -- FIN --> Server (CLOSE_WAIT)
+2. Client (FIN_WAIT_2) <-- ACK -- Server (CLOSE_WAIT)
+3. Client (TIME_WAIT) <-- FIN -- Server (LAST_ACK)
+4. Client (CLOSED) -- ACK --> Server (CLOSED)
+#TCP Retransmission 
+  - TCP uses sequence num and ack in the header to reliabily tranfer the data between sender and reciever. 
+  - When the receiving socket detects an incoming segment of data, it uses the acknowledgement number in the TCP header to indicate receipt. After sending a packet of data, the sender will start a retransmission timer of variable length. If it does not receive an acknowledgment before the timer expires, the sender will assume the segment has been lost and will retransmit it.
+  - Selective ACK
+    - Window size allow for sending certain data before expecting ack for it aka sliding window defined in bytes and is maintained by receiver.
+    - SACK allow the receiver to continue to acknowledge incoming data while informing the sender of the missing packet(s) in the stream.
+    - Most network analyzers will flag these packets as duplicate acknowledgements because the ACK number will stay the same until the missing packet is retransmitted, filling the gap in the sequence.
+    - In most cases, once the sender receives three duplicate acknowledgments, it will immediately retransmit the missing packet instead of waiting for a timer to expire. These are called fast retransmissions.
+    - Indictive of some packet loss. 
+
+## TCP Congestion Control
+# TCP Congestion Window (cwnd)
+  - cwnd is known only to a sender and is not sent over the links
+  - Maintained for each TCP session and represents the maximum amount of data that can be sent into the network without being acknowledged.
+  - cwnd is calculated using different variants of TCP congestion control algorithms like Tahoe or CUBIC or BBR (bottleneck bandwidth and RTT by Google) 
+  - Tahoe/Reno working 
+    - initially sets cnwd to one Maximum Segment Size (MSS).
+    - After ACK is received, the sender increases the cwnd size by one MSS. 
+    - Cwnd is exponentially increased, following the formula: cwnd = cwnd + MSS.
+    - MSS defines the amount of data that a receiver can receive in one segment. MSS value is set inside a SYN packet.
+    - when TCP sender detects packet loss (duplicate ACKs or the retransmission timeouts), cwnd is decreased to one MSS. Slow start threshold is then set to half of the current cwnd size and TCP resumes the slow start phase.
+  - CUBIC
+    - used in Linux since the kernel 2.6.19 version, replacing its predecessor BIC-TCP.
+    - suited for transmission over the long fat networks with both high capacity and RTT.
+  - Bottleneck Bandwidth and RTT (BBR) : Congestion control algorithm developed by Google. 
+    - loss-based congestion control is problematic with shallow buffers as packet loss happens before congestion or with bufferbloat by repeatedly filling the deep buffers in many last-mile links and causing seconds of needless queuing delay.
+    - BBR uses recent measurements of the network's delivery rate and round-trip time to build an explicit model that includes both the maximum recent bandwidth available to that connection, and its minimum recent round-trip delay.
+    - Long Haul Backbones, terrible throughput. 10 Gbit/sec, 100 ms RTT needs 1/30M loss (1% loss delivers 3 Mbps) 
+    - BBRv2 flows shares BW more evenly with CUBIC. BBRv1 will consume 94% of bandwidth. 
+    - BBRv2 start slow to adjust with heavy policier in countries with limited BW like India, Africa etc 
+    - Avaiable on Ubuntu 16 and 18, Linux 4.9 kernel code. 
