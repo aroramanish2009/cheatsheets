@@ -1,0 +1,101 @@
+##Fiber
+  - Waveguide for light
+  - most commonly made of glass/silica, but can be plastic
+  - glass is low cost to produce and install
+  - very light, Flexible and high density 
+  - can carry latge numbers of independant signals over the same strand, without interfaces, no regeneration required may require amplification. 
+  - continue to evolve on existing fiber infra
+  - Parts of Fiber cable 
+    - core - this is where light stays
+	- cladding - used to create reflection so light stays inside. 
+	- Acceptance cone - angle for light to coming into core so it maintain reflection.
+  - Duplex vs Simplex
+    - Duplex 
+      - one pair of fiber is used for each point to point link. 
+	  - one strand is used to transmit and other to receive.
+	  - requires less expansive optical components to do so. 
+	- Simplex
+	  - requires expansive optical components to send/recieve signals in both directions. 
+	  - done where Fiber is expensive or constrained (eq riser capacity or long-haul etc)
+  - MultiMode 
+    - wide core, allows for cheaper, less precisely focused and aimed light sources. 
+	- Wide core causes Modal Dispersion that typically limit distances to ten to hunderd of meters. 
+    - OM1/OM2 aka FDDI grade (orange fiber jackets), 62.5 micron for OM1 and 50 micron (um) core for OM2. starts to fail at 10 G Speeds
+	- OM3/OM4 aka Laser Optimized (aqua fiber jackets). Designed for 850 nm short reach laser, Supports 10g at 300-550m. 40/100G at 100-150M
+  - SingleMode
+    - Much smaller core, 8-10 micros, no distance limitation caused by modal dispersion 
+	- supports upto 80KM without Amplification 
+	- singlemode OS1 = tight buffered packaging for indoor use. 
+	- singlemode OS2 = Losse buffered packaging for ducts. 
+	- SMF-28 has the lowest attenuation. 
+
+#Basic Optical Terms and Concepts
+  - Optical power and Attenuation 
+    - Light travels through fiber, some of its energy is lost due microscopic imprefections in the fiber or absorbed by dopants and converted to heat.
+	- Loss of intensity is called Attenuation
+    - typicall measured in db (decibels) which is 1/10th of a Bel 
+    - db = logarithmic ratio between two values 
+	  - -10 db == 1/10th the signal, -20db is 1/100th the signal
+	  - Easy to remember: +3bd is double and -3 db is half 
+	- dBm : This is decibel relative to 1 milliwatt of power 
+	  - 0 dBm is 1 mW, 3 dBm is 2mW, -3 dBm is 0.5mW etc 
+
+#Wave Division Multiplexing (WDM) 
+  - CWDM (anything not DWDM) 
+    - 8 channels with 20 nm spacing, with low water peak fiber another 10 channels are possibles. 
+	- can also be used to refer to a simple 1310/1550 nm mux. 
+  - DWDM (Dense wave division multiplexing) 
+    - from 100 GHz to 25 GHz giving you 40/48 channels in C-band to 160-192 channels in C-band 
+	- 25 GHz is defunt
+	- 50GHz with 0.4nm spacing gives 80-96 Channels. Common for long haul and 100G systems. 
+	- 100 GHz MUX = channel spacing [This is very simplied description since there are multiple other factors like passband etc] 
+NOTE: C Band has far lower attenuation and simple Erbium Doped Amplifiers (EDFAs) work. 
+  - 10 GE had 4x 2.5 G channels 
+  - 40 GE has LR4 (4x 10G)
+  - 100 GE has LR4 (4x 25G) 
+  - WDM Networking 
+    - Mux/DeMux : simple, passive (unpowered) device which combines/splits multiple colors of light to/from a single common fiber. 
+	- Use Filter or Prism is used to filter specific colors. 
+	- A complete system requires both Mux and a deMux for the TX and RX operations 
+  - Fixed Optical Add/Drop Multiplexer (FOADM) : Passive device 
+    - Selectively Adds and Drops certain WDM channels 
+	- While muxes at major endpoint to break out all channels, OADMs are often used at mid-points within rings. 
+  - ROADM aka Reconfigurable Optical Add/Drop Multiplexer
+    - This allows individual or multiple wavelengths carrying data channels to be added and/or dropped from a transport fiber without the need to convert the signals on all of the WDM channels to electronic signals and back again to optical signals. 
+	- ROADM allows for remote configuration and reconfiguration.
+  - Optical Amplification
+    - Purely optical way to extend signal reach, no regenration. 
+	- Booster Amplifler, Inline Amplifler and Pre-Amplifier 
+	- EDFA (Erbium Dopen Fiber Amplifier): In this a piece of fiber is doped with Erbium ions. 
+	- EDFA in addition to the intended boosting of signal, also generate noise. 
+	- Raman Amplification: Plasma wave is sent in opposite direction of probe, enery is tranfered from Plasma wave to Probe which depletes pump and amplify probe. Pump is filtered out after aplify. 
+	- EDFA and Raman can be used togather to reduce the Noice. 
+#OTN optical transport network (G.709)
+  - replacement for SONET/SDH 
+  - implemented as a wrapper around other protcols
+  - Used for pure optical channels for high speed protocols. ex a single 100 GE service, delivered over a 100G wave. 
+  - OTN can allow you to MUX many different single types. 
+#What we transmit over fiber 
+  - Modulation 
+    - Sending Analog waves, Amplitude shift keying = bright for a 1, dim for a 0 
+	- requires direct detech system used for RX 
+	- 10G and below are in Non-return to Zero (NRZ) based.
+  - Baud 
+    - Rate at which you modulate a signal 
+	- 10 Gbps means flashing bright/dim, 10 billion times/sec AKA 10GigaBaud 
+	- Two states(bright/dim) means we represent 1 bit per symbol. 
+	- Worked well for 10gigabaud rate, more parallel 10G links were build using DWDM. 
+  - Coherent Optical Tech or Phase Shift Keying (PSK) 
+    - Able to track phase chnages in optical signals 
+	- Uses a concept called "local oscillator" AKA uses Laser on the recieive side of the signal.
+	- Gave true 100G signal, enabled high bandwidth for lang hauls. 
+#Will Laser burn my Eye 
+  - Every single channel laser that can be connected to router is Class1 or 1m (even the long reach 200km+ optics) 
+  - Class 1 or 1m is no issues 
+  - Class 3 or class 4 will burn so avoid, normally found in optical applifies, raman amplifiers and dwdm equipment specially if you have 40 channels muxed into 1 - dont look at directly when though signal quickly disperses. 
+  - use your phone camera if you really have to use it. 
+
+#Notes
+  - Clean fiber before plugging as the connector is pressed with great force and dust spec can damage optics .
+  - Speed at which light traffic inside fiber == speed of light/ refractive index 
+    - ex: on SMF-28 with RI of 1.4679, 1ms per 62.5 miles of RTT, you will see more latency due to fiber uses scenic routes over long distance. 
