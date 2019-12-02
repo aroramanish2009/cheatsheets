@@ -1,0 +1,79 @@
+#OS Concepts
+##Process Management
+  - Process: a program in execution or running instance of a program. 
+    - Foreground or Interactive Process: user initiated process, requires interaction. 
+	- Background or non-interactive process: start the process, ctrl z it and the "bg". To bring back use "fg" or by doing "Process_name &"
+  - Daemons: Background processes that start at system startup and keep running as service. can be controlled using init process. 
+  - Process Creation
+    - using the system() function 
+	- using fork() and exec() function 
+	- Basically new process is created when an exisiting process makes an exact copy of itself, this child process has same enviorment as its parent but new process ID (this is called Forking). The address space of the child process is overwritten with the new process data using an exec call to the system.  
+    - Processes are identified by their PID or PPID (Parent's PID) 
+  - Init Process
+    - first program executed when the Linux System boots up. 
+	- PID == 1
+	- pidof systemd == 1 
+************************
+[1]+  Stopped                 top
+root@ip-172-26-3-150:~# jobs
+[1]+  Stopped                 top
+root@ip-172-26-3-150:~# bg
+[1]+ top &
+root@ip-172-26-3-150:~# fg
+************************
+  - State of Process 
+    - running 
+	- waitiing 
+	- stopped 
+	- zombie : parent process is dead or it has been halted but still exists in process table. 
+  - Process view Commands
+    - ps 
+	- top 
+	- glances
+  - Process Kill or Stop command 
+    - kill -l ;; Will list different signals can be sent to a process. 
+  - nice/renice 
+    - used to adjust the priority of a process. default priority == 0 , range -20 to 19 with lower being better. 
+
+##Sockets 
+  - It is one end of an interprocess communication channel established between client/server. 
+  - Clinet side socket establishment steps
+    - Create a socket with the socket() system call 
+	- Connect the socket to the address of the server using the connect() system call 
+	- Send and receive data. There are a number of ways to do this, but the simplest is to use the read() and write() system calls. 
+  - Server side socket establishment steps
+    - Create a socket with the socket() system call 
+	- Bind the socket to an address using the bind() system call. For a server socket on network, an address consists of a port number on the host machine. 
+	- Listen for connections with the listen() system call 
+	- Accept a connection with the accept() system call. This call typically blocks until a client connects with the server. 
+	- Send and receive data 
+  - Types of Sockets
+    - stream sockets - TCP, continuous steam of characters. 
+	- datagram sockets - UDP, read entire messages at once.
+##Processes and threads
+  - Process: Running instance of a computer program. 
+    - It consists of allocated memory which holds the program code, its data and a heap for dynamic memory allocations. 
+	- It is not the unit for multi-tasking in destop operating systems. 
+  - Thread: It is the default unit - the task - of CPU usage. Code executed in a single thread is what we usually refer to as sequential or synchronous execution.
+    - supported on multithreaded OS and can be created with system calls. 
+	- They have their own call stacks, virtual CPU and (often) local storage but share the application's heap, data, codebase and resources (such as file handles) with the other threads in the same process.
+  - Context switching: switching between threads
+    - It is done at frequent intervals by the kernel, creating the illusion that our programs are running in parallel, whereas in reality, they are running concurrently but sequentially in short slices. 
+  - CPU Bound
+    - scientific computation
+	- (in-mem) data analysis 
+	- simulations
+  - I/O Bound
+    - reading from/writing to Disk 
+	- access peripherials like mic or cam etc 
+	- reading/writing to Network Sockets
+	- reading from stdin 
+  - Blocking vs non-blocking 
+    - blocking: waiting for the device to be ready 
+	- non-blocking: eg polling periodically until ready 
+  - synchronous vs asynchronous 
+    - synchronous: executing the operation (e.g. read or write) initiated by the program
+	- asynchronous: executing the operation as response to an event from the kernel (asynchronous / event driven)
+  - synchronous, blocking I/O: Eg Cooking food by focusing on one recipe at a time, not multi-tasking at all. 
+  - Synchronous, non-blocking I/O: Eg Cooking rice dish and other dishs at the same time, make rice changes when needed otherwise do other dishes. 
+  - Asynchronous, non-blocking I/O: Eg Get a sou chef, assign work to them as needed and during non-interuptions work on your dishes. 
