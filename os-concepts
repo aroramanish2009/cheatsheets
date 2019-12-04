@@ -76,4 +76,63 @@ root@ip-172-26-3-150:~# fg
 	- asynchronous: executing the operation as response to an event from the kernel (asynchronous / event driven)
   - synchronous, blocking I/O: Eg Cooking food by focusing on one recipe at a time, not multi-tasking at all. 
   - Synchronous, non-blocking I/O: Eg Cooking rice dish and other dishs at the same time, make rice changes when needed otherwise do other dishes. 
-  - Asynchronous, non-blocking I/O: Eg Get a sou chef, assign work to them as needed and during non-interuptions work on your dishes. 
+  - Asynchronous, non-blocking I/O: Eg Get a sou chef, assign work to them as needed and during non-interuptions work on your dishes.
+##Filesystems of yesterday and today
+  - Ext2
+    - Ext2 stands for second extended file system.
+    - Ext2 does not have journaling feature, thereby considered better on usb, flash etc 
+    - Maximum individual file size can be from 16 GB to 2 TB
+    - Overall ext2 file system size can be from 2 TB to 32 TB
+    - Creating ext2 filesystem # mke2fs /dev/sda1
+  - Ext3
+    - Ext3 stands for third extended file system.
+    - allows journaling
+	- Journaling has a dedicated area in the file system, where all the changes are tracked. When the system crashes, the possibility of file system corruption is less because of journaling.
+	- Types of Journalling 
+	  - Journal – Metadata and content are saved in the journal.
+	  - Ordered – Only metadata is saved in the journal. Metadata are journaled only after writing the content to disk. This is the default.
+	  - Writeback – Only metadata is saved in the journal. Metadata might be journaled either before or after the content is written to the disk. - Performant 
+	- You can convert a ext2 file system to ext3 file system directly (without backup/restore).
+  - Ext4 
+    - Ext4 stands for fourth extended file system.
+	- Maximum individual file size can be from 16 GB to 16 TB
+	- Overall maximum ext4 file system size is 1 EB (exabyte). 1 EB = 1024 PB (petabyte).
+	- Directory can contain a maximum of 64,000 subdirectories (as opposed to 32,000 in ext3). max files 4 billion. 
+	- Several other new features are introduced in ext4: multiblock allocation, delayed allocation, journal checksum. fast fsck, etc. All you need to know is that these new features have improved the performance and reliability of the filesystem when compared to ext3.
+	- In ext4, you also have the option of turning the journaling feature “off”.
+  - XFS
+    - high-performance 64 bit journaling file system
+	- scalable/parallel I/O based I/O threads and file system bandwidth 
+	- journaling for metadata operations
+	- online defragmentation
+	- suspend/resume I/O
+	- maximum file system size of 8 exabytes for 64 bit file system, max file size 8 ebytes. 
+	- max files 2 to power 64 
+	- cannot be shrunk or size changed
+	- Uses B+ tree implementation for searching files and allocating space. This makes searching and fetching the data much faster.
+  - OpenZFS
+    - OpenZFS is designed as a copy-on-write file system which means even when data is being modified, it is done by writing a new data block first and then getting rid of the old data block.
+	- Supports checksums which means silent data corruptions when your disks start to fail is reported, if not automatically fixed.
+	-  OpenZFS is a 128-bit file system with some super large file zise/directories support
+##Directory Structure 
+  - root
+    - bin: Essential user command binaries 
+	  - bash, cat, cp etc 
+	- etc: (everything to configure) Config files for the system 
+	  - crontab, hosts, http etc 
+	- sbin: Essential system binaries
+	  - fdisk, getty, ifconfig etc 
+	- usr: read-only user app support data and binaries
+	  - usr/bin: most user commands
+	  - usr/include: standard include files for "C" code
+	  - usr/lib: obj, bin,lib for coding and packages
+	  - usr/local: local software with sub tree structure 
+	  - usr/share: static data sharable across all architectures 
+	- var: variable data files 
+	  - lib, log, cache, opt etc sub directories 
+	- dev: device files incl. /dev/null 
+	- home: user home directories
+	- lib: libraries and kernel modules 
+	- mnt: mount files for temp filesystems 
+	- opt: optional software applications
+	- proc: process and ketnel information files 
