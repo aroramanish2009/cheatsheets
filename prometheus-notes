@@ -1,0 +1,390 @@
+Prometheus Notes
+================
+##GENERAL
+#Features
+  - Multi Dimensional data model with time series data identified by metric name and key/value pairs
+  - PromQL, a flexible query language to leverage this dimensionality
+  - time series collection happens via a pull model over HTTP
+  - pushing time series is supported via an intermediary gateway
+  - targets are discovered via service discovery or static configuration
+  - no need for distributed storage, single server nodes are autonomous. 
+ 
+#Components
+  - the main Prometheus server which scrapes and stores time series data
+  - client libraries for instrumenting application code
+  - a push gateway for supporting short-lived jobs
+  - special-purpose exporters for services like HAProxy, StatsD, Graphite, etc.
+  - an alertmanager to handle alerts
+
+#Architecture
+  - Prometheus Server: Retrives data for TSDB which writes to local HDD/SSD and runs http server. 
+    - Pull Metrics
+	  - Using Jobs/Exporters to Prometheus Targets
+	  - Using Pushgateway
+	- AlertManager
+	  - Main server pushes alerts to AlertManager 
+	  - This can notify various services Pagerduty, email, etc 
+	- PromQL
+	  - Data visualization tools like grafana, api clients can utilize this to leverage this data.
+
+#Configuring Prometheus 
+  - Use YAML, comes with sample file called prometheus.yml
+  - Three main blocks of configuretion. Global, rule_files and scrape_configs
+  - global block 
+    - scrape_interval 
+	- evaluation_interval 
+  - rule_files 
+    - Specifies the location of any rules we want the Prometheus server to load. 
+  - scrape_configs
+    - Controls what resources Prometheus server monitors. 
+	- By default it has localhost as target for monitoring prometheus itself. 
+
+#Starting Prometheus
+  - ./prometheus --config.file=prometheus.yml
+  - Prometheus status page is at http://localhost:9090
+  - Self Metrics http://localhost:9090/metrics.
+
+# Prometheus vs Influx 
+  - Prometheus is better:
+    - Primarily doing metrics 
+	- promql, alerting and notification functionality 
+	- Higher Availability and uptime for graphing and alerting. 
+  - InfluxDB is better:
+    - Event Logging 
+	- Has Commercial clustering which is better for long term data storage
+	- Eventually consistent view of data between replicas.
+
+# Prometheus vs OpenTSDB : 
+  - OpenTSDB's storage is implemented on top of Hadoop and HBase. This means that it is easy to scale OpenTSDB horizontally, but you have to accept the overall complexity of running a Hadoop/HBase cluster from the beginning. 
+  - Prometheus will be simpler to run initially, but will require explicit sharding once the capacity of a single node is exceeded.
+
+##CONCEPTS 
+#Data model
+  - Metric names and labels: Every time series is uniquely identified by its metric name and optional key-value pairs called labels.
+  - Metric Name must match regex [a-zA-Z_:][a-zA-Z0-9_:]*
+  - Labels enable Prometheus's dimensional data model: any given combination of labels for the same metric name identifies a particular dimensional instantiation of that metric (for example: all HTTP requests that used the method POST to the /api/tracks handler). The query language allows filtering and aggregation based on these dimensions. Changing any label value, including adding or removing a label, will create a new time series.
+  - Labels must match regex [a-zA-Z_][a-zA-Z0-9_]*
+  - Samples: Form the actual time series data. Each sample consists of:
+    - a float64 Value 
+	- a millisecond-precision timestamp 
+  - Notation: Given a metric name and a set of labels, time series are frequently identified using this notation:
+    - <metric name>{<label name>=<label value>, ...}
+	- Example: api_http_requests_total{method="POST", handler="/messages"} : where metric name api_http_requests_total and the labels method="POST" and handler="/messages"
+
+#Metric Types
+  - The Prometheus client libraries offer four core metric types. The Prometheus server does not yet make use of the type information and flattens all data into untyped time series. This may change in the future.
+    - Counter
+	- Gauge
+	- Histogram
+	- Summary
+  - Counter: A counter is a cumulative metric that represents a single monotonically increasing counter whose value can only increase or be reset to zero on restart. Do not use a counter to expose a value that can decrease.
+  - Gauge: A gauge is a metric that represents a single numerical value that can arbitrarily go up and down.
+  - Histogram: A histogram samples observations (usually things like request durations or response sizes) and counts them in configurable buckets. It also provides a sum of all observed values. 
+  - Summary: Similar to a histogram, a summary samples observations (usually things like request durations and response sizes). While it also provides a total count of observations and a sum of all observed values, it calculates configurable quantiles over a sliding time window.
+
+#Jobs and Instances: In Prometheus terms, an endpoint you can scrape is called an instance, usually corresponding to a single process. A collection of instances with the same purpose, a process replicated for scalability or reliability for example, is called a job.
+  - Example 
+    - job: api-server
+	  - instance 1: 1.2.3.4:5670
+	  - instance 1: 1.2.3.5:5670
+  - By default, prometheus attaches the Job and instance lobels to the TSDB which serve to identify the scraped target. 
+  - For each instance scrape, Prometheus stores a sample in the following time series:
+    - up = 1 or 0 (for instance availability)
+	- scrape_duration_seconds{job="<job-name>", instance="<instance-id>"}:
+	- scrape_samples_scraped{job="<job-name>", instance="<instance-id>"}: the number of samples the target exposed.
+	- scrape_series_added{job="<job-name>", instance="<instance-id>"}: the approximate number of new series in this scrape.
+
+##Prometheus
+#Getting Started 
+  - Downloading and running Prometheus
+    - tar xvfz prometheus-*.tar.gz
+	- cd prometheus-*
+  - Before starting, configure prometheus.yml with base information so it can scrape itself. 
+  - By default, Prometheus stores its database in ./data (flag --storage.tsdb.path).
+    - ./prometheus --config.file=prometheus.yml
+  - status page at x.x.x.x:9090
+  - metrics x.x.x.x:9090/metrics
+  - Expression browser http://localhost:9090/graph  --> console view --> graph Tab. Can be used with promql to get data. 
+  - Graph expressions  http://localhost:9090/graph and use the "Graph" tab . Ex: rate(prometheus_tsdb_head_chunks_created_total[1m]) 
+  - Configuring Prometheus to monitor the sample targets. Following example show 3 server in one Job but group Prod and Dev
+**********************************
+scrape_configs:
+  - job_name: 'example-random'
+
+    # Override the global default and scrape targets from this job every 5 seconds.
+    scrape_interval: 5s
+
+    static_configs:
+      - targets: ['localhost:8080', 'localhost:8081']
+        labels:
+          group: 'Prod'
+
+      - targets: ['localhost:8082']
+        labels:
+          group: 'Dev'
+***********************************		  
+  - Configure rules for aggregating scraped data into new time series. queries that aggregate over thousands of time series can get slow when computed ad-hoc. To make this more efficient, Prometheus allows you to prerecord expressions into completely new persisted time series via configured recording rules. 
+  
+#Installation
+  - Docker images on Docker hub or quay.io 
+  - Use Data container that prometheus will utilize 
+    - docker run -p 9090:9090 -v /prometheus-data prom/prometheus --config.file=/prometheus-data/prometheus.yml
+
+#Configuration 
+  - Done via config file and CLI flags 
+  - Config files 
+    - Jobs and instances
+	- Rules files to load
+  - CLI flags 
+    - changes like how much data in disk and memory 
+	- storage locations etc 
+	- ./prometheus -h to view all available options
+  - Valid Example File : https://github.com/prometheus/prometheus/blob/release-2.13/config/testdata/conf.good.yml 
+  - <scrape_config> : section specifies a set of targets and parameters describing how to scrape them. relabel_configs allow advanced modifications to any target and its labels before scraping.
+  - <tls_config> : This section allows for TLS connections. 
+  - Targets can be static or dynamically gathered from AWS to Openstack to K8. 
+  - <relabel_config> : Relabeling is a powerful tool to dynamically rewrite the label set of a target before it gets scraped. 
+
+#Defining rules
+  - Prometheus supports recording rules and alerting rules. To include rules in Prometheus, create a file containing the necessary rule statements and have Prometheus load the file via the rule_files field in the Prometheus configuration.
+  - Syntax-checking rules
+    - go get github.com/prometheus/prometheus/cmd/promtool
+	- promtool check rules /path/to/example.rules.yml  ;; Before restarting prometheus process, 0 is good and 1 is bad in output
+  - Recording rules: Recording rules allow you to precompute frequently needed or computationally expensive expressions and save their result as a new set of time series. Querying the precomputed result will then often be much faster than executing the original expression every time it is needed. This is especially useful for dashboards, which need to query the same expression repeatedly every time they refresh.
+    - Recording and alerting rules exist in a rule group. Rules within a group are run sequentially at a regular interval.
+**********************************************************
+Example:
+groups:
+  - name: example
+    rules:
+    - record: job:http_inprogress_requests:sum
+      expr: sum(http_inprogress_requests) by (job)
+***********************************************************
+  - Alerting rules allow you to define alert conditions based on Prometheus expression language expressions and to send notifications about firing alerts to an external service.
+  - Defining alerting rules
+***********************************************************
+Example:
+groups:
+- name: example
+  rules:
+  - alert: HighRequestLatency
+    expr: job:request_latency_seconds:mean5m{job="myjob"} > 0.5
+    for: 10m
+    labels:
+      severity: page
+    annotations:
+      summary: High request latency
+*************************************************************
+  - Inspecting alerts during runtime: navigate to the "Alerts" tab of your Prometheus instance.
+  - Sending alert notifications: Prometheus may be configured to periodically send information about alert states to an Alertmanager instance, which then takes care of dispatching the right notifications.
+  - Template examples: Prometheus supports templating in the annotations and labels of alerts, as well as in served console pages. Templates have the ability to run queries against the local database, iterate over data, use conditionals, format data, etc.
+**************************************************************
+Example
+alert: InstanceDown
+expr: up == 0
+for: 5m
+labels:
+  severity: page
+annotations:
+  summary: "Instance {{$labels.instance}} down"
+  description: "{{$labels.instance}} of job {{$labels.job}} has been down for more than 5 minutes."
+***************************************************************
+
+#Querying Prometheus
+  - PromQL : Lets the user select and aggregate time series data in real time. The result of an expression can either be shown as a graph,  viewed as tabular data in Prometheus's expression browser, or consumed by external systems via the HTTP API.
+  - An expression or sub-expression can evaluate to one of four types:
+    - Instant vector - a set of time series containing a single sample for each time series, all sharing the same timestamp
+	- Range vector - a set of time series containing a range of data points over time for each time series
+	- Scalar - a simple numeric floating point value
+	- String - a simple string value; currently unused
+  - Literals
+    - Strings may be specified as literals in single quotes, double quotes or backticks. Ex: "this" 'this' or `this`
+	- Scalar float values can be literally written as numbers of the form [-](digits)[.(digits)].
+  - Time series Selectors
+    - Instant vector selectors : Allow the selection of a set of time series and a single sample value for each at a given timestamp (instant): in the simplest form, only a metric name is specified. This results in an instant vector containing elements for all time series that have this metric name.
+*****************************************************************
+Example:
+1. Selects all time series that have the "http_requests_total" metric name:
+http_requests_total
+
+2. Time series can be filtered further by appending a set of labels to match in curly braces ({}).
+http_requests_total{job="prometheus",group="canary"}  ## Will select TS with Job label prometheus and group label canary
+
+3. Possible to negatively match a label value, or to match label values against regular expressions. The following label matching operators exist:
+    =: Select labels that are exactly equal to the provided string.
+    !=: Select labels that are not equal to the provided string.
+    =~: Select labels that regex-match the provided string.
+    !~: Select labels that do not regex-match the provided string.
+Following selects all http_requests_total time series for staging, testing, and development environments and HTTP methods other than GET:
+http_requests_total{environment=~"staging|testing|development",method!="GET"}
+
+4. The expression http_requests_total is equivalent to {__name__="http_requests_total"}. Matchers other than = (!=, =~, !~) may also be used. The following expression selects all metrics that have a name starting with job:  : 
+
+{__name__=~"job:.*"}
+********************************************************************
+  - Range Vector Selectors: Range vector literals work like instant vector literals, except that they select a range of samples back from the current instant.
+    - Time durations are specified as a number, followed immediately by one of the following units:
+    s - seconds
+    m - minutes
+    h - hours
+    d - days
+    w - weeks
+    y - years
+  - offset modifier allows changing the time offset for individual instant and range vectors in a query.
+*********************************************************************
+Example: we select all the values we have recorded within the last 5 minutes for all time series that have the metric name http_requests_total and a job label set to prometheus:
+http_requests_total{job="prometheus"}[5m]
+
+Following expression returns the value of http_requests_total 5 minutes in the past relative to the current query evaluation time:
+http_requests_total offset 5m
+
+Note that the offset modifier always needs to follow the selector immediately, i.e. the following would be correct:
+sum(http_requests_total{method="GET"} offset 5m) // GOOD.
+sum(http_requests_total{method="GET"}) offset 5m // INVALID.
+
+This returns the 5-minutes rate that http_requests_total had a week ago:
+rate(http_requests_total[5m] offset 1w)
+*********************************************************************
+NOTE: Avoiding slow queries and overloads
+  - If a query needs to operate on a very large amount of data, graphing it might time out or overload the server or browser. Thus, when constructing queries over unknown data, always start building the query in the tabular view of Prometheus's expression browser until the result set seems reasonable (hundreds, not thousands, of time series at most). Only when you have filtered or aggregated your data sufficiently, switch to graph mode. If the expression still takes too long to graph ad-hoc, pre-record it via a recording rule.
+  - This is especially relevant for Prometheus's query language, where a bare metric name selector like api_http_requests_total could expand to thousands of time series with different labels. Also keep in mind that expressions which aggregate over many time series will generate load on the server even if the output is only a small number of time series. This is similar to how it would be slow to sum all values of a column in a relational database, even if the output value is only a single number.
+  
+  - Operators: Prometheus's query language supports basic logical and arithmetic operators.
+  - Arithmetic binary operators: Binary arithmetic operators are defined between scalar/scalar, vector/scalar, and vector/vector value pairs.
+  
+    + (addition)
+    - (subtraction)
+    * (multiplication)
+    / (division)
+    % (modulo)
+    ^ (power/exponentiation)
+	
+  - Comparison binary operators  
+  
+    == (equal)
+    != (not-equal)
+    > (greater-than)
+    < (less-than)
+    >= (greater-or-equal)
+    <= (less-or-equal)
+	
+  - Logical/set binary operators: These logical/set binary operators are only defined between instant vectors: 
+  
+    and (intersection)
+    or (union)
+    unless (complement)
+	
+  - Aggregation operators: Prometheus supports the following built-in aggregation operators that can be used to aggregate the elements of a single instant vector, resulting in a new vector of fewer elements with aggregated values.
+  
+    sum (calculate sum over dimensions)
+    min (select minimum over dimensions)
+    max (select maximum over dimensions)
+    avg (calculate the average over dimensions)
+    stddev (calculate population standard deviation over dimensions)
+    stdvar (calculate population standard variance over dimensions)
+    count (count number of elements in the vector)
+    count_values (count number of elements with the same value)
+    bottomk (smallest k elements by sample value)
+    topk (largest k elements by sample value)
+    quantile (calculate φ-quantile (0 ≤ φ ≤ 1) over dimensions)
+****************************************************************
+Example: If the metric http_requests_total had time series that fan out by application, instance, and group labels, we could calculate the total number of seen HTTP requests per application and group over all instances via
+  - sum(http_requests_total) without (instance)  OR sum(http_requests_total) by (application, group)
+  - sum(http_requests_total) ## If we are just interested in the total of HTTP requests we have seen in all applications
+  - count_values("version", build_version) ##To count the number of binaries running each build version
+  - topk(5, http_requests_total) ##To get the 5 largest HTTP requests counts across all instances
+****************************************************************
+  - Binary operator precedence: The following list shows the precedence of binary operators in Prometheus, from highest to lowest.
+  
+    1. ^
+    2. *, /, %
+    3. +, -
+    4. ==, !=, <=, <, >=, >
+    5. and, unless
+    6. or
+NOTE: Operators on the same precedence level are left-associative. For example, 2 * 3 % 2 is equivalent to (2 * 3) % 2. However ^ is right associative, so 2 ^ 3 ^ 2 is equivalent to 2 ^ (3 ^ 2).
+
+  - Functions : Promql has many support for many functions that can be applied on the TS. 
+    - e.g. year(v=vector(time()) instant-vector). This means that there is one argument v which is an instant vector, which if not provided it will default to the value of the expression vector(time()).
+	- List of Functions: https://prometheus.io/docs/prometheus/latest/querying/functions/
+  
+****************************************************************
+Querying Examples:
+  - Simple TS 
+    - http_requests_total{job="apiserver", handler="/api/comments"}[5m] ;; Return a whole range of time (in this case 5 minutes) for the same vector, making it a range vector
+    - http_requests_total{status!~"4.."} ;; To select all HTTP status codes except 4xx ones
+  - Subquery
+    - rate(http_requests_total[5m])[30m:1m] ;; Return the 5-minute rate of the http_requests_total metric for the past 30 minutes, with a resolution of 1 minute.
+  - Using functions, operators, etc.
+    - rate(http_requests_total[5m]) ;; Return the per-second rate for all time series with the http_requests_total metric name, as measured over the last 5 minutes
+****************************************************************
+
+#Storage
+  - Prometheus's local time series database stores time series data in a custom format on disk.
+  - Ingested samples are grouped into blocks of two hours. Each two-hour block consists of a directory containing one or more chunk files that contain all time series samples for that window of time, as well as a metadata file and index file (which indexes metric names and labels to time series in the chunk files). When series are deleted via the API, deletion records are stored in separate tombstone files (instead of deleting the data immediately from the chunk files).
+  - Prometheus has several flags that allow configuring the local storage. The most important ones are:
+    - --storage.tsdb.path: This determines where Prometheus writes its database. Defaults to data/
+	- --storage.tsdb.retention.time: This determines when to remove old data. Defaults to 15d
+  - On average, Prometheus uses only around 1-2 bytes per sample. Thus, to plan the capacity of a Prometheus server, you can use the rough formula : needed_disk_space = retention_time_seconds * ingested_samples_per_second * bytes_per_sample
+
+#Federation
+  - Allows a Prometheus server to scrape selected time series from another Prometheus server.
+  - Use Cases
+    - Hierarchical federation: For example, a setup might consist of many per-datacenter Prometheus servers that collect data in high detail (instance-level drill-down), and a set of global Prometheus servers which collect and store only aggregated data (job-level drill-down) from those local servers. 
+	- Cross-service federation: a Prometheus server of one service is configured to scrape selected data from another service's Prometheus server to enable alerting and queries against both datasets within a single server.
+	
+#Grafana support for Prometheus
+  - The Grafana data source for Prometheus is included since Grafana 2.5.0 (2015-10-28).
+  - Grafana Instalation https://grafana.com/grafana/download
+  - To create a Prometheus data source:
+    - Click on the Grafana logo to open the sidebar menu.
+	- Click on "Data Sources" in the sidebar.
+	- Click on "Add New"
+	- Select "Prometheus" as the type.
+	- Set the appropriate Prometheus server URL 
+	- Adjust other data source settings as desired
+	- Click "Add" to save the new data source.
+  - Grafana PreBuilt Dashboards; https://grafana.com/grafana/dashboards
+
+#Client libraries
+ - Official client libs avaiable for Go, Java, Pythin and ruby. https://prometheus.io/docs/instrumenting/clientlibs/
+ - Pushing metrics : The Prometheus Pushgateway allows you to push time series from short-lived service-level batch jobs to an intermediary job which Prometheus can scrape. 
+ - Exporters and integrations: Many official and unofficial exporters are available. https://prometheus.io/docs/instrumenting/exporters/ Ex: Blackbox exporter can be used for Ping test. 
+
+#Alerting Overview
+  - Alerting with Prometheus is separated into two parts.
+    - Alerting rules in Prometheus servers send alerts to an Alertmanager.
+	- The Alertmanager then manages those alerts, including silencing, inhibition, aggregation and sending out notifications via methods such as email, on-call notification systems, and chat platforms.
+  - Alertmanager Core Concepts 
+    - Grouping(configured in config file): Grouping categorizes alerts of similar nature into a single notification. Ex: If all servers lost connection to DB, grouping allows to send a single compact notification yet showing the no. of servers affected. 
+	- Inhibition(configured in config file): concept of suppressing notifications for certain alerts if certain other alerts are already firing. Ex: Mute all alerts if Edge routers have failed. 
+	- Silences(configured in Web GUI:  straightforward way to simply mute alerts for a given time.
+	- High Availability: supports configuration to create a cluster for high availability. This can be configured using the --cluster-* flags.
+  - Configuration
+    - It is configured via command-line flags and a configuration file. While the command-line flags configure immutable system parameters, the configuration file defines inhibition rules, notification routing and notification receivers.
+	- https://prometheus.io/webtools/alerting/routing-tree-editor/ Can be used to build routing tree. 
+	- Reload to pick config file changes, error is config file not correct. 
+	- ./alertmanager --config.file=simple.yml
+	- Various Integrations (slack, email, pagerduty etc) avaiable at https://prometheus.io/docs/alerting/configuration/
+  - Notification Template Reference
+    - Prometheus creates and sends alerts to the Alertmanager which then sends notifications out to different receivers based on their labels. A receiver can be one of many integrations including: Slack, PagerDuty, email etc 
+
+#Best Practices 
+  - Metric and label naming: recommended best practices 
+  - Metric names:
+    - must comply with the data model for valid characters.
+	- Single word application prefix sometimes referred to as namespace by client libraries. For metrics specific to an application, the prefix is usually the application name itself. Ex: http_request_duration_seconds (for all HTTP requests)
+	- must have a single unit (i.e. do not mix seconds with milliseconds, or seconds with bytes).
+	- use base units (e.g. seconds, bytes, meters and not milliseconds, megabytes, kilometers)
+	- should have a suffix describing the unit, in plural form. Ex: http_request_duration_seconds or process_cpu_seconds_total etc 
+	- should represent the same logical thing-being-measured across all label dimensions. 
+	- As a rule of thumb, either the sum() or the avg() over all dimensions of a given metric should be meaningful (though not necessarily useful). 
+  - Labels:
+    - Use labels to differentiate the characteristics of the thing that is being measured
+	-  api_http_requests_total - differentiate request types: operation="create|update|delete" 
+	-  api_request_duration_seconds - differentiate request stages: stage="extract|transform|load" 
+  - Alerts: keep alerting simple, alert on symptoms, have good consoles to allow pinpointing causes, and avoid having pages where there is nothing to do.
+  - Push Gateway: an intermediary service which allows you to push metrics from jobs which cannot be scraped. Using Push Gateway: https://github.com/prometheus/pushgateway/blob/master/README.md
+    - Pitfall-1: Pushgateway becomes both a single point of failure and a potential bottleneck.
+	- Pitfall-2: You lose Prometheus's automatic instance health monitoring via the up metric (generated on every scrape).
+	- Pitfall-3: Pushgateway never forgets series pushed to it and will expose them to Prometheus forever unless those series are manually deleted via the Pushgateway's API.
