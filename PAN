@@ -1,0 +1,175 @@
+##PAN
+#Initial Connectivity using Console
+  - Seting up mgmt Interface: set deviceconfig system ip-address x.x.x.x netmask x.x.x.x default-gateway x.x.x.x dns-setting servers primary x.x.x.x secondary x.x.x.x;; check pending; commit
+  - admin password change: set mgt-config users admin password XXXXX ;; commit
+#Dashboard
+  - HA status
+  - User Activity
+  - Interfaces
+  - config logs
+  - Widgets
+    - move widgets around
+        - Select widgets to display Interface status, HA status etc
+#CLI
+  - Structure: {action} {section} {element}
+  - show:       show     system   info
+  - Request:    request  system   restart
+  - test:       test     vpn ike-sa gateway {name} or test http-server address google.com protocol HTTPS (confirm reachability if FW able to connect)
+  - test vpn ike-sa gateway GW1  ;; This will reinitiate phase 1
+  - test vpn ipsec-sa gateway GW1  ;; This will reinitiate phase 2
+  - set cli config-output-format set --> config --> show | match XXXX ;; This will display config in Set format, causes no issues with current config. 
+  - admin@PA-5220> show config diff  --> shows pending changes
+  - load config last-saved  + commit --> abort changes and commits last saved configuration. 
+
+#Device Mgmt overview
+  - every PAN has dedicated Mgmt Interface, this can be maintained in Device->Interfaces->Mgmt
+  - Mgmt Profiles can be created under Network->Interface Mgmt and applied to physcial interfaces if you want to mgmt on data interface
+
+#Local Admins
+  - Admin Roles under Device ;; Role based access is configured here.
+#Address Objects and Groups
+  - address object = similar to ASA objects ;; Objects -> Addresses
+  - CLI Ex: set address core_app_server_1 ip-netmask 10.21.22.23;; set address core_app_server_1 tag core_app_server
+  - address group object = Similar to ASA network objects which groups individuals address objects. ;; Objects -> Address Groups
+  - CLI Ex: set address-group core_app_servers dynamic filter "'core_app_server'" ;; This is dynamic group based on Address object Tag 
+  - CLI Ex: set address-group core_app_servers static core_app_server_1 ;; This is adding an object manually into a address-group. Address-group can be dynamic or manual. 
+#Service Objects and Groups 
+  - Similar to Port Object and Port Object groups.;; Objects -> Services or Service-groups 
+  - service group can contain tcp/udp/predefined/nested service-groups in it. 
+  - CLI Ex: set service-group DNS_TCP_UDP members DNS_PORT_TCP 
+  - set service-group DNS_TCP_UDP members DNS_PORT_UDP
+  - set service-group DNS_TCP_UDP members [DNS_PORT_TCP DNS_PORT_UDP ]
+  - dynamic mode using tag is can be used as well. 
+#Application Objects and Groups
+  - Policies can be applied to network traffic based on the application types. 
+  - Custom Application can be build and use of PAN App research Center is advised to classify application. 
+  - Applipedia (PAN App research Center) is where PAN pulls db for application filters signatures etc. This is updated weekly. 
+  - Applipedia.paloaltonetworks.com provides application dependancy map, for ex youtube-base needs google-base to work which can depend on something else. Custom Application object will need to allow all dependancy for it to work. 
+#User Objects and Groups 
+  - Local users can be created in Device --> Local User Database 
+  - No Tag functionality is available for Local User DBs 
+  - LDAP/AD Integration : You need a service account. 
+    - Device --> Server Profiles --> LDAP ;; Add your LDAP Profile, add AD server name/ip,port, add active-directory, add Bind DN(using service account). If service account works then you can see Base DN.
+	- Device --> Authentication Profile ;; LDAP Profile, select Server Profile created above, Login Attribute as sAMAccountName (account name);select "all" groups from AD. 
+	- Device --> Authentication Sequence;; Add profile sequence. Basically use local if ldap not available. 
+  - Device --> User Identification --> User Mapping --> Server Monitoring ;; we can create policy to monitor PAN to AD communication. 
+  - Device --> User Identification --> Group Mapping ;; Link to Server Profile LDAP profile, confirm attribute, if connectivity to AD is working then you will see Available Groups and you can add them to Group Include List. 
+#Firewall Security Zones, Interface Types and V-Wires 
+  - Firewall Security Zones: Outside, Inside, DMZ, Server Zone etc 
+    - Network --> Zones ;; Create zones and select the interface type associated with that Zone;; Interface can be Tap, L2, L3, Tunnel etc 
+  - Interface Type : Network --> Interfaces 
+    - L2 and vlans ;; Can be subinterfaces using dot1q tunnel on the other end. Can be used as L2 hop between 2x switches. 
+	- L3 ;; Can be subinterfaces using dot1q tunnel on the other end.  Make sure to set the Tag same as Vlan ID on far end. 
+	  - Create a LACP Bundle Link, set select sub-interfaces, create same Tag ports and Assign IPv4/6. Managment Profile if you need to enable PING etc. 
+	- Tap 
+	- Loopback and tunnel Interfaces;; Tunnel interfaces are created for IPSEC tunnel etc and Loopback for routing instances. 
+	- HA Interfaces ;; Used for HA configuration, Some FW comes with HA interfaces otherwise you need to change some Interfaces to HA mode. 
+  - V Wires: Inspect per Vlan traffic by creating Vlan Traffic, Policies without influencing any routing decisio. 
+    - Parent Interfaces should only Virtual Wire enabled
+	- Add Sub-Interface, add a Vlan Tag, (here IP classifier config can enable policy based on the certain host inside Vlan), assign it to security zone. 
+	- Connect to the parent interfaces which are in 2 security zones by going to Network --> Virtual Wire. "Link state pass through" will kill the Interface if one the interface goes down. 
+	- Create v Wire connection after above physical connectivity. 
+#Security Policies, Routing Contexts and NAT 
+  - Security Policies: Enforcing security rules between logical network segments(zones). Can manipulate traffic based on IP Address (src/dst), Users, services (ports) or Applications. 
+    - Security rules are enforced Top -> Down 
+	- By default, IntraZone traffic is allowed and InterZone traffic is denied and requires allow policies 
+	- Log profiles can attached to the policy, log can be generated at session start/end. QoS marking and time schedule can also be attached to the policy. 
+	- Deny Action == Reset session and Drop == silently drop (optional to sent ICMP unreachable) 
+	- Region select in src/dst provides ability to limit traffic from certain Geo location. 
+  - Routing Context 
+    - aka virtual routers or basically routing VRFs 
+	- Network --> Virtual Router ;; Add Interfaces, enable ECMP, AD, BFD etc 
+	- Redistribution, ipv4/6 is available here. 
+  - Network Address Translation 
+    - DNAT 
+	  - Global to Inside Address translation. Ex: Publically available server IP translating to internal IP. 
+	  - Policies --> NAT ;; Select destination zone as zone where packet is received, source can be Any or specific, desination will be Global IP, Translation will be static or Dynamic. 
+	  - Security Policies will be towards the Global Address zone which will be Outside. Security zone will be from Outside to DMZ but with Global IP. 
+	- SNAT 
+	  - Converting Inside-Local to outside-Global. 
+	  - Policies --> NAT ;;
+	  - NAT policy, Route and security policy to make it work. 
+#Next Gen Firewall 
+  - Security Profile overview;; offers Antivirus, Anti-Spyware, url filtering, dos protection, vulnerability protection etc are part of Next Gen FW 
+  - PAN comes with default and strict policies but custom profiles can be created. 
+  - AntiVirus and Anti-Spyware 
+    - Requires valid license and get real time updates from WildFire. 
+	- Can be enabled Policies -> Security -> Rule Profiles, select profiles. If you have security groups then use security profile groups
+	- Custom profiles can be created on Objects -> Security Policies -> AntiVirus / Anti-Spyware
+  - URL filtering and File blocking 
+    - Objects -> Security Profiles -> URL Filtering 
+	- Overrides;; Allows you to override behavior of block or allow from Categories action. 
+	- File Blocking allows you to restrict certain files based on the extentions. 
+  - DOS protection Profiles 
+    - Objects -> Security Profiles -> DOS protection
+	- Type Aggregate : max session rate for all packets matching the policy, basically looking at total connections towards desination irrespective of source IPs. 
+	- Type Classified : It allows the creation of a threshold that applies to a single source IP.
+	- Policy applied from Policies -> Dos Protection ;; Action "Protect" counts packets towards policy and activate another action, "drop" will drop all packets that match policy. 
+#Clustering and Virtual Systems
+  - HA and Firewall Clustering
+    - HSCI - syncs session and routing info between firewalls. In Active/Active setup this link is also used for data path if traffic need to reach the other active peer. 
+	- HA1-A and HA1-B are for keepalive links
+    - Active/Standby 
+	  - Enable HA;; Peers needs to be in same Group-ID, Enable mode and config Sync, Add peer's HA IP Address
+	  - Active/passive setting, auto and 1 min. 
+	  - Election setting - default priority 100 and lower is better, set up preempt and tweak HA Timer setting. 
+	  - Configure HA Interfaces 
+	  - Repeat config on peer device. 
+	  - Edit Link and Path monitoring to initiate Failover. Devices -> HA -> Link and Path monitoring. Link = Layer1 and Path = Layer 3 for ex. Ping to gateway etc. 
+	  - HA Config is NOT replicated and needs to be configured on both devices. 
+	  - Test Failover and observe network activity
+	- Active/Active 
+	  - configure Virtual addresses, a/p doesnt require a VIP 
+	  - Rest of the config is same as Active/Standby
+	  - For Floating IP or ARP Load Sharing IP Config ;; Device -> HA -> A/A config -> virtual IP 
+	  - Floating IP VIP -> Active on one device only at a time, will float to peer device is link failover occurs 
+	  - ARP load Sharing -> Traffic is shared on both a/a devices. 
+	- Virtual Systems
+	  - virtual context inside physical firewall to isolate tenants. 
+	  - allocate interfaces per firewall 
+	  - supported from 2k to 7k models 
+	  - Device -> Setup -> mgmt (general settings) enable Multi Virtual system capability 
+#IPsec VPN Tunnels and Global Protect 
+  - site to site VPN 
+    - Tunnel Mode: No IP required on tunnel interface. AKA crypto ACL based VPN using Proxy IDs in config. 
+	  - ike phase 1 ;; Network -> Ike crypto 
+	  - ipsec phase 2;; Network -> IPsec crypto 
+	  - ike gateway ;; PKS, peer IP, IKE modes are selected here. Advance option has NAT-T setting. 
+	  - IPsec Tunnel ;; Requires tunnel interface, no IPv4 is needed as it is tunnel mode. Proxy ID == Crypto ACLs 
+	  - static route towards tunnel interface
+	  - Adjust your security policy on the zone tunnel interface is assigned
+	  - If interesting is not available then use test command from console, "test vpn ike-sa gateway $NameofGateway" and for phase 2 "test vpn ipsec-sa gateway $NameofGateway"
+	  - Tunnel Info to see stats on Ipsec Tunnel on GUI
+	- Interface Mode: Allows for IP reachability on tunnel interfaces so IP routing can be enabled. 
+	  - Still requires Proxy IDs or crypto ACLs 
+	  - allows for routing protocol setup over tunnel interface
+	  - rest config is same as above. 
+	  - Big difference between juno/ios-xe is that it still requires crypto acl. 
+  - Globalprotect Portal and gateway client based VPN Services 
+    - Globalprotect Portal: Frontend that allows authenticated users to download gp client for VPN. 
+	- Create VPN users and vpn groups (if local)
+	- authentication profile Device -> Authentication Profile 
+	- CSR or self signed certificate 
+	- Create SSL/TLS service profile 
+	- Network -> GP -> Portal 
+	- Device -> GP Clinet Tick mark shows which client version is active. Needs to uploaded or internet connectivity to download. 
+  - GP Gateway: Client based access using secure tunnel 
+    - Requires GP Portal
+	- Configure tunnel interface and gp security zone 
+    - configure local or ldap user with auth 
+	- attach ssl profile 
+	- configure agent setting and allocate ip subnet 
+#Mgmt and Maintenance 
+  - Software Upgrade: Base and maintenance version. 
+    - Device -> Software
+    - Perform config backup and export before upgrade and reboot. Device -> setup -> operation ;; for backup/export 
+  - Configuration Revions 
+    - Device -> setup -> operation ;; Load previous saved config snapshots.
+  - PAM Maintenance Mode 
+    - 5 sec to get into PANOS Maintenance mode which takes you to maintenance mode menu using "maint" on prompt
+	- Factory reset is done here with PANOS version selection
+  - Panorama 
+    - Central FW management platform using device groups 
+	- code upgrade using panorama 
+	- central monitoring point of view 
+#######################################################################################
