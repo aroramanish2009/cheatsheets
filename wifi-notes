@@ -1,0 +1,376 @@
+##WIFI
+#Standards 
+  - 802.11ax = wifi 6, 802.11ac = wifi 5 and 802.11n Wifi 4
+  - wifi 6 or 802.11ax is dual band (2.4 and 5 GHz), MIMO is available in downlink and uplink. Multiple improvement over wifi5 to provide greater bandwidth in denser locations. Cisco 9100 series APs can support wifi6 with WLC 9800 or 5520 support. 
+  - wifi 5 or 802.11ac operates at 5 GHz with MIMO (downlink only) (multiple input, multiple output or multiple antennas) gets upto 3.46Gbps. Cisco AP 2800, 3800 or 4800 support.  
+  - wifi 4 or 802.11n can operates at 2.4 GHz or 5 GHz (aka dual band), first standard with MIMO. upto 600 mbps speed. 
+  - Aironet active sensor 1800 series acts as client and sends performance metrics to Cisco DNA center. 
+  - WLC LAN controller Cisco 9800 supports from 100 APs to 6k APs, uses Cisco IOS-XE. Cisco is still offering 5520 or 8540 WLCs which run AireOS. 
+  - Infrastructure Components
+    - DNA center : Uses AI and ML to automate provisioning work. 
+	- ISE : Security solution that controlls access across wired, wireless and VPN. Sends user and device details to DNA center. 
+	- Other components like Cisco Prime, Stealthwatch, Cisco Mobile experience, Cisco DNA spaces etc can be utilized as well.
+  - enterprise campus wireless with centralized mode
+	- VLANS defined on WLC, wireless client traffic is centralized to WLC. Client gets IP from the vlan defined on WLC which corresponds to their SSID
+	- Easy to apply security and QOS policy as WLC is centralized point. 
+	- traffic is tunneled from the AP to the WLC following the Control and Provisioning of Wireless Access Points (CAPWAP) protocol, the wireless network becomes a network overlay to the wired infrastructure. 
+  - SD-Access: integrating wired and wireless in the enterprise campus
+    - Centralized WLC that manages functions such as client sessions management, RRM, AP management, and troubleshooting, just as in centralized mode.
+	- uses the capabilities of SD-Access Fabric data plane for greater scale and capabilities. 
+	- SD-Access wireless used ISE and DNA center for creation and implementation of policy on users. 
+  - Resiliency at the radio frequency layer
+    - Radio Resource Mgmt (RRM): determines the optimal power and channel plan based on access point layout and environmental information continually reported by each AP. Uses CHDM (coverage hole detection and mitigation) algorithm that changes the the power of neighboring radios, allowing clients to roam to neighboring APs and cover the coverage hole.
+    - Cisco CleanAir - identifying, classifying, mitigating an interference source
+	- Cisco ClientLink - improving client received signal (beamforming): concentrates signals toward the receiving client, that client is better able to “hear” the AP transmission, so throughput is higher.
+  - Wireless LAN controller high availability 
+    - N+1: the AP is preconfigured with a primary, secondary and tertiary controller;
+	  - WLCs can be deployed across Layer 3 networks.
+	  - Primary WLC can preempt
+	  - Critical AP priority can be established. 
+	  - Can provide redundancy for centralized, FlexConnect and SD-Access deployments.
+	  - The secondary/tertiary WLC is managed independently and does not share configuration with the primary WLCs. Each WLC needs to be configured and managed separately. The same configuration must be defined on the redundant WLC to ensure seamless operation during a failover.
+	- Stateful Switch Over (SSO)
+	  - Active/Hot-standby WLC config 
+	  - client info is synced therefore no reassciation during failover
+	  - No Network impact when failover occurs. 
+	  - 
+#Radio Excellence 
+  - WIFI 6 features 
+    - it allows 8 spatial streams vs 4 from wifi 5 from sender to same receiver or different receiver (MU-MIMO) 
+    - uses 1024-QAM for coding thereby have 25% extra throughput vs wifi5 
+    - OFDMA (orthogonal frequency-division multiple access) support which allows AP allocate a small segment of time and frequency from the overall channel. 
+    - Target wake time support which allows APs to instrust client to sleep longer to avoid collisions.
+#High Density Experience 
+  - ClientLink: The primary purpose is to use an additional transmitter to enhance the perception of the received signal at the client by forming the transmitted elements into a focused beam. This is transmit beamforming (TxBF). The effect of ClientLink is to improve the client's Signal-to-Noise Ratio (SNR) in the downlink direction by 3-6 dB, enabling the client to maintain a higher data rate for longer. 
+  - Flexible Radio Assignment (FRA): FRA algorithms use RRM's RF maps to evaluate the coverage in 2.4 GHz and identify radio resources which are not needed. FRA first identifies redundant interfaces, and then calculates and manages the assignments. Basically can reassign the 2.4Ghz radio into second 5Ghz radio or even turn it into monitor mode if there is no need for another 5GHz radio. 
+  - BandSelect : If BandSelect detects a dual band client, the 2.4 GHz probe response is delayed and 5 GHz probe responses are sent, steering the client to 5 GHz. 
+#Hardware changes for WIFI 
+  - Dual 5 Ghz radios: Uses Macro/Micro cells to cover more clients while keeping noise low between radios. 
+  - Modularity: AP3800 provides option to plug in modules such Ras-pi or Intel-NUC etc into the AP that provides it power and connectivity. Uses cases as sensors etc 
+  - Multigigabit: Supports upto 5gbps with CAT5e and 10gbps with CAT6 
+  - Cisco SAgE (CleanAir): SAgE integrated into the Cisco Aironet and Catalyst access points, is specifically designed to identify sources of non-Wi-Fi interference, at the highest resolution, in the most simple and effective way.
+#QoS 
+  - On the 802.11 medium, QoS is expressed with 8 user priorities (UP), grouped into 4 access categories (AC). A higher marking value reflects a higher priority.
+  - wireless CAC, also called access control mandatory (ACM): when enabled on radio band, it sends 802.11 marking in AP frames indication clients can use UP 6 marking (EF in L3) only if Client first ask for permission. If AP receives such request (sent in special ADDTS frames), AP verifies its resources and only accepts the call if they are good for UP6 traffic. If resources are not avaiable, client are told to either lower marking or roam to another AP. 
+  - DSCP-trust: Cisco APs can be configured to use DSCP value rather than the 802.11 UP value. 
+  - Rate Limiting: Roles with QoS rate limits can be created directly on the WLAN controller, for smaller networks. In larger entities  where an AAA server is installed, these bandwidth rules can be returned as an authorization profile at the end of the authentication process. can be applied to SSID's or at the QoS profiles as well. 
+  - Do DNA Center and Migration to 9800 post WLC etc. Page 150. 
+  
+#######################################################
+##Cisco WLC 
+#WLC Initial Configuration 
+  - mgmt and service-port cannot be in same subnet. service-port is addressed in 192.168.1.0/24 subnet for oob connectivity. 
+  - mgmt interface is network facing interface and can be used for GUI mgmt interface of the vWLC or Device. 
+  - CLI config Mgmt IP
+    - (Cisco Controller) >config interface address management 192.168.10.50 255.255.255.0 192.168.10.1
+	- (Cisco Controller) >save config 
+  - WLC ports and Interfaces 
+    - ports: Physical ports that connect to Network, supports 802.1q and LAG 
+	- Interfaces: Management, Service and virtual interfaces. Supports static and dhcp ip addresses. 
+	- Dynamic Interfaces: Vlan to WLAN mapping, similar to sub-interfaces. 
+  - Static Interfaces 
+    - mgmt interface: inband mgmt for WLC, connectivity for services like AAA etc, AP mgmt interfaces, AP CAPWAP termination point. 
+	- service interface: out of band, service port etc, no gateway 
+	- virtual Interface: mobility mgmt, dhcp relay etc 
+  - Dynamic Interface aka vlan interfaces which can be used for WLAN 
+    - can be used for dhcp relay 
+    - Multiple SSIDs to single dynamic interface
+    - can be used for AP mgmt 
+  - Link Aggregation (LAG) 
+    - 802.3ad , with only one LAG support. IOS-XE based offer more PC 
+	- 5508 supports upto 8 port in 1 port-channel, 2504 upto 4 ports only 
+#WLC architecture and concepts 
+  - WLC Split-MAC architecture
+    - WLC does Auth, Association and re-association, Frame translation and Bridging 
+	- AP does the time sensitive functions like FEG, beacons, 802.11 encryption and description, monitor band, cleanair etc 
+  - CAPWAP Protocol; control and provisioning of Wireless Access Points 
+    - uses UDP 5246 (DTLS Enc) for control and UDP 5247 (optionally encrypted) for data channel 
+	- control plane CAPWAP contains auth, mobility, CAPWAP headers with SNR, RSSI etc information 
+	- Data Plane CAPWAP can be optionally Encrypted as well. 
+  - Mobility Agent 
+    - responsible for CAPWAP Tunnels 
+	- Client DB maintenance
+	- security and QoS
+  - Monility controller 
+    - client roaming
+	- Radio Resource management
+	- WIPS - wireless intrusion prevention system 
+	- Guess Access 
+  - Point of presence and Point of attachment (pop and poa) 
+    - PoA can change during roaming if the AP is attached to a different WLC. 
+	- PoP is where user first authenticated, received IP etc
+  - AP discovery process 
+    - AP attempts to discover as many WLC as possible. Broadcast UDP port 5246 is used for discovery. 
+	- AP can have static ip, if it gets DHCP IP then option 43 (or 53 for ipv6) for IP of the WLC. 
+	- DNS option in DHCP pointed to FQDN of WLC 
+  - AP Join Order 
+    - configured controller in local NVRAM. Uses the order of configured controllers or master controller (WLC config) or least loaded controller. 
+  - AP Failover Process 
+    - AP failover from Primary to secondary WLC has preempt enabled. 
+	- Heartbeat used is 30 seconds 
+	- Retry Heartbeat is 5 times at 1 sec interval
+  - AP priority levels and fallbacks 
+    - AP failover priority can be set at AP or Global WLC level 
+	- AP failover priority is required in case WLC doesn't have full capacity if primary WLC fails. AP with low priority will fall from WLC to make room for high priority APs. Default is 1 (low) priority. 
+	- AP fallback (enabled by default) make AP preempt to primary WLC if it comes back online. 
+
+#Access Point Operation Modes 
+  - AP Modes: Local, Local-WIPS, Flex-Connect, monitor, sniffer, se-connect and sensor 
+  - Local Mode:
+    - Default mode. Deals with Data sources and monitoring
+	- will scan all channels every 180 sec bu default 
+	- off-channel scanning is done for RRM, noise etc. Best effort scanning 
+	- scanning responsible for Management traffic only.
+  - Local mode with WIPS 
+    - scanning for mgmt and data traffic for IDS. 
+	- requires WIPS licensing 
+	- Signature detect scanning. 
+  - Flex-Connect Mode 
+    - normally used with Branch offices. 
+	- traffic can be selected to be sent to WLC using CAPWAP or locally switched in Branch office. 
+  - Office Extend Mode 
+    - secure, simple and cost effective way to connect to corporate resources. 
+	- Split tunnel ability available
+	- Basic FW functionality available
+	- Voice QoS available as well
+  - Monitor Mode 
+    - No Client data is served in this mode 
+	- scanning of channles in 1.1 sec 
+	- Data and Management checked for signature, IDS 
+	- Rogue AP detection 
+	- 2 Modes, Tracking optimization and WIPS 
+  - Rogue Detector Mode 
+    - AP radio is disabled, it works as wired device. 
+	- Deals with ARP packets on wired network. basically ARP inspection. Trunk all Vlans 
+	- Rogue AP & Client detection
+  - Sniffer Mode 
+    - 802.11 packets can be send to wireshark or airmagnet etc in ext server. 
+	- It will get Data, packet size, RSSI and timestamps information. 
+	- uses 2.4 and 5 ghz, will consume one AP license
+  - Bridge Mode 
+    - Mesh AP : can carry WLAN client traffic, MAP Eth Port and root AP eth port
+	- Root-AP connects to WLC using Root_Eth_Port, MeshAPs can connect to the RAP. WLC <-> RAP <-> MAP <-> Client1 
+	                                                                                           <-> MAP 
+    - Need atleast one RAP for mesh network to work. 
+	- Adaptive Wireless path protocol - MAP uses this protocol to reach WLC in network. 
+  - Flex+Bridge Mode 
+    - provides ability of Flexconnect & bridge 
+	- Flex can provide both connected and standalone for control traffic. Data can be Centralized (CAPWAP to WLC) or Local switched. 
+  - SE-connect Mode
+    - Sensor mode, doesnt support Data (aka clients) 
+	- Requires CleanAir 
+	- Supports 2.4 and 5 Ghz 
+	- Similar to Sniffer mode but in this case it deals more with Signal Spectrum information
+
+#Radio Resource Management
+  - Deals with Power Levels, dynamic channel assignment, co-channel interference and coverage 
+  - RRM configures new AP and WLC when they are added to wireless networks. It optimizes the capacity planning and coverage
+  - Dynamic channel assingnment (DCA) done using custom algorithms which takes following into consideration: Same channel contention, foreign channel (rogue), Noise, channel load and DCA sensitivity. DCA operates every 600 seconds by default in steady state. 
+  - Transmit Power Control (Tx): Can be managed by controlling power level of AP to reduce the overall noise. Uses TPC algorithms V1 to manage Tx on APs. 
+  - Coverage Hole Detection (CHD): WLC runs algorithm to detect (and correct if possible) of coverage holes. 
+  - Notes: 1. Turn off RRM initially whiles changes in wireless network are being done 2. Enable and allow RRM to stabilize Network which takes 100 mins. 3. DCA should run at least 2 times a day atlease. 4. RRM should be restarted if AP are removed or added. 
+  - RF Groups: Exists for each radio, so you have a RF group for a/n/ac and b/g/n 
+  - RF group should have less than 6k APs and less than 20 WLCs 
+  - To find RF groups: Wireless -> radio (802.11x/x/x) -> RRM -> RF groups 
+  - Tx Power Control (TCP) - should be Version 1, version 2 is for TAC 
+  - wireless -> radio rf group -> network : this is where data rate setting, beacon period, RSSI threshold etc are completed. 
+  - clean air 
+    - cisco only feature 
+	- does spectrum analytics using spectral analysis gen engine chipset (SAgE)
+	- using Air quality Index (100 - 0 range, higher is better) 
+	- Severity Index (0 - 100 range, Lower is better) 
+	- wireless -> Radio -> clean_air 
+  - BandSelect 
+    - used for optimization for clients on 2.4 Ghz band 
+	- when cisco AP sees that client is dual band, the AP sends 5 Ghz response but introduces a delay in 2.4 Ghz response 
+	- wireless -> advanced -> BandSelect (Global settings) 
+	- Bandselect needs to be enabled under WLAN -> Advance -. LB and BandSelect
+	- Do not enable BandSelect probe delay if your Wifi system is using Voice/Video as it causes delays while roaming
+	- Acceptable Client RSSI (dBm): received signal strength indicator, it shows you in a numerical reading (usually dBm) of what the signal strength is of a wireless client: In this case client will only be allowed for Bandselect if the RSSI is at that range. 
+  - ClientLink 
+    - allows better performance for MIMO clients compared to SISO (single in single out) 
+	
+#Wireless Security Options 
+  - Client/AP Flow in OpenAuth 
+    - Client send Probe request to APs 
+	- APs send Probe response 
+	- Client selects AP and send Auth Request 
+	- AP confirms Auth and registers client 
+	- Client sends Association Request 
+	- AP sends Association Response 
+  - WEP 
+    - In Auth step, AP send challenge Phrase in plain text 
+	- Client sends phrase back by encrypting it with PSK 
+	- No Longer recommended as 24 bit IV key is reused or easily recovered in Data packet after association and this is vulnerable to MIM 
+	- Other Reason why not recommended 
+	  - not scalable 
+	  - allows for rouge AP because AP is not authenticated
+  - 802.1x Overview 
+    - Client is Supplicant - supplier of user/pass
+	- AP is authenticator 
+	- ISE or Radius = Authentication Server 
+	- Flow of 802.1x 
+	  - AP Port state "unauthorized" 
+	  - client --EAPOL-Start --> AP 
+	  - AP -- Radius Access Request --> ISE (Default port TCP 1812 for Radius) 
+	  - ISE -- Radius Access challenge --> AP 
+	  - AP -- EAP-Request/Identity --> Client
+	  - client -- EAP-Response/Identity --> AP 
+	  - AP -- Radius Access Response  --> ISE 
+	  - ISE -- Radius Accept or Deny --> AP 
+	  - If Radius Accept 
+		- AP --EAP-Request --> Client 
+		- Client --EAP-Response --> AP
+		- AP --EAP-Success --> Client
+		- AP Port state "authorized" and AP will send info to WLC in CAPWAP tunnel. Wireless traffic will be WPA2 encrypted. 
+	- WPA Auth Modes: WPA1 and WPA2 
+	- with personal WPAv1 or 2, PSK is used.
+	- With enterprise 802.1x is used. 
+	- WPA1 used RC4 encryption but WPA2 uses AES encryption
+	- configuration 802.1x and WPA2
+	  - WLAN --> SSID
+	  - SSID --> Security --> L2 Security 
+	  - L2 Security Select WPA+WPA2, Authentication as 802.1x. Only Select WPA2 policy and AES as Encryption 
+	  - AAA Servers and select pre entrered Radius or ISE server 
+	- Local User and local EAP 
+	  - security --> Local Net users 
+	  - security --> Local EAP Profile --> Select EAP-TLS and PEAP 
+	  - WLAN --> SSID --> Disable AAA server, enable Local EAP and select profile made in previous step 
+	- WLAN with Web Authentication (Guest SSID) 
+	  - can be open (after accepts use policy) or can be Auth based 
+	  - WLAN ID --> Security -> Layer 3 Security
+#Roaming and Mobility Groups 
+  - Intracontroller and InterController roaming 
+    - WLC keeps Mac & IP, Security context, QoS, WLAN and AP information fpr Client. 
+	- Intracontroller roaming only, Only AP information is updated. 
+	- InterController Layer 2 roaming, Security Context, AP and QoS information is updated. 
+	- InterController Layer 3 roaming, Mac&IP, Security Context, AP and QoS information is updated. 
+  - Mobility Groups and Domains 
+    - There can be upto 24 WLC inside a mobility group. These are connected using a Full mesh tunnels which are used for Data and Roaming/Redundancy. A WLC can be part of one mobility group. 
+	- Mobility Domain are used to connect mobility groups usign full mesh tunnels between members. You can have upto 72 controller in a domain. 
+	- Seamless roaming can happen between a mobility group or domain. 
+  - Layer 2 Dynamic roaming 
+    - SSID mapping to Vlan to Subnets must be same between WLC. 
+	- Running compatible Aireos 
+	- Intercontroller roaming would require Clinet DBentry from one WLC to another 
+  - Layer 3 Dynamic Roaming
+    - Share same SSID but do not share same vlan/subnet information. 
+	- Point of Presence (POP) and Point of Attachment are originally on one WLC, roaming will make POA to move towards different WLC. 
+	- Client DBentry will change IP Address in normal L3 roaming but if IP is required to be same then traffic is tunneled from POA to POP WLC. 
+  - Wireless Guest Network 
+    - Auto anchor mobility (WLC Anchor) 
+	- POA is with any regular WLC but POP will always be at the WLC Anchor
+	- PoA WLC creates either a CAPWAP or EoIP tunnel to WLC Anchor
+  - Configuring Foreign and Anchor Controller. Guest SSID on Anchor
+    - Controller --> Mobility Management --> Mobility Group, add controller info on both foreign and anchor controller.
+	- WLAN SSID --> New highlight --> Mobility Anchor 
+	- Mobility Anchor selection based on what you are looking to use as POP vs POA. 
+
+#FlexConnect Deployment 
+  - FlexConnect Overview
+    - operational modes : Connected and Standalone 
+	- Connected modes: Auth request are sent over to centralized WLC
+	  - AP has CAPWAP connectivity to WLC when reachable.
+	- Standalone mode: Client request are process based on local config. 
+	  - WLC is unreachable, flexconnect lost or failed to establish CAPWAP to WLC 
+	- Switching modes: Central switching and Local Switching 
+	- Central switching means CAPWAP to WLC, can be inefficient if everything is tunneled. You can use Central switching with Split tunnel and make some traffic local switching. 
+	- Local Switching: Traffic switching stays local to branch office. 
+	- Authentication Modes: Central vs Local. Auth can be done locally on the AP or local radius server. 
+  - Flexconnect States 
+    - connected mode : switching is central and Authentication is central
+	- connected mode : switching is local and Authentication is central
+	- connected/Standalone mode: switching is local and Authentication is local 
+	- Standalone mode: switching is Down and Authentication is Down 
+	- Configuration for Flexconnect 
+	- Branch switch should have Flex Vlan and DHCP pool
+	- Local switching Flexconnect WLAN 
+	  - new WLAN under WLANs 
+	  - change interface in General to "client" 
+	  - Use WPA/WPA2 for Layer 2 security with 802.1x 
+	  - Disable Authentication servers in Security under WLAN
+	  - Enable Flexconnect local auth under Advanced 
+	- AP mode for Connected FlexConnect and WLAN-Vlan Mapping 
+	  - AP --> General --> AP Mode "Flexconn" and apply. This will start to show "FlexConnect" Tab. 
+	  - FlexConnect Tab --> Enable Vlan and add Native Vlan. We can also do Vlan Mapping. 
+	- Flexconnect with Local Authentication
+	  - Under Advance Tab of WLAN, enable Flexconnect local auth 
+	  - FlexConnect Group under Wireless. Edit this new group and Add AP and enable AP Local Auth 
+	  - AP -> Flexconnect Tab -> Verify AP is in the above created group 
+	  - Under Flexconnect group, enable PEAP and EAP-TLS under Local Authentication
+	  - Add WLAN to VLAN Mapping 
+#WLC Maintenance and Troubleshooting 
+  - Licensing 
+    - All features are supported on base license
+	- License is attached to WLC Serial number 
+	- Additional AP counts can be added via GUI license page 
+	- Licenses can be preinstalled and transferred. 
+	- Ex AIR-CT5508-100-K9 where "100" number of APs Supported 
+	- mgmt --> Software Act --> License 
+  - WLC Software Upgrade 
+    - GUI/CLI upgrade option 
+	- If you upgrade WLC, AP will be upgraded as well 
+	- AireOS Image Software Types: ED (Early deployment) and MD (maintenance deployment)
+	- To download code to the WLC: Commands --> Download File (File Type Code) 
+	- For AP, WIRELESS --> All APs --> Global Configuration ; select Download Primary 
+	- If AP Primary Image or secondary Image does not match Controller then AP will request Image from WLC and will upgrade itself before joining the WLC. 
+	- In Flexconnect mode, you can make one AP as master for other APs to download image. Flexconnect Group -> Edit -> Image upgrade 
+  - WLC Backup and Restore Process 
+    - Commands --> Upload File (from WLC to local server etc) 
+	- Select Configuration, use transfer mode and send over the config file for backup. 
+	- For Restore, Download File to WLC. Reboot is required to apply the restored config. 
+  - Troubleshooting Methods and WLAN AP Client Settings
+  - WLAN Settings 
+    - Security 
+	  - Wrong security 
+	  - wrong PSK 
+	  - Wrong Method 
+	  - wrong AAA server or not reachable
+	- SSID 
+	  - Disabled SSID 
+	  - Misspelled SSID 
+	  - Wrong RF setting 
+	  - Wrong config for L2-3 security 
+	  - Unsupported DATA Rates 
+	- Infrastructure
+	  - Mismatch Time 
+	  - Mismatch RF Groups 
+	  - Mismatch mobility groups 
+	  - Redundancy Problems 
+  - AP settings 
+    - Port Level config 
+	  - Wrong switchport con fig 
+	  - Wrong vlan or trunk native vlan 
+	  - DHCP options, DNS and AP certificates 
+	- Power and cable length/type issues 
+	- Orientation and Position 
+	  - Antenna orientation and Type 
+  - Client Settings 
+    - SSID 
+	  - adapter settings 
+	  - SSID name and data rates 
+	- Security 
+	  - Wrong PSK
+	  - Wrong Method 
+	  - Excluded Client 
+	  - Disabled Client 
+	- Device Driver version 
+	  - Old driver version 
+	  - incompatible wireless adaptor 
+  - WLC maintenance and Troubleshooting
+    - Monitor - Logs etc 
+	- Cli Show commands ex: show client detail <mac>, show ap summary 
+  - ThirdParty Tools 
+    - Spectrum Analyzers (Layer 1) 
+	  - MetaGeek Chanalyzer 
+	  - Cisco CleanAir
+	  - Cisco Meraki RF Spectrum 
+	- Wifi Scanners (Layer 2) 
+	  - MetaGeek inSSIDer 
+	  - Wifi Analyzer 
+	  - Apple Airport utility scanner 
+	- Packet Analyzers (Layer 3)
+	  - MetaGeek Eye PA 
+	  - Wireshark 
+	  - Omnipeak 
+	  - AirMagnet wifi Analyzer
