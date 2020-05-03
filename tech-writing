@@ -1,0 +1,245 @@
+#Technical Writing#
+-------------------
+Basic Grammar: 
+  - Noun: a person, place, concept, or thing
+    - ex "Justin" runs races 
+	- ex India, James, codebase, objects, value
+  - Pronoun: a noun that substitutes for another noun
+    - ex Justin runs races. "He" loves running.
+    - ex He, She, This, They, it 
+  - Adjective: a word or phrase that modifies a noun
+    - ex Justin has his "blue" shoes on.  
+	- ex "yellow" food, "bad" code 
+  - Verb: an action word or phrase
+    - ex Justin runs races. He loves "running".
+	- ex is cooking, leads, will grow 
+  - Adverb: a word or phrase that modifies a verb, an adjective, or another adverb
+    - ex Justin runs races. He runs "fast".
+    - ex "efficiently" fixes, runs "fast"
+  - Preposition: a word or phrase specifying the positional relationship of two nouns
+    - ex Justin's car is never "in" his garage. 
+	- ex in, on 
+  - Conjunction: a word that connects two nouns or phrases
+    - ex Justin's car "and" shoes are his life. 
+	- ex and, but, or 
+  - Transition: a word or phrase that connects two sentences
+    - ex Justin loves his car "however" shoes are his favorite. 
+	- ex however, therefore, for ex 
+
+Magic of Words:
+  - When using newer words that some or all of your targeted audience are unfamiliar of:
+    - Link documentation for that word if it already exists. 
+	- If your documentation is introducing a term then include definition. If there are number of new items then include glossary. 
+  - Don't rename a term in the middle of a documentation aka use terms consistently 
+  - ex Protocol Buffers (or protobufs for short)
+  - Use acronyms properly, during initial use in document, spell out the full form of acronym. It is advised to Bold both full form and acronym in the document when it is used at first. 
+    - ex Border Gateway Protocol (BGP)
+    - guidelines for acronyms
+	  - don't define or create acronyms if only to be used a few times. 
+	  - define acronym if full term is much longer and it appears multiple times in document. 
+  - Disambiguate pronouns : When "pronouns" create confusion, "they" should be avoided. 
+  - Pronouns Guidelines
+    - only use pronoun after noun introduction. 
+	- Place pronoun as close to noun its replacing as possible. Rule of thumb, if more than 5 words between noun and pronoun then skip using pronoun. 
+	- if there is another noun between noun/pronoun then use noun again. 
+  - this/that issue 
+    - use appropriate noun instead of this/that 
+	- place noun immediately after this/that 
+    - Ex "routed path is not optimal." vs "This routed path is not optimal."
+
+Active vs Passive Voice:
+  - Technical writing should be in active voice as it is usually clearer. 
+  - Active voice sentences = actor + verb + target 
+    - Ex: The player passes the ball. 
+  - Imperative verbs like Open, set are typically active.
+  - Passive voice sentences = Target + verb + actor 
+    - Ex: The ball was passed by the player. 
+  - passive verb = form of be + past participle verb
+    - use of "be", for ex: is/are, was/were 
+	- typically followed by "past participle verb", for ex: formed, generated etc 
+  - why use Active voice ?
+    - Most readers converts passive voice to active voice, thus using Active voices reduces the extra effort. 
+	- reports action indirectly
+	- Passive voice confuses reader with the identity of the actor. 
+	- Active voice is generally shorter than passive voice. 
+
+Clear Sentences:
+  - Choose strong verbs over weak or generic verbs. For ex, forms of be: is, are, was, were etc.,  occur, happen 
+  - Examples of swap, occurs  == triggers, happens == generates, are == ensure 
+  - Reduce there is/there are
+    - There is a program called Jenkins, that does CI/CD. == The Jenkins program performs CI/CD functionality. 
+	- There are two disturbing facts about Cisco you should know. == you should know two disturbing facts about Cisco. 
+  - Minimize certain adjectives and adverbs (optional)
+    - Ex: Provide real number data instead of "crazy" fast. for ex 150% faster
+
+Short Sentences: 
+  - Shorter documentation reads faster comparative to longer documentation. 
+  - Shorter documentation is easier to maintain comparatively. 
+  - Focus each sentence on a single idea
+  - Convert some long sentences to lists. When you see the conjunction or in a long sentence, consider refactoring that sentence into a bulleted list.
+  - Eliminate or reduce extraneous words: Avoid Junk words. 
+    - Ex: ACL hits causes the triggering of logs. vs ACL hits triggers logs. 
+    - Ex: "at this point in time" == now, "is able to" == can 
+  - Reduce subordinate clauses: A clause is an independent logical fragment of a sentence, which contains an actor and an action.
+    - Ex: Python is an interpreted programming language, which was invented in 1991.
+	- main clause = "Python is an interpreted programming language" and subordinate clause: "which was invented in 1991"
+	- normally uses "which", "that", "because", "unless", "since" etc 
+	- If subordinate clause does not extend single idea then consider separate sentences. 
+  - That vs Which 
+    - Reserve "which" for nonessential subordinate clauses, and use "that" for an essential subordinate clause that the sentence can't live without.
+	- Ex: PAN supports layer 4 statefull firewall inspection, which Cisco ASA does as well. 
+	- Ex: Fortran is perfect for mathematical calculations that don't involve linear algebra.  (No comma needed in front of "that") 
+
+Lists and tables:
+  - Lists 
+  - Use a bulleted list for unordered items; use a numbered list for ordered items.
+  - Rule of thumb, if you move the items and meaning of list doesn't change then use bulleted otherwise use numbered.
+  - parallel or nonparallel : Group things in a list if they make sense together.
+    - Ex of nonparallel
+	  * Cisco 
+	  * Juniper 
+	  * PAN 
+	  * CentOS 
+  - Mixing Active & Passive voice sentences makes the list as nonparallel.
+  - Start numbered list items with imperative verbs, An imperative verb is a command, such as open or start. 
+  - Punctuate items appropriately: If the list item is a sentence, use sentence capitalization and punctuation. Otherwise, do not use sentence capitalization and punctuation. 
+    - Ex: "Purchase the equipment in Q1." vs "the color of sky" 
+  - Tables 
+  - Create useful tables
+    - Label each column with meaningful header.
+	- Avoid putting too much text in each column. If more than 2 lines then consider splitting. 
+	- Strive for parallel data in each cell of the column. 
+  - Introduce each list and table : 
+    - Give the list or table context. 
+	- Terminate the introductory sentence with a colon rather than a period.
+  - Example for introduction:
+    - "The following list identifies key performance parameters:"
+	- "Take the following steps to install the Frambus package:"
+	- "The following table summarizes our product's features against our key competitors' features:"
+
+Paragraphs:
+  - Write a great opening sentence, busy readers will skip paragraph after first sentence. 
+  - The opening sentence should lay the foundation for the rest of the paragraph. 
+  - Focus each paragraph on a single topic. Paragraph should represent an independent unit of logic.
+  - Don't make paragraphs too long or too short, reader normally skips large paragraph after reading first line and a short paragraphs should be converted into List. 
+  - Good paragraphs answer the following three questions:
+    - "What" are you trying to tell your reader ?
+	- "Why" is it important for the reader to know this ?
+	- "How" should the reader use this knowledge ? 
+	- Ex:
+	    <What>The garp() function returns the delta between a dataset's mean and median</What/>. <Why>Many people believe unquestioningly that a mean always holds the truth. However, a mean is easily influenced by a few very large or very small data points</Why/>. <How>Call garp() to help determine whether a few very large or very small data points are influencing the mean too much. A relatively small garp() value suggests that the mean is more meaningful than when the garp() value is relatively high.</how/>
+
+Audience:
+  - good documentation = knowledge and skills your audience needs to do a task − your audience's current knowledge and skills
+  - Using technical terms with audience unfamiliar with these terms in not recommended. Ex Using Big O notation or O(logN) notation with non mathematical or CS audience will create confusion. 
+  - Determine what your audience needs to learn, write down a list of things your target audience needs to learn to accomplish goals. 
+  - Ex: After reading the documentation, the audience will know how to do the following tasks:
+    - Log into application 
+	- Check traffic and download pcap
+	- Log into servers and check service status
+	- Able to restart service if needed. 
+  - Fit documentation to your audience
+    - Vocabulary and concepts should be in accordance to your audience's knowledge. 
+	- Curse of knowledge, avoid using words or terms that are too advanced for targeted audience. 
+	- Simple words, prefer simple words over complex words as majority in technical field isn't native English speaker. 
+	- Cultural neutrality and idioms, avoid using slang or idioms like "a piece of cake", "Bob's your uncle" etc 
+
+Documents: 
+  - State your document's scope, a better document defines non-scope as well. 
+    - ex: "This document describes the overall design of the campus network.This document does not describe Production Network"
+  - State your audience, Ex: This document is written for NOC Network Engineers during DDOS attack. 
+  - Establish your key points up front, First Page should be done correctly for readers to read full document. 
+  - Always write an executive summary (a TL;DR) for long engineering documents. Although the executive summary must be very short, expect to spend a lot of time writing it. A boring or confusing executive summary is a red flag warning potential readers to stay away.
+  - Write for your audience
+    - Define audience
+	  - who is the target audience ?
+	  - what do they already know/understand ?
+	  - what readers can accomplish after they have read the document ?
+	- Organize
+	  - organize the document to supply what readers should know or be able to do after reading the document.
+	- Break your topic into sections, make it modular and pack information efficiently into the document. 
+
+Punctuation:
+  - commas: Insert a comma wherever a reader would naturally pause somewhere within a sentence. 
+    - use commas to separate items in an embedded list. 
+	- In sentences that express a condition, place a comma between the condition and the consequence. Ex: If connection is slow, then reload the router. 
+	- Avoid using a comma to paste together two independent thoughts.
+  - Semicolons: A period separates distinct thoughts; a semicolon unites highly related thoughts. The thought preceding and following the semicolon must each be grammatically complete sentence. 
+    - Many sentences place a transition word or phrase immediately after the semicolon. In this situation, place a comma after the transition. Ex: Even seemingly trivial code changes can cause bugs; therefore, write abundant unit tests.
+  - Em-Dashes: An em-dash represents a longer pause—a bigger break—than a comma.
+  - Parentheses: Use parentheses to hold minor points and digressions. Parentheses inform readers that the enclosed text isn't critical.
+  - Use Period inside the () if you have a complete sentence inside it otherwise use it after closing Parentheses.
+  
+Self-editing:
+  - Adopt a style guide
+    - Refer to documentation style guide your company used in the past or utilize following from google. 
+    - Ex: https://developers.google.com/style/highlights
+  - Think like your audience : Helpful to outline a persona for your audience. 
+    - A persona can consist of any of the following attributes:
+	  - A role, such as Systems Engineer or QA Tester.
+	  - An end goal, such as Restore the database.
+	  - A set of assumptions about the persona and their knowledge and experience. ex: know CS, runs Linux OS etc 
+  - Read it out loud: To check your writing is conversational, read it out loud. Listen for awkward phrasing, too-long sentences, or anything else that doesn't feel natural. Alternatively, you can also try asking someone else to read your draft out loud for you.
+    - Refer to: https://developers.google.com/style/tone
+  - Come back to it later: Give few hours between review of drafts. 
+  - Change the context: Change font, size and color of your document to add into review capability. 
+  - Find a peer editor: Ask a peer to review your document and provide feedback. 
+
+Organizing large documents:
+  - When to write large documents, Consider the following guidelines:
+    - How-to guides, introductory overviews, and conceptual guides often work better as shorter documents when aimed at readers who are new to the subject matter. 
+	- In-depth tutorials, best practice guides, and command-line reference pages can work well as lengthier documents, aimed at readers with prior experience.
+  - Organize a document and create an Outline. For ex:
+    1. Audience
+	2. Prerequisites
+	3. Setting up the tutorial
+	4. Useful terminology
+  - Introduce a document
+    - What the document covers.
+	- What prior knowledge you expect readers to have.
+	- What the document doesn't cover.
+  - Add navigation
+    - introduction and summary sections
+	- a clear, logical development of the subject
+	- headings and subheadings that help users understand the subject
+	- overviews that introduce the tool
+	- a table of contents menu that shows users where they are in the document
+	- links to related resources or more in-depth information
+	- links to what to learn next
+  - Prefer task-based headings: Choose a heading that describes the task your reader is working on. Avoid headings that rely on unfamiliar terminology or tools.
+  - Provide text under each heading: Most readers appreciate at least a brief introduction under each heading to provide some context.
+
+Illustrating:
+  - Providing any graphics—good or bad—makes readers like the document more; however, only instructive graphics help readers learn.
+  - Write a good caption first
+    - They are brief. Typically, a caption is just a few words.
+	- They explain the takeaway. After viewing this graphic, what should the reader remember?
+	- They focus the reader's attention. 
+  - Constrain the amount of information in a single drawing. 
+  - Focus the reader's attention using pointer, colors, highlights etc 
+  - Tools for illustration, draw.io, lucidcharts etc 
+  
+Creating sample code:
+  - Good samples are correct and concise code that your readers can quickly understand and easily reuse with minimal side effects.
+  - Sample code should meet the following criteria:
+    - Build without errors.
+	- Perform the task it claims to perform.
+	- Be as production-ready as possible. For example, the code shouldn't contain any security vulnerabilities.
+	- Follow language-specific conventions. 
+  - Running sample code: Good documents explain how to run sample code. For example:
+    - Install a certain library.
+	- Adjust the values assigned to certain environment variables.
+	- Adjust something in the integrated development environment (IDE).
+  - Concise: Sample code should be short, including only essential components.
+  - Understandable:
+    - Pick descriptive class, method, and variable names.
+	- Avoid confusing your readers with hard-to-decipher programming tricks.
+	- Avoid deeply nested code.
+  - Commented:
+    - Keep comments short, but always prefer clarity over brevity.
+	- Avoid writing comments about obvious code, but remember that what is obvious to you (the expert) might not be obvious to newcomers.
+	- Focus your commenting energy on anything non-intuitive in the code.
+	- When your readers are very experienced with a technology, don't explain what the code is doing, explain why the code is doing it.
+  - Reusable: For your reader to easily reuse your sample code, provide the following:
+    - All information necessary to run the sample code, including any dependencies and setup.
+	- Code that can be extended or customized in useful ways.
