@@ -1,4 +1,29 @@
 ##WIFI
+#Wireless Basics:
+  - radiates over space, signal weakens with distance:r2 or faster 
+  - interference from other transmitters 
+  - Signal Strength
+    - Obstructions can further weakens signal
+    - reflections can occur which can result in mutipath signals (like echoes in a canyon)
+	- no perfectly uniform antenna 
+    - Enviorment changes results in signal weakness 
+  - Wireless Media Access Control 
+    - one node should be able to use 100% if no other notes 
+	- multiple nodes receive fair share like 1/n 
+	- high utilization under contention, if 1/n is too low then not useful
+  - Wireless CSMA/CA 
+    - Ack is sent by Receivers on the link layer level 
+	- Basic CSMA/CA
+	  - pick random backoff
+	  - sense local channel, transmit after backoff 
+	  - if packet not Ack, backoff again & retry 
+	  - if packet ack, accept next packet for transmission
+	- Really hard to distinguish between collision and SNR
+  - RTS/CTS (Request to Send/Clear to Send)
+    - Sender Node sends RTS to receiver which sends back CTS for certain time. This CTS can be heard by others and they know media is being used. 
+	- This pushes losses and collisions to RTS/CTS control packets. 
+    - RTS/CTS results in overhead. ex: at 11 mbps, you have around 25% overhead with RTS/CTS
+  - SNR/Channel conditions can cause bitrate from 6 Mbps to 150 Mbps. 
 #Standards 
   - 802.11ax = wifi 6, 802.11ac = wifi 5 and 802.11n Wifi 4
   - wifi 6 or 802.11ax is dual band (2.4 and 5 GHz), MIMO is available in downlink and uplink. Multiple improvement over wifi5 to provide greater bandwidth in denser locations. Cisco 9100 series APs can support wifi6 with WLC 9800 or 5520 support. 
