@@ -1,0 +1,316 @@
+Salt
+====
+Salt Communication:
+  - Default topology master/minion. Uses ZeroMQ with MessagePack lib.
+  - Minions connects to master on port 4505 and 4506
+  - Master broadcasts commands to minions. 
+  - dedicated 2 way channel for other communications. 
+  - ZeroMQ is the default transport
+    - creates the network topology 
+	- provides concurrency 
+	- moving to python lib tornado
+  - MessagePack Serializes messages
+    - Json-comptible struct 
+  - Other topologies
+    - masterless
+	- multi-master
+	- syndic 
+	- salt-ssh : Call out minions using SSH from master.  
+  - Other transports 
+    - zeromq is default 
+	- raw tcp by Tornado 
+	- Https salt-api 
+  - Installing Salt 
+    - Install/Upgrade Master before minion for backward compatibility. 
+	- Install repo and apt-get/yum the package. 
+	- Can also use Python pip in env
+  - Salt Configuration
+    - Master config in /etc/salt/master, it has ample documentation. 
+	- Minion config in /etc/salt/minion 
+	- Normally master authenticate minion, option available for minion to auth master as well. 
+	- overwrites can be placed in /etc/salt/minion.d/*.conf file. 
+	- sdb module : can be used for pulling in secure config from various options like vault, consul etc 
+  - Salt Authentication 
+    - Public and private RSA keys 
+	- ssh handshake on top of ZeroMQ. Keys are in /etc/salt/pki/master/master.p* 
+	- salt-key : Used for managing salt key. use --help for more info. 
+	- use salt-key -a to accept new minions. 
+
+Salt Execution modules: 
+  - Targeting Minions 
+    - salt '*' test.ping ##On Master, it will ping all minion (Not ICMP, more of minion running test.ping function and return answer)
+	- salt -C 'G@os_family:Redhat and Node-0*' test.ping ## will ping redhat machine with name starting with "Node-0"
+	- In case of targeting, minion determines if it is part of target. This makes load on Master low as it is distributed to minion. 
+	- Grains
+	  - Static info about Minion, Generated on Minion start, cashed in mem and cache is kept on master as well. 
+	  - similar to facts in Ansible. 
+	  - salt-call --local grains.local ## On minion
+  - Execution Modules
+    - Anatomy of a salt command 
+      - salt '*' pkg.install httpd ## 	* = Target, pkg = module, install = function and httpd = argument  
+	- All modules in salt provides JSON serializable data.
+	- Modules will load only if library requirements are satisfied
+	- Load modules under common Alias. Ex pkg will call underline system pkg system to execute action. 
+  - Common Execution Functions Examples
+    - Use Doc for modules for reference due to shear volume of modules 
+	- salt $Node_Name sys.doc service | less ## provide documentation on service module. 
+    - salt $Node_Name pkg.list_pkgs ## will list all installed packages
+	- salt -L machine1,machine2 pkg.list_pkgs --out=txt 
+	- salt $Node_Name user.list_users ## Lists all users in system 
+	- salt $Node_Name service.get_running ## List running info 
+    - salt -L machine1,machine2 cmd.run 'date'  ## Run commands on the system
+	- salt -L machine1,machine2 grains.get selinux:enforced ## drill down on grains data structure 
+  - Call from Master or Minion 
+    - Salt is both push/pull, module can be invoked from Master or Minion 
+	- salt-call is used to invoke salt from Minion 
+	- salt-call cmd.run 'ls -ll' -l debug ## Will produce verbose info of the salt running module locally on minion. 
+	- salt command can pass complex datastructures as args/kwargs. anything right of module is parsed using yaml parser
+
+The State of an Infrastructure
+  - Flow vs State 
+    - Flow is one time and ephemeral 
+	- state is consistent and enforced
+  - Idempotent: Salt runs can be executed many times with same end result. 
+  - Deterministic Order 
+    - Runs in same order 
+	- Order can implicit or explicit to determine the order of execution. 
+  - Minion-Side execution 
+    - state tree is compiled locally on minion, can use local data, can shell out, can be minion specific. 
+	- results is returned to the salt master 
+  - Writing Salt state ;; docs under "s". 
+    - create /srv/salt directory, init git repo.
+	- create first state in that directory
+	  - Ex state: create our first state to install apache. 
+	    - vi apache.sls 
+********************************
+install_and start_apache:
+  pkg.installed:
+    - name: apache2
+  service.running:
+    - name: apache2
+	- enable: True
+********************************
+    - run state system: "salt $Node_Name state.sls apache" 
+	- Minion check for lastest file using hash comparison before executing apache.sls 
+  - Anatomy of a state function 
+    - Maps data structure to python function 
+	- state_id followed by module.function followed by arguments 
+	- State function Return dictionary with result, changes and comment per function executed. 
+	- State function checklist 
+      - does anything needs to changes ?
+      - is this dry mode ?
+      - make the change 
+      - check the result 
+  - dry-run , only within the context of state run. 
+	- Pass the test=true keyword argument 
+  - Execution Flow of state run 
+	- execution module invoked 
+	- file transfer and caching 
+	- Renderers (Yaml or Jinja) 
+    - state compilers 
+	- state module invoked 
+	- running dictionary 
+	- display results 
+  - Debugging States 
+    - salt-call and debug logging 
+	- developing directly on Minion by using "file_client: local" setting; this will make minion look at his local system. 
+	- salt-call state.sls apache -l debug ## debugging the state file 
+
+Expanding states with Jinja and Pillar
+  - YAML, Jinja and other Renderers 
+    - by default Salt uses Jinja|yaml renderers (#!jinja|yaml). Jinja happens before yaml. 
+	- may be other options available for ex : python  etc 
+  - Reusable States
+    - use same SLS files across OSes or distros or environments like Prod/Dev 
+********************************
+install apache:
+  pkg.installed:
+    {% if salt.grains.get('os_family') == 'Debian' %}
+    - name: apache2
+	{% elif salt.grains.get('os_family') == 'RedHat' %}
+	- name: httpd
+	{% endif %}
+********************************
+	- parameterize states using external data
+	- generate states using external data 
+  - Maintainable States
+    - Avoid more than 2 level of loops
+	- Add comments for explanation of steps. 
+	- Set variable based on condition and used in SLS file 
+  - Map File 
+    - loopup file can be created with a dictionary and jinja can reference it. 
+********************************
+{% set apache = salt.grains.filter_by({
+    'Debian': {
+	    'pkg': 'apache2'
+		},
+	'RedHat': {
+	    'pkg': 'httpd'
+		}
+	})
+%}
+install apache:
+  pkg.installed:
+    - name: {{ apache.pkg }}
+	- enable: True
+********************************
+    - Different map file can be created and imported into SLS file. 
+  - Using Pillar for state files 
+    - Arbitrary secure Minion-Specific data 
+    - good pulling data from external resources 
+    - Make pillar directory and create sls files in it. It also needs a top.sls file where you map minion to pillar sls files. Minions will get values from allowed pillar files.  
+	  - Command for making minion request pillar values:  "salt '*' saltutil.refresh_pillar"  
+    - Pillar is cached on the Master and stored in memory on the minion. 
+	- Pillar data can be passed over CLI as well and will override data in file. CLI Pillar data is not private and sent to all minion in salt command match 
+	- Pillar is dual templating which means master sends values after templating in pillar sls then minion will use this data for templating on states sls files. Unexpected issues can occur with boolean. 
+  - Salt Formula 
+    - Reusable, maintainable Salt States. Similar to recipes in chef. 
+	- salt-formula are available on github.com/saltstack-formulas
+
+Complex State Trees 
+  - Glue SLS files together 
+    - Similar to main.yml in Ansible roles with Include other tasks. 
+	- can be done on CLI using: Salt Node_Name state.sls apache,apache.othertask 
+	- Can use "include" directive with other sls files inside main sls file. 
+	- we can also make top.sls and add targets + state.sls files in it. (same as main.yml)
+	- top.sls can then be executed as "salt Node_Name state.highstate" 
+	- state.highstate adds an additional targeting semantic 
+  - Defining, enforcing and debugging execution orders
+    - You can use explicit order but not recommended. Better to use implicit ordering of salt. 
+	- Implicit odering can be bugging when "include" is present in sls files. 
+	- To counter the issues with implicit + include sls, you can use "require" directive. 
+*************************************************
+{% set apache = salt.grains.filter_by({
+    'Debian': {
+	    'pkg': 'apache2'
+		},
+	'RedHat': {
+	    'pkg': 'httpd'
+		}
+	})
+%}
+install apache:
+  pkg.installed:
+    - name: {{ apache.pkg }}
+	- enable: True
+	
+start_apache:
+  service.running:
+    - name: {{ apache.pkg }}
+	- enable: True
+	- require:
+	  - pkg: install_apache 
+**************************************************
+	- You can use Community project "salt-state-graph" to create the requisite tree. 
+	- "watch" is similar to "require" but "watch" is similar to combination of notify + handler in Ansible
+	- "extend" and requisites_in (for ex: "watch_in") : this allows state to be watched inside of another state. 
+	- "onchanges|onfail" conditionally runs if another state produces changes or fails 
+	- "onchanges" depends on the changes dictionary in the state return. 
+	- "prereq" conditionally perform an action before another state, basically a pre changes state run. Inserts itself as a require statement in some other state. 
+  - Debugging State 
+    - salt '*' match.glob '*' ## will show which nodes the regex matches 
+	- dry run and mock run to verify Salt itself 
+	- verification states (locally or remotely via orchestration) 
+  - Sharing data between minions using Salt Mine 
+    - mine can be defined inside of State or using Pillar using mine_functions 
+	- mine data is much resent vs grains 
+	- mine.get, mine.update and mine.send can executed and will push mine data to master. 
+	- On Master: "salt '*' mine-get '*' network.ip_addrs --out=json" ## Will get mine-get info from traget prospective (due to second '*')
+  - Master Side state runs aka Salt Orchestrate  
+    - run as "salt-run state.orch orch.test_file" 
+
+Events and the Reactor
+  - Salt's events bus 
+    - Anatomy of salt event: It is a tag (slash-delimited namespaces that can be matched by globbing) and data (minion-centric dictionary)
+    - Master event bus
+	  - Ex: Auth, minion start, ket changes, job events, runner events etc 
+	  - https://docs.saltstack.com/en/master/topics/event/master_events.html
+	  - "salt-run state.event pretty=true" in one window and run event in other window. 
+	- Custom Events
+	  - define a namespace : ex "yourcompany/category/event/detail"
+	  - you can use "salt-call event.send mygig/mytag foo=Foo bar=Bar" on minion to send data to master event watch. 
+	- Listen to events and trigget actions with salt reactor
+	  - Reactor is a long running process that listens to events and run sls files. 
+      - configure in salt config file
+*****************************
+reactor:
+  - 'mygig/mytag/*':
+    - /srv/reactor/highstate.sls
+*****************************
+      - reactor sls should render as quickly as possible. 
+	  - highstate files can complex but reactor sls needs to simple so it can execute quickly. 
+	  - Trigger examples:
+	    - run orchestrate for complex master or minion side operations
+		- start state run on minions
+		- run execution for slack, irc etc.
+		- use salt-eventsd can send events to other data banks.
+	- Beacon Modules 
+	  - Light weight functions invoked on a regular, short interval (every 1 sec). Interval can be customized. 
+	  - send salt events 
+	  - open-ended:
+	    - tail a file
+		- watch for logins, filesystem changes, send system data etc 
+	  - configured in Pillar or minion config
+	  - Avoid creating loop between beacon event and reactor. 
+	- Debug 
+	  - Restart salt master in debug mode. "salt-master -l debug"
+	  - Reactor processing workflow
+	    - salt event arrives (reactor looking into events bus)
+		- reactor matches it against the list in the reactor config. 
+		- sls file for matching event is rendered to a data structure 
+		- data structure is used to invoke a function in a worker pool 
+	- Best practices
+	  - Reactor SLS files must be rendered quickly 
+	  - the workers can be long running 
+	  - Reactor SLS should be simple and fire/forget 
+	  - worker should run any complex action. 
+	- Thorium (replacement of reactor)
+	  - complex decision engine, string together multiple events before any action event. 
+	  - time-aware and tracks context 
+  
+Salt Rest API 
+  - Installing and Configuring 
+    - netapi modules like cherrypy and new development of tornado api 
+	- Salt Auth modules for external authentication, can limit users to certain sls or all sls
+	- Execution limits can be machine or userbased 
+	- configuration is done slat config file under external_auth section. Grains can be used here as well. 
+	- This is master side check only. 
+	- salt generate e-auth token which can be used for futher calls
+  - Rest Cherrypy can send commands as json and get output as x-yaml
+  - Convenience URLs
+    - view minions and create async jobs 
+	- look up jobs 
+	- view keys and generate keys 
+  - salt-api with external systems
+    - many 3rd services cannot auth before hand
+	- if webhook auth is disabled then operator is responsible for Auth 
+
+================================
+
+Salt and Napalm 
+  - Salt connection to network device is based on Napalm Proxy.
+  - Proxy config with "always_alive: false" allows for user initialized connection when needed. 
+  - salt has netbox execution modules as well 
+  - You will need master, minion + proxy. all 3 can live on same compute for a smaller environment
+  - Installation on ubuntu 20.04.1
+    - wget -O bootstrap-salt.sh https://bootstrap.saltstack.com/develop
+	- sudo sh bootstrap-salt.sh (installs minion and proxy)
+	- sudo sh bootstrap-salt.sh -M (installs master)
+	- edit /etc/salt/minion ## change master to localhost or master address
+	- salt-key # accept key using "salt-key -a ubuntu-20"
+	- Napalm dependencies  
+	  - sudo apt-get install libffi-dev libssl-dev python3-dev python3-cffi libxslt1-dev python3-pip
+	  - sudo pip3 install --upgrade cffi
+	  - python3 -m pip install pip==9.0.3
+	  - sudo pip3 install napalm-junos napalm-iosxr napalm-ios
+	  - pip3 install --upgrade pip
+	- Create directory /etc/salt/pillar 
+	  - Create /etc/salt/pillar/top.sls with device info 
+	  - Create corresponding device files: /etc/salt/pillar/router1_pillar.sls
+	- edit /etc/salt/minion and /etc/salt/proxy # Master info minion config and master info, multiprocessing and pki info for proxy 
+	- Create deamon file for proxy service 
+	- Run proxy in debug mode, accept keys for devices. If all well and "sudo salt 'router[12]' test.ping" return true then move forward
+	- Run Proxy in deamon mode. ex "sudo salt-proxy --proxyid=router2 -d"
+  - Ready to roll:
+    - sudo salt 'router*' net.cli 'show configuration | display set'
+	- salt 'router*' net.load_config text='delete: policy-options prefix-list SSH_PREFIXES 10.1.0.0/24;' test=True
