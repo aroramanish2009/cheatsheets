@@ -1,0 +1,404 @@
+SDWAN Cisco:
+============
+WAN Challenges: 
+  - security requirements 
+  - complexity of multiple layers of MPLS, Ethernet, leased lines, DSL etc 
+  - Need for analytics and visibility into apps and resources 
+  - consistently for user experience
+  - in-house management of Enterprise WAN networks 
+  - growing annual costs to provide additional bandwidth 
+  - time to provision new service to a site. 
+
+SDWAN Solution Providers:
+  - Viptela - Cisco 
+  - VeloCloud - VMware 
+  - Riverbed
+  - Versa - Backbone/ISP 
+  - Juniper 
+  - Nokia 
+  - Silver Peak 
+  
+Cisco Hardware for SD WAN:
+  - ISR(vEdge Cloud) 
+
+Cisco Software Vision:
+  - vManage for SDWAN
+  - DNA Center for campus 
+  - ACIC for DC 
+  - Eventually DNA Center to manage all 3 
+
+Cisco SD-WAN Overview:
+  - Stack appears to be like Tungsten Fabric 
+  - Split into following layers
+    - vEdge Routers - DATA Plane
+	- vSmart Controllers - Control Node (or controller nodes ) 
+	- vAnalytics
+	- vBond # API layer for vEdge 
+	- vManage # GUI/APIs
+  - vSmart creats OMP peering to vEdge routers 
+  - vManage orchestrate vSmart 
+
+Control Plane Components:
+  - vManage Network Management System (NMS) 
+  - vSmart Controllers
+  - vBond Orchestrator
+  - vEdge/Branch Routers 
+  - Bringing up Control plane components:
+    - Spin up virtual machines for vManage, vBond, vSmart and vEdges on the virtual machines. 
+	- Deploy vManage, vBond & vSmart with minimal config like System wide config (hostname, system-IP, site-id, org name, reachability to vBond), vpn0(transport) and vpn-512 (mgmt))
+	- Enable connectivity between Controllers  (Inter-controller communication) 
+	- Generate CSRs for each Controller. 
+	- Sign cert to validate and authenticate the controllers. 
+	- vEdge deployment 
+	  - Minimum config (hostname, system-IP, site-id, org name, reachability to vBond), vpn0(transport) and vpn-512 (mgmt))
+	  - Install root cert 
+	  - Upload serial num and chassis num of vEdge into vManage which passes information to vBond. 
+	- Connectivity between cp/dp
+	  - CP <-> DP == DTLS/TLS
+	  - DP <-> DP == ipsec 
+  - Verification 
+    - Check connections 
+	  - show control connections ## shows connections between vEdge to vBond 
+	  - show control local-properties ## detailed information for local device properties 
+	  - show connection history ## diag info for why tunnel broke or not working 
+	  - show bfd summary 
+	- Certificate Info 
+	  - show certificate installed
+	- show ipsec inbound-connection
+	- show ipsec outbound-connection
+	- show bfd session 
+
+vManage Configuration, Features and CLI template: 
+  - You can jump to dashboard for other components from vManage 
+  - Device Template can be created in vManage and can be pushed to devices in Fabric. 
+  - vManage gives CLI and Features template method to push config to devices, you can also configure devices locally via SSH if they are not joined to vManage. When joined to vManage then only vManage CLI/Features can be used. 
+  - Config components
+    - system wide policies like hostname, dns etc 
+	- VPN wide policies like vpn0 for transport, vpn 1-511 for services, vpn 512 for mgmt 
+	- Policy - ACL, Port mirror etc 
+  - Configurational Template 
+    - What: define device config, enforece compliance, allow customization, simple bulk device config provisioning using variables & managed from vManage GUI. 
+	- CLI template and Feature Template 
+	- vManage uses Netconf to push Templates, you can configure vManage using NetConf as well. 
+	- Feature Template Creation
+	  - vManage -> config -> Feature Template 
+	  - Create Templates (like modules in ansibles), use Varible is value is device specific or use Global if its global
+	  - vManage -> config -> Device -> Create template from Feature template
+	  - Attach the Device Template to devices 
+	  - Variables values can added via Excel upload it or can be added on Gui
+	  - Can do config diff before you push config, it has a config rollback timer if vManage losses access to device after Push. 
+	  - Config is pushed using NetConf
+	- CLI Template Creation
+	  - vManage -> config -> Device -> Cli Template 
+	  - This is similar to Full config jinja template format 
+	  - Device can be attached to only one Device Template 
+  - Similar to Ansible modules/napalm GUI in given in vManage. 
+
+OMP Overlay Management Protocol & TLOC (Transport Locators) 
+  - Protocol between vsmart to vEdge as well as vSmart to vSmart 
+  - Features 
+    - Orchestration of overlay Network communication
+	- Distribution of Service Level routing 
+	- Distribution of data plane security parameters
+	- Central control and distribution of routing policy
+  - show omp peer ## shows peering to OMP peers with info
+  - OMP Routes 
+    - 3 Types 
+	  - Service Side VPN route aka vRoutes 
+	  - TLOC routes 
+	  - Firewall or Service routes 
+  - vSmart has complete DB of OMP routes and make policy on distribution of routes. 
+  - show omp routes ## Similar "show ip bgp"
+  - show omp tlocs 
+  - show omp services 
+  - GUI - Monitor -> Network -> Device selection -> Real Time, check OMP routes 
+  - OMP Best Path Selection 
+    - Valid Path check if TLOC is reachable or not. If Not reachable TLOC, then path is invalid. 
+	- If Valid path learned from same Viptela device then select with lower AD 
+	- If AD is same then prefer higher route preference value. 
+	- If route preference is same, then TLOC preference is compared. 
+	- On vEdge devices, If TLOC preference is same then Origin Type is compared. Following Order: connected, static, eBGP, OSPF intra, OSPF inter, OSPF ext, iBGP and unknown. 
+	- If Origin is same, select OMP route with the higher router ID. If RID is same, then high private ip address is selected. 
+	- If a vSmart get same prefix from 2 different sites and all attributes aee equal then both routes are chosen. 
+  - TLOC is considered active if an active BFD session is associated with that TLOC. If BFD session becomes inactive, vSmart removes all OMP routes pointed that TLOC from forwarding table. 
+  - Graceful restart for OMP 
+    - If vEdge lost connectivity to vSmart (one or all), the data plane continues to work on the last known state. When vSmart comes online, it recreates session with vEdge and updates it with current info. 
+	- Default graceful restart timer is 12 hours, This timer can be updated to 7 days. 
+	- vEdge(config-omp)# timers graceful-restart-timer "seconds"
+  - OMP hold timers by default are 60 sec (range 0 - 65535sec), keepalive is 1/3 of hold timer. If peers have different timers, higher is chosen. 
+  - OMP AD is 250 
+
+OMP Route Redistribution:
+  - OMP automatically redistributes Connected, static, OSPF (Intra/Inter). For BGP/OSPF external redistribution, explicit config is required. 
+  - OMP to IGP is needs to be explicit on each vEdge Router. 
+  
+Viptela Smart Policy
+  - 2 Types of policies
+    - control policy
+	  - centralized policy :ex control-policy
+	  - Local policy ex: route-policy,  
+	- data policy 
+	  - centralized ex: approute-policy, data-policy, cflow template 
+	  - local ex: QoS, ACL, Mirrors 
+	  - DP acts on entire VPN and is not interface specific. 
+  - components of policy 
+    - Traffic Class (to whom the traffic destined) 
+	- Policy definition : What the policy does ? 
+	- Apply policy : how it will be applied ?
+  - Difference between Control policy and Data Policy 
+    - CP is configured, applied and executed on vSmart 
+	- DP is configured and applied on vSmart but executed on vEdge 
+	- CP resides on vSmart where as DP is download by vEdge 
+	- CP is unidirectional, that means needs different policy for Ingress and Egress 
+	- DP is bidirectional
+  - vSmart Policy processing 
+    - Policy is processed sequentially, starting at lowest seq no#.
+	- Match ends the execution with the action in it
+	- No match meets default action, by default that action is Reject
+  - vSmart policy application 
+    - Applied on per-site-list basis 
+	- Can have one control policy per direction. 
+	- Avoid multiple CP on same site as results are unpredictable
+	- Data Policy can be applied in either direction. VPN membership policy is always applied to traffic outbound from the vSmart controller
+	- Application-aware routing policy can select path based on SLA parameters. 
+Note: control policy affects routes coming in or going out of vSmart. Data Policy is sent in OMP updates to vEdge, it affects the data traffic that the routers send and receive. 
+  - Application-aware Routing Policies 
+    - Create SLA-CLASS which defines latency and loss
+	- configure app-route-policy which specifies the traffic that is to belong to SLA-CLASS
+	- App-route-policy is attached to VPN-LIST at the listed sites 
+  - Cflowd Flow Data collection 
+    - Flow going through vEdge routers in overlay can be sent to a collector and processed by IPFIX analyzer. 
+	- This is a data policy with 2 sections. cflowd-template and data-policy that selects traffic subject to flow data. 
+	
+Data Policies Encore
+  - verification: show policy from-vsmart 
+  - Service Chaining 
+    - Basically you can create PBR to send selected Traffic (based on Match) to FW or IDS etc as its next hop. 
+	- FW or other device will then follow its route table. 
+	- configuration 
+	  - define next hop add for service device. ex: "vpn 1 service FW address 1.1.1.1"
+	  - create vpn-list and site-list 
+	  - create Data Policy that matches interesting traffic, in action "set service FW vpn 1" followed by default policy. 
+	  - Apply DP service-chain on site-list. 
+  - NAT Exit 
+    - Allows local vEdge device to provide internet access from Branch site instead of routing traffic to centralized location. 
+	- configuration
+	  - create data-prefix-list to identify prefixes allowed for Internet access 
+	  - vpn-list identifies the affected VPNs. 
+	  - site-list - groups sites with local internet allowed. 
+	  - DP in that matches traffic with data-prefix-list and actions accept "nat use-vpn 0" 
+	  - apply-policy on the site-list 
+	- VPN Membership Policy 
+	  - Allows for means to control access to approved member vEdge devices. 
+	  - configuration 
+	    - vpn-list define VPN match data 
+		- site-list 
+		- vpn-membership policy that matches vpn-list with action accept
+		- apply-policy policy to site-list 
+
+App-aware Routing 
+  - It is part of Data Policy structure which means executed on vEdge, Verification: "show policy from-smart" or "show app dpi flows" 
+  - This policy only applies to the traffic flowing from service side (local LAN) to the tunnel (WAN) side of the vEdge router
+  - App-aware routing tracks network and path health of the DP tunnels between vEdge routers and computes optimal paths for Data Traffic. 
+  - Monitored Characteristics 
+    - packet loss 
+	- latency 
+	- Jitter 
+	- Load 
+	- cost 
+	- bandwidth 
+  - Components of app-aware routing 
+    - define interesting traffic, create policy to map interesting traffic to SLA requirement, push to vEdge 
+	- Measure Loss and Latency 
+	- Map application (interesting traffic) to tunnel based on Loss and Latency data, maintain historical data for analytics. 
+  - Each vEdge router supports upto 4 TLOCs, allowing a single vEdge router to connect to up to four different WAN networks. 
+  - BFD periodically polls all tunnels on vEdge for Loss, Jitter, latency etc. At each poll interval, app-aware routing calculates the average loss, latency, jitter for each tunnel and then recalculates each tunnel SLA. Each poll interval is called Bucket. 
+  - By default, poll interval is 10 mins and BFD hello interval is 1 Sec. Which is avg is created using 600 samples. 
+  - Poll Interval is user-configurable using "bfd app-route poll-interval xx" 
+  - SLA Class for tunnel by default uses 6 as multiplier for poll interval. 
+  - Configuration for app-aware routing policy 
+    - It is a Centralized Data policy. 
+	- If traffic is matched with one of the match conditions, an SLA action is applied to figure out the data plane tunnel to use. No match will result in default accept where traffic is routed without considering SLA. 
+	- components
+	  - Lists which could prefix, sites or VPNs to match interesting traffic. 
+	  - SLA Class, required performance metrics. 
+	  - app-aware routing policy instance 
+	  - numbered sequences of match-action pairs 
+	- Verification of app-aware DP 
+	  - show app dpi flows 
+	  - show app-route sla-class 
+	  - show app-route stats 
+	  - show app-route stats | tab  (shows in Table format)
+	  - (packet tracer for app-route) show policy service-path vpn 10 int ge0/2 source-ip x.x.x.x dest-ip x.x.x.y protocol 1 
+
+Viptela VRRP:
+  - If vEdge devices are configured to be Active/Standby for the host default gateway. 
+  - Support VRRP multigroup to create Load sharing 
+  - VRRP not allowed on VPN0 (transport VPN) 
+  - config 
+    - Under VPN ID 
+	  - interface x/x 
+	    - vrrp group-num 
+		- ipv4 ip-add 
+		- priority Num (default is 100, range 1-254, preempt is enabled) 
+		- timers in_sec (default 1 sec, range 1 to 3600 sec) 
+		- OPTIONAL - track-omp | track-prefix-list list_name 
+  - Verification 
+    - show vrrp vpn | tab 
+	- "debug vrrp events" followed by "monitor start /var/log/vdebug"
+	- "tcpdump vpn 10"  (on vEdge) 
+	
+Viptela Transport Redundancy - TLOC Extension 
+  - vEdge devices can create tunnels using directly connected transport and across the transport connected to the neighboring vEdge router using TLOC ext. 
+  - TLOC extension should be part of VPN0 as well.
+  - Basically providing another path for Control communication using link between 2 adjacent routers.
+  
+Different SD-WAN Topologies 
+  - By default SDWAN topology is full mesh ipsec. 
+  - Hub and Spoke 
+    - Create control policy that matches TLOC for Site and rejects it. 
+	- Apply the policy on Sites in Out direction, Basically you are trying to stop TLOC information to be exchanged between Brach Sites. 
+
+High Availability and Scaling 
+  - Redundancy at Control Plane
+    - multiple vBond Orchestrator
+	- multiple vSmart controllers
+	- multiple vManage Cluster 
+	- Dispersed geo locations 
+	- Using redundant transport networks 
+  - vEdge Redundancy
+    - different transport networks 
+	- can reach networks though different NAT and DMZs
+  - vSmart controllers learn about the presence of other vSmart controllers, they automatically sync their route tables. If one vSmart controller fails, remaining system take over management of the control plane. 
+  - vBond, It manages authentication and validation of all vSmart and vEdges routers that attempt to join the viptela network. They orchestrates the control plane connection between vSmart and vEdge devices. vBond redundancy is achived by adding multiple IPs under same DNS name, this DNS name is used by vEdge/vSmart controllers. 
+  - vManage Redundancy
+    - vManage Cluster need atleast 3x machines 
+	- vManage components = App server (web server) & config database (stores the inventory/state and config of viptela devices). 
+	- vManage requires 3 NICs, 1 for control plane, one for VPN 512 and one for message Bus to redundant vManage server 
+  - vManage Cluster 
+    - Each vManage instance in the cluster is an independent processing node.
+	- Each user session can be load balanced using internal vManage load balancer or external LB. 
+	- vEdge connections to vManage are load balanced, a single vManage instance can manage a max of 2000 vEdge routers
+	- Controller session between vManage - vSmart and vManage - vBond are full-mesh to all vManage Instances. 
+  - vManage Cluster best practices
+    - Each vManage instance (minimum 3 instances) should run application web servers 
+	- A max of 3 configuration Databases and Statistics databases can be present in vManage Cluster 
+	- Use external Load balancer for distributing traffic to vManage. 
+	- Configure each vManager instance to run message bus
+  - vSmart Controller redundancy
+    - Viptela network contains 2 or more vSmart controllers in each domain, You can have upto 20 vsmart controller in a domain and each vEdge device connects to at least 2 vSmart controllers. 
+	- vSmart controllers connect in a full mesh using DTLS and communicate using OMP. 
+  - vEdge Redundancy
+    - Used in branch and hub site as Edge devices used for data plane connectivity. 
+	- vEdge maintains DTLS connection to 2 vSmart controllers
+	- vEdge device at a branch site, maintain data plane connection other vEdge device for TLOC extention
+	
+  - Control Plane failure senario 
+    - As long as one vSmart controller is present and operating in the domain, the viptela network can continue operating without interruption. 
+	- As long as one vBond orchestrator is present in viptela domain, network is able to operate without any interruption
+	- vBond never participate in the data plabe so failure of any vBond has no impact on the data traffic. 
+  - Data Plane Software support for HA 
+    - vEdge or transport failure can be avoided using redundant vEdge devices and TLOC extension
+	- BFD which runs automatically between secure IPsec connections between vEdge routers. BFD is not only used for maintaining hard failures, it is also used for SLA baselining. 
+	
+  - Viptela Domain Affinity to Manage Scaling
+    - Limit num of control connections a vEdge device can make with vSmart, without affinity each vEdge device creates a control connection using TLOC to each of the available vSmart.
+	- Full Mesh connectivity between vEdge and high num of vSmart can lead to resource constrain on both devices. 
+	- affinity config allows you to distribute vEdge control connections across the vSmart controllers. 
+	- config 
+	  - Add vSmart controller to a controller group 
+	  - configure which group or groups vEdge router can establish control connection with. 
+	  - Controller groups are what establishes the affinity between vSmart controllers and vEdge routers
+	  - On vSmart -> "system controller-group-id X" (x is num )
+	  - On vEdge -> "system controller-group-id X" & "system max-omp-sessions Y" + "max-control-connection" under VPN interface. 
+	- By default, vEdge router can establish 2 OMP sessions for control connections to vSmart controllers. To modify use "system max-omp-sessions X" 
+	- Verification
+	  - show control local properties
+	  - show control affinity config 
+	  - show control affinity status 
+
+Cisco SDWAN Optimization 
+  - Cloud Express Service (CES) 
+    - From vManage, Cloud Express Service can provide visibility into the performance of the individual cloud applications and automatically chose the best path for each one. 
+	- It responds to changes in Network Performance in real time, intelligently re-routing cloud application traffic onto the best available path. 
+	- CES calculates viptela quality of experience value (vQoE), it ranges from 0 to 10 with 0 being worst. CES calculates this value for applications and paths, then matches them accordingly. 
+	- Requirements 
+	  - Viptela software version 16.3 or higher 
+	  - devices run in vManage mode 
+	  - DNS server for VPN0 along with local exit interfaces (NAT enabled if physcial) 
+	  - Doesn't support IPv6
+	- configuration
+	  - vManage -> administration -> settings 
+	  - Edit CloudExpress 
+	  - Enable and Save 
+	- Add applications to CES 
+	  - vManage -> configuration -> "Manage Cloud Express"
+	  - Select application from dropdown and click "add application and vpn". 
+  - TCP Optimization 
+    - Can be enabled System wide on vEdge using "tcp-optimization-enabled" 
+	- CPU-intensive process 
+	- Can also be enabled over VPN using "tcp-optimization" in config-vpn level. 
+	- verification 
+	  - show app tcp-opt active-flows 
+	  - show app tcp-opt expired-flows 
+	- It can be enabled for specifc flow inside a VPN using data-policy with action "tcp-optimization"
+
+Viptela vAnalytics 
+  - LiveNX can create reports based on Application, service, ip, hostname etc, Reports can be exported in csv or pdf format & Utilization report graphs, automatic triggers for link outages etc 
+  - vAnalytics can be enabled in vManage -> administration -> vAnalytics ## Enable/Disable 
+  - vAnalytics is cloud based and require SSO username/pass from Viptela 
+  - vAnalytics dashboard provide insight into network/circuit uptime, App performance, top talkers/users etc 
+  - vAnalytics provides latency, loss or jitter reports for different tunnels and carriers
+
+Zscaler and Security Features 
+  - Create GRE tunnel to Zscaler Enforcement Node (ZEN) to exit all internet traffic
+  - vEdge can send all traffic towards ZEN or sent traffic based on policy
+
+SDWAN Troubleshooting 
+  - Control Plan bring up debug 
+    - On vManage CLI -> debug vdaemon all -> monitor start /var/log/temlog/vdebug 
+	- To stop messages on CLI :  monitor stop /var/log/temlog/vdebug 
+	- Stop debug -> no debug all
+  - Data Plane Debug Transport Events 
+    - on vEdge CLI -> debug transport events -> monitor start /var/log/temlog/vdebug 
+  - Data Plane Debug OMP 
+    - debug omp events
+	- show control connections-history 
+  - Transport VPN and OMP Failure 
+    - vManage -> Alarms -> pick one alarm and check for Alarm Detail 
+	- show bfd information 
+  - VPNs Limit Numbers and restrictions
+    - Under VPN config, "tunnel-interface color XXXX restrict"  # Keyword "restrict" will only create tunnel with same color TLOC 
+	- Mismatch if "restrict" keyword will result in Tunnel not forming
+	- You can use "debug transport events" to view debug related to tunnel not forming for above case. 
+  - ExtraNet or Route Leak not working 
+    - vSmart control policy can leak routes between different VPNs 
+    - Check for routes in VPN and if missing, check the control policy on vsmart regarding leaking 
+  - Troubleshooting Route Install issue 
+    - If site IDs are same, routes will not be installed. 
+	- Route can be filtered using control policy on vsmart applied to sites in a particular direction 
+  - You can run routing protocol like BGP/OSPF between vEdge and internal CE device. You will need to redistribute omp to exchange routes. 
+  - If you apply a policy on OMP to prefer certain routes, then use control policy and verify using "show omp routes" (similar show ip bgp") 
+  - Tloc Preference
+    - Under VPN -> Interface -> Add preference in "encapsulation ipsec preference XXX" where XXX is num, higher is better. 
+	- Verify: "show ip route x.x.x.x" or "show omp route" 
+  - vManage Dashboard TS options & Tools 
+    - sdwan-docs.cisco.com has a lot of Howtos 
+	- vManage -> Pick device -> Left pan Troubleshooting # has options for debug, packet capture, ping , traceroute etc 
+	- For speedtest troubleshooting, enable "data stream" administration setting before you can use feature. 
+	- vManage -> Tools -> Operational commands ## show tech AKA admin-tech, interface bounce etc are here 
+	- CLI: request admin-tech exclude-cores exclude-logs 
+	- Only one admin-tech operation can occur at a time. 
+	- CLI: drop down to vshell -> cd into directory where admin-tect is located
+	- CLI: untar the admin-tech and you can look into files it created with data such as config, config changes, vdebug etc 
+	- CLI: tools # Offers many Linux tools like iperf, netstat, ss, nping etc 
+  - ZTP 
+    - VEDGE must have reachability to public DNS and ztp.viptela.com.
+	- ztp.viptela.com will redirect vEdge to correct vBond 
+	- Note: if vManage does not have template for vEdge device, ZTP process will fail. 
+	- Incorrect Cert can make the device stuck in sync state 
+	- vbond-ztp listens on 12346 by default, we are required to add OTP, serial num and org ID 
+  - VRRP Issues 
+    - debug vrrp events vpn XX 
+	- debug vrrp packets vpn XX 
+	- show vrrp interface
