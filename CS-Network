@@ -17,8 +17,8 @@ The 7 layer OSI
  
 Things that IP do: 
 1. limit the damage of looping packets using TTL, reduce TTL by 1 every time it hits a router. 
-2. Will fragment packets longer that MTU it supports or drop them if "donotfrag" bit is set. 
-3. you can find ipv4 (32bit (4x 8 bit), 20 byte long) and ipv6 (128bit) in the wild. 
+2. Will fragment packets longer than MTU it supports or drop them if "donotfrag" bit is set. 
+3. you can find ipv4 (32bit (4x 8 bit or 4 octet), 20 byte long) and ipv6 (128bit or 8 hextet) in the wild. 
 4. options can be added to the header. 
 
 IPv4 Header: 0-31 Bit, SA, DA, Protocol ID (tells the transport layer what to expect in Data field), version, total packet length, ttl, packet-id, flags, fragment offset, TOS, header length, checksum. 
@@ -30,11 +30,11 @@ Layering:
   - provides modularity 
   - well defined service
   - reuse
-  - separation of concerns 
+  - separation of concerns
   - continuous improvement
   - peer to peer communication 
   
-Encapsulation: 
+Encapsulation:
   - Layer N Data is payload to layer N-1 
   - ex: http web payload encapsulated by TCP which is encapsulated by IP which is encapsulated by ethernet or wifi frame. 
   - Wireshark will display these layers starting from Frame at top to application at bottom. top/down 
@@ -42,13 +42,13 @@ Encapsulation:
 Unix Sockets: They allow communication between two different processes on the same or different machines.
   - 4 types of sockets
     - Stream Sockets: Delivery in a networked environment is guaranteed. These sockets use TCP (Transmission Control Protocol) for data transmission.
-	- Datagram Sockets: Delivery in a networked environment is not guaranteed. Uses connectionless UDP 
-	- Raw Sockets: These provide users access to the underlying communication protocols, which support socket abstractions. Generally used for research or analysis of existing protocols. 
-	- Sequenced Packet Sockets: They are similar to a stream socket, with the exception that record boundaries are preserved.
+    - Datagram Sockets: Delivery in a networked environment is not guaranteed. Uses connectionless UDP 
+    - Raw Sockets: These provide users access to the underlying communication protocols, which support socket abstractions. Generally used for research or analysis of existing protocols. 
+    - Sequenced Packet Sockets: They are similar to a stream socket, with the exception that record boundaries are preserved.
 	
   - Client-Server architecture: Two processes or two applications that communicate with each other to exchange some information.
     - Client Process: This is the process, which typically makes a request for information. Ex: Web browser 
-	- Server Process: This is the process which takes a request from the clients. After getting a request from the client, this process will perform the required processing, gather the requested information, and send it to the requesting client.
+    - Server Process: This is the process which takes a request from the clients. After getting a request from the client, this process will perform the required processing, gather the requested information, and send it to the requesting client.
 	
   - Client-Server Architectures
     - 2-tier architecture − In this architecture, the client directly interacts with the server. Ex Browser to Server 
@@ -56,128 +56,128 @@ Unix Sockets: They allow communication between two different processes on the sa
   
   - Server Types:
     - Iterative Server: server process serves one client and after completing the first request, it takes request from another client.
-	- Concurrent Server: simplest way to write a concurrent server under Unix is to fork a child process to handle each client separately.
+    - Concurrent Server: simplest way to write a concurrent server under Unix is to fork a child process to handle each client separately.
 	
   - Socket Creation
     - Client Socket Creation
-	  - Create a socket with the socket() system call.
-	  - Connect the socket to the address of the server using the connect() system call.
-	  - Send and receive data. There are a number of ways to do this, but the simplest way is to use the read() and write() system calls.
-	- Server Socket Creation
-	  - Create a socket with the socket() system call.
-	  - Bind the socket to an address using the bind() system call.
-	  - Listen for connections with the listen() system call.
-	  - Accept a connection with the accept() system call. This call typically blocks the connection until a client connects with the server.
-	  - Send and receive data using the read() and write() system calls.
+      - Create a socket with the socket() system call.
+      - Connect the socket to the address of the server using the connect() system call.
+      - Send and receive data. There are a number of ways to do this, but the simplest way is to use the read() and write() system calls.
+    - Server Socket Creation
+      - Create a socket with the socket() system call.
+      - Bind the socket to an address using the bind() system call.
+      - Listen for connections with the listen() system call.
+      - Accept a connection with the accept() system call. This call typically blocks the connection until a client connects with the server.
+      - Send and receive data using the read() and write() system calls.
 	  
   - Socket Structures
     - sockaddr : This is a generic socket address structure, which will be passed in most of the socket function calls. Attributes
-	  - sa_family: Represents an address family. In most of the Internet-based applications, we use AF_INET.
-	  - sa_data: Protocol-specific Address. For the Internet family, we will use port number IP address represented by sockaddr_in structure.
-	- sockaddr_in: Contains socket elements as follows
-	  - sin_family: It represents an address family.
-	  - sin_port: A 16-bit port number in Network Byte Order.
-	  - sin_addr ("struct in_addr"): A 32-bit IP address in Network Byte Order. 
-	  - sin_zero 	: Null, not being used. 
-    - in_addr: holds 32 bit netid/hostid 
-	  - s_addr: A 32-bit IP address in Network Byte Order.
-	- hostent: structure is used to keep information related to host.
-	  - *h_name : Host name pointer 
-	  - **h_aliases: It holds a list of host name aliases.
-	  - h_addrtype: It contains the address family
-	  - h_length: holds the length of the IP address, which is 4 for Internet Address.
-	  - **h_addr_list: in_addr struct pointer 
-	- servent:  structure is used to keep information related to service and associated ports.
-	  - *s_name: official name of the service. For example, SMTP, FTP POP3, etc.
-	  - **s_aliases: It holds the list of service aliases. Most of the time this will be set to NULL.
-	  - s_port: It will have associated port number. For example, for HTTP, this will be 80.
-	  - *s_proto: It is set to the protocol used. Internet services are provided using either TCP or UDP.
+      - sa_family: Represents an address family. In most of the Internet-based applications, we use AF_INET.
+      - sa_data: Protocol-specific Address. For the Internet family, we will use port number IP address represented by sockaddr_in structure.
+      - sockaddr_in: Contains socket elements as follows
+        - sin_family: It represents an address family.
+        - sin_port: A 16-bit port number in Network Byte Order.
+        - sin_addr ("struct in_addr"): A 32-bit IP address in Network Byte Order. 
+        - sin_zero : Null, not being used. 
+      - in_addr: holds 32 bit netid/hostid 
+        - s_addr: A 32-bit IP address in Network Byte Order.
+      - hostent: structure is used to keep information related to host.
+        - *h_name : Host name pointer 
+	- **h_aliases: It holds a list of host name aliases.
+	- h_addrtype: It contains the address family
+	- h_length: holds the length of the IP address, which is 4 for Internet Address.
+	- **h_addr_list: in_addr struct pointer 
+      - servent:  structure is used to keep information related to service and associated ports.
+	- *s_name: official name of the service. For example, SMTP, FTP POP3, etc.
+	- **s_aliases: It holds the list of service aliases. Most of the time this will be set to NULL.
+	- s_port: It will have associated port number. For example, for HTTP, this will be 80.
+	- *s_proto: It is set to the protocol used. Internet services are provided using either TCP or UDP.
 	
   - Socket Ports and Services: 
     - Port and Service Functions: Unix provides the following functions to fetch service name from the /etc/services file.
-	  - struct servent *getservbyname(char *name, char *proto): Takes Service name & Protocol Name, returns port num for that service. 
-	  - struct servent *getservbyport(int port, char *proto): Takes port number and protocol name, and returns Service Name. 
-	  - Return value is a pointer to the servert struct mentioned above. 
+      - struct servent *getservbyname(char *name, char *proto): Takes Service name & Protocol Name, returns port num for that service. 
+      - struct servent *getservbyport(int port, char *proto): Takes port number and protocol name, and returns Service Name.  
+      - Return value is a pointer to the servert struct mentioned above. 
 	  
   - Socket Network Byte Order: Unfortunately, not all computers store the bytes that comprise a multibyte value in the same order. Consider a 16-bit internet that is made up of 2 bytes. There are two ways to store this value.
     - Little Endian: low-order byte is stored on the starting address (A) and high-order byte is stored on the next address (A + 1)
     - Big Endian: high-order byte is stored on the starting address (A) and low-order byte is stored on the next address (A + 1)
     - Byte Ordering Functions: Routines for converting data between a host's internal representation and Network Byte Order are as follows −
-	  - unsigned short htons(unsigned short hostshort): converts 16-bit (2-byte) quantities from host byte order to network byte order.
-	  - unsigned long htonl(unsigned long hostlong) − converts 32-bit (4-byte) quantities from host byte order to network byte order.
-	  - unsigned short ntohs(unsigned short netshort) − converts 16-bit (2-byte) quantities from network byte order to host byte order.
-	  - unsigned long ntohl(unsigned long netlong) − converts 32-bit quantities from network byte order to host byte order.
+      - unsigned short htons(unsigned short hostshort): converts 16-bit (2-byte) quantities from host byte order to network byte order.
+      - unsigned long htonl(unsigned long hostlong) − converts 32-bit (4-byte) quantities from host byte order to network byte order.
+      - unsigned short ntohs(unsigned short netshort) − converts 16-bit (2-byte) quantities from network byte order to host byte order.
+      - unsigned long ntohl(unsigned long netlong) − converts 32-bit quantities from network byte order to host byte order.
 
   - Socket IP Address Functions: Helps convert Inet address between ASCII strings and network byte ordered binary values stored in socket addr structures. following three function calls are used for IPv4 addressing: 
     - int inet_aton(const char *strptr, struct in_addr *addrptr): function call converts the specified string in the Internet standard dot notation to a network address, and stores the address in the structure provided. 
-	- in_addr_t inet_addr(const char *strptr): function call converts the specified string in the Internet standard dot notation to an integer value suitable for use as an Internet address. returns a 32-bit binary network byte ordered IPv4 address and INADDR_NONE on error.
-	- char *inet_ntoa(struct in_addr inaddr): function call converts the specified Internet host address to a string in the Internet standard dot notation.
+      - in_addr_t inet_addr(const char *strptr): function call converts the specified string in the Internet standard dot notation to an integer value suitable for use as an Internet address. returns a 32-bit binary network byte ordered IPv4 address and INADDR_NONE on error.
+      - char *inet_ntoa(struct in_addr inaddr): function call converts the specified Internet host address to a string in the Internet standard dot notation.
 	
   - Socket Core Functions: Below describes the core socket functions required to write a complete TCP client and server.
     - The socket Function: To perform network I/O, the first thing a process must do is, call the socket function, specifying the type of communication protocol desired and protocol family, etc
-	  - int socket (int family, int type, int protocol);
-	- The connect Function: Used by a TCP client to establish a connection with a TCP server.
-	  - int connect(int sockfd, struct sockaddr *serv_addr, int addrlen);
-	- The bind Function: assigns a local protocol address to a socket. This function is called by TCP server only.
-	  - With the Internet protocols, the protocol address is the combination of either a 32-bit IPv4 address or a 128-bit IPv6 address, along with a 16-bit TCP or UDP port number.
-	  - int bind(int sockfd, struct sockaddr *my_addr,int addrlen);
-	- The listen Function:  function is called only by a TCP server and it performs two actions:
-	  - Converts an unconnected socket into a passive socket, indicating that the kernel should accept incoming connection requests directed to this socket.
-	  - second argument to this function specifies the maximum number of connections the kernel should queue for this socket.
-	  - int listen(int sockfd,int backlog);
-	- The accept Function: Called by a TCP server to return the next completed connection from the front of the completed connection queue.
-	  - int accept (int sockfd, struct sockaddr *cliaddr, socklen_t *addrlen);
-	- The send Function: used to send data over stream sockets or CONNECTED datagram sockets. If you want to send data over UNCONNECTED datagram sockets, you must use sendto() function.
-	  - int send(int sockfd, const void *msg, int len, int flags);
-	- The recv Function: used to receive data over stream sockets or CONNECTED datagram sockets. If you want to receive data over UNCONNECTED datagram sockets you must use recvfrom().
-	  - int recv(int sockfd, void *buf, int len, unsigned int flags);
-	- The sendto Function: used to send data over UNCONNECTED datagram sockets.
-	  - int sendto(int sockfd, const void *msg, int len, unsigned int flags, const struct sockaddr *to, int tolen);
-	- The recvfrom Function: used to receive data from UNCONNECTED datagram sockets.
-	  - int recvfrom(int sockfd, void *buf, int len, unsigned int flags struct sockaddr *from, int *fromlen);
-	- The close Function: used to close the communication between the client and the server.
-	  - int close( int sockfd );
-	- The shutdown Function: used to gracefully close the communication between the client and the server.
-	  - int shutdown(int sockfd, int how);
-	  - "how" : Can indicate receiving is not allowed(0) or sending is not allowed(1) or Both are not allowed(2). 
-	- The select Function: indicates which of the specified file descriptors is ready for reading, ready for writing, or has an error condition pending.
-	  - int select(int  nfds, fd_set  *readfds, fd_set  *writefds, fd_set *errorfds, struct timeval *timeout);
-	  - Calling recv or recvfrom on a socket that has no data in its input queue prevents immediate reception of data from other sockets. The select function call solves this problem by allowing the program to poll all the socket handles to see if they are available for non-blocking reading and writing operations.
+      - int socket (int family, int type, int protocol);
+    - The connect Function: Used by a TCP client to establish a connection with a TCP server.
+      - int connect(int sockfd, struct sockaddr *serv_addr, int addrlen);
+    - The bind Function: assigns a local protocol address to a socket. This function is called by TCP server only.
+    - With the Internet protocols, the protocol address is the combination of either a 32-bit IPv4 address or a 128-bit IPv6 address, along with a 16-bit TCP or UDP port number.
+      - int bind(int sockfd, struct sockaddr *my_addr,int addrlen);
+    - The listen Function:  function is called only by a TCP server and it performs two actions:
+      - Converts an unconnected socket into a passive socket, indicating that the kernel should accept incoming connection requests directed to this socket.
+      - second argument to this function specifies the maximum number of connections the kernel should queue for this socket.
+      - int listen(int sockfd,int backlog);
+    - The accept Function: Called by a TCP server to return the next completed connection from the front of the completed connection queue.
+      - int accept (int sockfd, struct sockaddr *cliaddr, socklen_t *addrlen);
+    - The send Function: used to send data over stream sockets or CONNECTED datagram sockets. If you want to send data over UNCONNECTED datagram sockets, you must use sendto() function.
+      - int send(int sockfd, const void *msg, int len, int flags);
+    - The recv Function: used to receive data over stream sockets or CONNECTED datagram sockets. If you want to receive data over UNCONNECTED datagram sockets you must use recvfrom().
+      - int recv(int sockfd, void *buf, int len, unsigned int flags);
+    - The sendto Function: used to send data over UNCONNECTED datagram sockets.
+      - int sendto(int sockfd, const void *msg, int len, unsigned int flags, const struct sockaddr *to, int tolen);
+    - The recvfrom Function: used to receive data from UNCONNECTED datagram sockets.
+      - int recvfrom(int sockfd, void *buf, int len, unsigned int flags struct sockaddr *from, int *fromlen);
+    - The close Function: used to close the communication between the client and the server.
+      - int close( int sockfd );
+    - The shutdown Function: used to gracefully close the communication between the client and the server.
+      - int shutdown(int sockfd, int how);
+      - "how" : Can indicate receiving is not allowed(0) or sending is not allowed(1) or Both are not allowed(2). 
+    - The select Function: indicates which of the specified file descriptors is ready for reading, ready for writing, or has an error condition pending.
+      - int select(int  nfds, fd_set  *readfds, fd_set  *writefds, fd_set *errorfds, struct timeval *timeout);
+      - Calling recv or recvfrom on a socket that has no data in its input queue prevents immediate reception of data from other sockets. The select function call solves this problem by allowing the program to poll all the socket handles to see if they are available for non-blocking reading and writing operations.
 	  
   - Socket Helper Functions: 
-	- The write Function: attempts to write nbyte bytes from the buffer pointed by buf to the file associated with the open file descriptor, fildes. Can also use send() function to send data to another process.
-	  - int write(int fildes, const void *buf, int nbyte);
-	- The read Function: attempts to read nbyte bytes from the file associated with the buffer, fildes, into the buffer pointed to by buf.
-	  - int read(int fildes, const void *buf, int nbyte);
-	- The fork Function: Creates a new process. The new process called the child process will be an exact copy of the calling process (parent process). The child process inherits many attributes from the parent process.
-	  - int fork(void);
-	- The bzero Function: Places nbyte null bytes in the string s. This function is used to set all the socket structures with null values.
-	  - void bzero(void *s, int nbyte);
-	- The bcmp Function: Compares byte string s1 against byte string s2. Both strings are assumed to be nbyte bytes long.
-	  - int bcmp(const void *s1, const void *s2, int nbyte);
-	- The bcopy Function: Copies nbyte bytes from string s1 to the string s2. Overlapping strings are handled correctly.
-	  - void bcopy(const void *s1, void *s2, int nbyte);
-	- The memset Function: used to set structure variables in the same way as bzero. 
-	  - void *memset(void *s, int c, int nbyte);
+    - The write Function: attempts to write nbyte bytes from the buffer pointed by buf to the file associated with the open file descriptor, fildes. Can also use send() function to send data to another process.
+      - int write(int fildes, const void *buf, int nbyte);
+    - The read Function: attempts to read nbyte bytes from the file associated with the buffer, fildes, into the buffer pointed to by buf.
+      - int read(int fildes, const void *buf, int nbyte);
+    - The fork Function: Creates a new process. The new process called the child process will be an exact copy of the calling process (parent process). The child process inherits many attributes from the parent process.
+      - int fork(void);
+    - The bzero Function: Places nbyte null bytes in the string s. This function is used to set all the socket structures with null values.
+      - void bzero(void *s, int nbyte);
+    - The bcmp Function: Compares byte string s1 against byte string s2. Both strings are assumed to be nbyte bytes long.
+      - int bcmp(const void *s1, const void *s2, int nbyte);
+    - The bcopy Function: Copies nbyte bytes from string s1 to the string s2. Overlapping strings are handled correctly.
+      - void bcopy(const void *s1, void *s2, int nbyte);
+    - The memset Function: used to set structure variables in the same way as bzero. 
+      - void *memset(void *s, int c, int nbyte);
 	
   - Socket Server Examples: 
     - To make a process a TCP server: 
       - Create a socket with the socket() system call.
-	  - Bind the socket to an address using the bind() system call.
-	  - Listen for connections with the listen() system call.
-	  - Accept a connection with the accept() system call. This call typically blocks until a client connects with the server.
-	  - Send and receive data using the read() and write() system calls.
-	- Handle Multiple Connections
-	  - Put the accept statement and the following code in an infinite loop.
-	  - After a connection is established, call fork() to create a new process.
-	  - The child process will close sockfd and call doprocessing function, passing the new socket file descriptor as an argument. When the two processes have completed their conversation, as indicated by doprocessing() returning, this process simply exits.
-	  - The parent process closes newsockfd. As all of this code is in an infinite loop, it will return to the accept statement to wait for the next connection.
+	- Bind the socket to an address using the bind() system call.
+	- Listen for connections with the listen() system call.
+	- Accept a connection with the accept() system call. This call typically blocks until a client connects with the server.
+	- Send and receive data using the read() and write() system calls.
+      - Handle Multiple Connections
+	- Put the accept statement and the following code in an infinite loop.
+	- After a connection is established, call fork() to create a new process.
+	- The child process will close sockfd and call doprocessing function, passing the new socket file descriptor as an argument. When the two processes have completed their conversation, as indicated by doprocessing() returning, this process simply exits.
+	- The parent process closes newsockfd. As all of this code is in an infinite loop, it will return to the accept statement to wait for the next connection.
 
   - Socket Client Examples: 
     - To make a process a TCP client:
-	  - Create a socket with the socket() system call.
-	  - Connect the socket to the address of the server using the connect() system call.
-	  - Send and receive data. There are a number of ways to do this, but the simplest way is to use the read() and write() system calls.
+      - Create a socket with the socket() system call.
+      - Connect the socket to the address of the server using the connect() system call.
+      - Send and receive data. There are a number of ways to do this, but the simplest way is to use the read() and write() system calls.
 	
 Longest Prefix Match(LPM): Algorithm IP routers use to select entry from forwarding table. Router selects route/interface with most bits matching. 
 
@@ -197,42 +197,42 @@ ARP: Address resolution protocol :
 TCP aka Transmission Control Protocol:
   - 3 way handshake 
     - syn 
-	- syn + ack
-	- ack 
+    - syn + ack
+    - ack 
   - Connection Teardown 
     - Fin 
-	- (data+) Ack
-	- Fin 
-	- Ack 
+    - (data+) Ack
+    - Fin 
+    - Ack 
   - TCP reliable delivery
     - Ack indicate correct delivery 
-	- Checksums detect corrupted data 
-	- Sequence number detect missing data 
-	- Flow-Control prevent overrunning receiver 
+    - Checksums detect corrupted data 
+    - Sequence number detect missing data 
+    - Flow-Control prevent overrunning receiver 
   - TCP Header Format, 20 byte: 
     - dst port: which socket to hand over the data. 
-	- Src Port: Tells TCP layer on dst to which port it needs to reply data/ack back. 
-	- Seq # : Sequence number of data being sent 
-	- Ack Seq #: Ack the data received, normally +1 of seq received
-	- Checksums: 16 Bit .. calculated on header + data 
-	- Window: flow control, tells other side how much receive buffer it has. 
-	- Header Length: Total length of TCP header
-	- TCP Options: Optional field, usally are empty
-	- TCP Flags
-	  - Ack Flag: Confirms Ack seq num is valid. 
-	  - Syn Flag: New connection 
-	  - Fin Flag: Closing Connection
-	  - PSH Flag: send data to app layer without waiting
-	  - URG Flag: If the URG flag is set, the receiving station evaluates the urgent pointer, a 16-bit field in the TCP header. 
-	  - RST Flag: Aborts a connection in response to an error
+    - Src Port: Tells TCP layer on dst to which port it needs to reply data/ack back. 
+    - Seq # : Sequence number of data being sent 
+    - Ack Seq #: Ack the data received, normally +1 of seq received
+    - Checksums: 16 Bit .. calculated on header + data 
+    - Window: flow control, tells other side how much receive buffer it has. 
+    - Header Length: Total length of TCP header
+    - TCP Options: Optional field, usally are empty
+    - TCP Flags
+      - Ack Flag: Confirms Ack seq num is valid. 
+      - Syn Flag: New connection 
+      - Fin Flag: Closing Connection
+      - PSH Flag: send data to app layer without waiting
+      - URG Flag: If the URG flag is set, the receiving station evaluates the urgent pointer, a 16-bit field in the TCP header. 
+      - RST Flag: Aborts a connection in response to an error
   - TCP 5 Tuple: IP DA/SA + Src/Dst Port + Protocol = 104 bit globally unique ID 
 
 UDP, User datagram protocol: Simple, unreliable byte transfer protocol
   - UDP Header
     - src port 
-	- dst port 
-	- length (16 bit): length of datagram in bytes 
-	- checksum 
+    - dst port 
+    - length (16 bit): length of datagram in bytes 
+    - checksum 
 
 ICMP, Internet Control Message Protocol:
   - communicate network layer info between end host and routers 
@@ -252,36 +252,36 @@ Error Detection:
 Finite State Machine: Valid state of protocol or algorithm. For ex: TCP Finite state diagram shows the 12 states a TCP connection can transition. Most helpful diagram to understand TCP states. 
 
 Flow Control Sliding Window: Sender No of Packets in flights before an ACK is received. 
-  - sliding window = max bandwidth/ RTT 
+  - sliding window = max bandwidth / RTT 
   - In TCP, tcp header provides window size in bytes. This is amount of data receiver will buffer. 
 
 
 Packet Switching: 
   - Why Packet Switching: 
     - efficient use of links
-	- resilience of failure of links and routers
+    - resilience of failure of links and routers
   - Propagation delay: The time it takes a single bit to travel over a link at propagation speed C. 
-    - t = l/c ; t = PD, l = length and c = speed. 
+    - t = l/c ; t = Propagation Delay, l = length and c = speed. 
   - Packetization delay: The time from when the first to the last bit of a packet is transmitted.  How fast we can put bits on the physical link. 
     - t = P/r 
-	- ex 1 kbit packet takes 1.024s to be transmitted onto a 1kb/s link. (1024 bits on 1k b/s link) 
+    - ex 1 kbit packet takes 1.024s to be transmitted onto a 1kb/s link. (1024 bits on 1k b/s link) 
   - End to End Delay: Add propagation deplay + Packetization delay for each link along the path from end to end. 
     - t = foreach-link (tp + td + Qi(t)) where tp = propagation delay, td = packetization delay and Qi(t) = queuing delay which is unpredictable. 
     - Shared links introduces queuing delay that are not deterministic. 
   - Playback Buffer: With packet switching, end to end delay is variable so we use a playback buffer to absord the variation. 
   - Queue Models
     - Messages are broken into packets as they can be quickly transferred over the wire and reduces end-to-end delay.
-	- Statistical multiplexing lets us carry many flows over a single link.
-	- Little's Result: well defined arrival rate "lambda", average num of queues in the system "L" and average delay "d" then 
-	  - L = Lambda * delay(ave) ; if none lost or dropped. 
-	- Poisson Process
-	  - Models aggregation of many independent random events Ex new call to telephone switch, user web requests etc 
+    - Statistical multiplexing lets us carry many flows over a single link.
+    - Little's Result: well defined arrival rate "lambda", average num of queues in the system "L" and average delay "d" then 
+      - L = Lambda * delay(ave) ; if none lost or dropped. 
+    - Poisson Process
+      - Models aggregation of many independent random events Ex new call to telephone switch, user web requests etc 
 
 Packet Switches 
   - Three main stages, 1-> Lookup add, 2 -> update header, 3-> Queue packet
   - Lookup Address 
     - match using Hash and perform action which can be "forward to xyz port" or Broadcast to all ports expect where received from. 
-	- If router, perform LPM and perform action. If not found then drop and send destination unreachable. 
+    - If router, perform LPM and perform action. If not found then drop and send destination unreachable. 
   - virtual queues help avoid Head of Line Blocking. 
 
 Congestion Control
@@ -289,51 +289,51 @@ Congestion Control
   - Why congestion: when packet arrival rate is higher than packet delivery rate somewhere in the path from end to end, it causes queuing, congestion and packets being dropped. 
   - Goal for congestion control
     - High Throughput 
-	- max-min fairness
-	- adapt quickly to changes 
-	- distributed control 
+    - max-min fairness
+    - adapt quickly to changes 
+    - distributed control 
   - TCP implements congestion control at the end host. It uses sliding window to control how much data can be in the network before getting ack from receiver. 
   - window size = min(adv window, congestion window) ; adv window is from receiver and cwnd is from transmitter
   - Calculating "cwnd" at Transmitter is done by using AIMD (Additive Increase, Multiplicitive Decrease):
     - If packet is received OK then, cwnd = cwnd + 1/cwnd 
-	- if a packet is dropped, cwnd = cwnd/2 
-	- This provides 100% utilization of the available link while reducing cwnd when drops are detected. Since the drops are multiplicitive decrease, cwnd drops to 1/2 of the value before the drops were encountered and allows for buffers to be emptied in the path. 
+    - if a packet is dropped, cwnd = cwnd/2 
+    - This provides 100% utilization of the available link while reducing cwnd when drops are detected. Since the drops are multiplicitive decrease, cwnd drops to 1/2 of the value before the drops were encountered and allows for buffers to be emptied in the path. 
   - throughput = window_size / RTT
   - TCP Congestion Control 1
     - slow start, congestion avoidance, triple duplicate ack 
-	- Slow Start Issues 
-	  - Assumes that unacknowledged segments are due to network congestion. While this is an acceptable assumption for many networks, segments may be lost for other reasons, such as poor data link layer transmission quality. Thus, slow start can perform poorly in situations with poor reception, such as wireless networks. 
-	- Fast retransmit
-	  - Duplicate acknowledgement is the basis for the fast retransmit mechanism. 
-	  - When a sender receives three duplicate acknowledgements, it can be reasonably confident that the segment carrying the data that followed the last in order byte specified in the acknowledgment was lost. A sender with fast retransmit will then retransmit this packet immediately without waiting for its timeout. On receipt of the re-transmitted segment, the receiver can acknowledge the last in order byte of data received. In the above example, this would acknowledge to the end of the payload of the fifth packet. There is no need to acknowledge intermediate packets. This ex is considering second packet was lost, so receiver got 3 duplicate ack for packet 3,4,5 before retransmitting packet 2 and getting ack for the 5 packet as it was last in order. 
-	- TCP Tahoe Action on timeout or triple duplicate ack (implies lost packet) 
-	  - set SlowStartThreshold to congestion window/2
-	  - set congestion window to 1 MSS  
-	  - Retransmit missing seg (fast retransmit for triple duplicate ack)
-	  - Enter slow start state 
-	  -  Once the CWND reaches ssthresh, TCP changes to congestion avoidance algorithm where each new ACK increases the CWND by MSS / CWND. This results in a linear increase of the CWND.
+    - Slow Start Issues 
+      - Assumes that unacknowledged segments are due to network congestion. While this is an acceptable assumption for many networks, segments may be lost for other reasons, such as poor data link layer transmission quality. Thus, slow start can perform poorly in situations with poor reception, such as wireless networks. 
+    - Fast retransmit
+      - Duplicate acknowledgement is the basis for the fast retransmit mechanism. 
+      - When a sender receives three duplicate acknowledgements, it can be reasonably confident that the segment carrying the data that followed the last in order byte specified in the acknowledgment was lost. A sender with fast retransmit will then retransmit this packet immediately without waiting for its timeout. On receipt of the re-transmitted segment, the receiver can acknowledge the last in order byte of data received. In the above example, this would acknowledge to the end of the payload of the fifth packet. There is no need to acknowledge intermediate packets. This ex is considering second packet was lost, so receiver got 3 duplicate ack for packet 3,4,5 before retransmitting packet 2 and getting ack for the 5 packet as it was last in order. 
+    - TCP Tahoe Action on timeout or triple duplicate ack (implies lost packet) 
+      - set SlowStartThreshold to congestion window/2
+      - set congestion window to 1 MSS  
+      - Retransmit missing seg (fast retransmit for triple duplicate ack)
+      - Enter slow start state 
+    -  Once the CWND reaches ssthresh, TCP changes to congestion avoidance algorithm where each new ACK increases the CWND by MSS / CWND. This results in a linear increase of the CWND.
   - TCP Tahoe 
     - Lets say cwnd = 8, it get duplicate ack at 3.
-	  - it will retransmit, set cwnd = 1 and Slowstart threshold = 4 
-	  - gets ack, changes cwnd to 2 then 3 then 4 assuming getting ack for them. This is congestion avoidance state. 
+    - it will retransmit, set cwnd = 1 and Slowstart threshold = 4 
+    - gets ack, changes cwnd to 2 then 3 then 4 assuming getting ack for them. This is congestion avoidance state. 
     - Slow start: Window starts at MSS, increases window by MSS for each Ack packet 
-	- Exponentially grow congestion window to sense network capacity
-	- TCP Tahoe Finite State Machine 
-	  - slow start 
-	  - congestion avoidance: cwnd+=MSS^2/cwnd 
-	- Fast Retransmit (Tahoe): Don't wait for timeout to retransmit a missing segment if you receive triple duplicate acks. Drop back to slow start state on a timeout. 
-	- Fast Recovery (Reno): Halve the congestion window (don't set it to 1) on triple duplicate ack. 
-	- In fast recovery state, inflate the cwnd as ack arrive, to keep data flowing. 
+      - Exponentially grow congestion window to sense network capacity
+      - TCP Tahoe Finite State Machine 
+	- slow start 
+	- congestion avoidance: cwnd+=MSS^2/cwnd 
+      - Fast Retransmit (Tahoe): Don't wait for timeout to retransmit a missing segment if you receive triple duplicate acks. Drop back to slow start state on a timeout. 
+    - Fast Recovery (Reno): Halve the congestion window (don't set it to 1) on triple duplicate ack. 
+    - In fast recovery state, inflate the cwnd as ack arrive, to keep data flowing. 
   - TCP Reno
-	- Major difference between Tahoe and Reno is fast recovery 
-	- Reno sets cwnd and SlowStartThreshold to cwnd/2 instead of 1 MSS on recieve of tripple duplicate and sets cwnd to 1 on timeout. This is called fast recovery
-	- Once ssthresh is reached, TCP changes from slow-start algorithm to the linear growth (congestion avoidance) algorithm.
+    - Major difference between Tahoe and Reno is fast recovery 
+    - Reno sets cwnd and SlowStartThreshold to cwnd/2 instead of 1 MSS on recieve of tripple duplicate and sets cwnd to 1 on timeout. This is called fast recovery
+    - Once ssthresh is reached, TCP changes from slow-start algorithm to the linear growth (congestion avoidance) algorithm.
   - TCP New Reno 
     - Improves retransmission during the fast-recovery phase of TCP Reno. During fast recovery, to keep the transmit window full, for every duplicate ACK that is returned, a new unsent packet from the end of the congestion window is sent. For every ACK that makes partial progress in the sequence space, the sender assumes that the ACK points to a new hole, and the next packet beyond the ACKed sequence number is sent. 
   - TCP BIC : BIC is used by default in Linux kernels 2.6.8 through 2.6.18.
     - BIC is optimized for high speed networks with high latency: so-called "long fat networks".
-	- If no packets are dropped, the congestion window (cwnd) increases in three distinct ways: binary search increase, additive increase, and slow start. In each step, one is used as an increment. cwnd = cwnd + (bic_inc / cwnd);
-	- If one or more packets are dropped, the cwnd is reduced using multiplicative decrease. This requires β, which is used in decreasing cwnd by (100×β)%. cwnd = cwnd * (1-β);
+    - If no packets are dropped, the congestion window (cwnd) increases in three distinct ways: binary search increase, additive increase, and slow start. In each step, one is used as an increment. cwnd = cwnd + (bic_inc / cwnd);
+    - If one or more packets are dropped, the cwnd is reduced using multiplicative decrease. This requires β, which is used in decreasing cwnd by (100×β)%. cwnd = cwnd * (1-β);
   - TCP CUBIC: CUBIC TCP is implemented and used by default in Linux kernels 2.6.19 and above, as well as Windows 10 and server 2016. As the name suggests, it modifies the linear window growth function to cubic. Main point: Approach the last packet loss point slowly and carefully but if there is no more packet loss here - begin ramp up to use possibly freed up resources. 
     - One of the major difference between CUBIC and standard TCP flavors is that it does not rely on the cadence of RTTs to increase the window size. CUBIC allows for more fairness between flows since the window growth is independent of RTT. 
 	- CUBIC increases its window to be real-time dependent, not RTT dependent like BIC. The calculation for cwnd (congestion window) is simpler than BIC, too. 
@@ -349,80 +349,80 @@ Congestion Control
 Common Protocols:
   - HTTP: Hypertext transfer protocol
     - text protocol, human readable
-	- Request/Response API
-	- Document Centric 
+    - Request/Response API
+    - Document Centric 
   - HTTP/1.0 
     - Open Connection 
-	- Issue GET
-	- Server closes connection after response 
-	- opening many connections is slow 
-	- Many transfers are small, doesn't let TCP window grow 
+    - Issue GET
+    - Server closes connection after response 
+    - opening many connections is slow 
+    - Many transfers are small, doesn't let TCP window grow 
   - HTTP/1.1 
-	- Added connection header for requests
-	  - keep-alive: tells the server "keep connection open, more requests coming".
-	  - close: Tells to close connection
-	  - Server can always ignore
-	- Added connection header for response 
-	  - keep-alive: tells the client "keep connection open, more requests coming".
-	  - close: Tells to close connection
-	- Keepalive header for responses, tells how long to keep the connection open. 
-	- Slow - multiple TCP connections to download resources and limit for num of connections per domain (6-8 connections) 
+    - Added connection header for requests
+    - keep-alive: tells the server "keep connection open, more requests coming".
+    - close: Tells to close connection
+    - Server can always ignore
+      - Added connection header for response 
+      - keep-alive: tells the client "keep connection open, more requests coming".
+      - close: Tells to close connection
+      - Keepalive header for responses, tells how long to keep the connection open. 
+      - Slow - multiple TCP connections to download resources and limit for num of connections per domain (6-8 connections) 
   - SPDY 
     - Google proposal, requests pipelining 
-	- remove redundant headers, allows header compression. Allows to send only Delta info of header. 
-	- Basis of HTTP/2.0 
-	- Binary instead of textual 
-	- multiplexed, not ordered and blocking 
-	- Single TCP connection which ones established, all the requests for that origin is done via that TCP connection. 
-	- Server Push - Server provides HTML file in response, along with CSS File. 
-	- Issue: single connection of HTTP/2 ends up being a bottleneck for data in a low network quality environment. Any drops on single connection slows the entire process down. 
+      - remove redundant headers, allows header compression. Allows to send only Delta info of header. 
+      - Basis of HTTP/2.0 
+      - Binary instead of textual 
+      - multiplexed, not ordered and blocking 
+      - Single TCP connection which ones established, all the requests for that origin is done via that TCP connection. 
+      - Server Push - Server provides HTML file in response, along with CSS File. 
+      - Issue: single connection of HTTP/2 ends up being a bottleneck for data in a low network quality environment. Any drops on single connection slows the entire process down. 
   - QUIC aka HTTP/3.0: Quick UDP Interaction Connections
     - Secure, no clear text version. 
-	- UDP based, sames good features of HTTP/2.0 like multiplexing, stream, server push, hearder compression etc 
-	- Uses user space instead of kernel level which allows quick iterations. 
-	- Quic manages the packet ordering part of stream. 
+    - UDP based, sames good features of HTTP/2.0 like multiplexing, stream, server push, hearder compression etc 
+    - Uses user space instead of kernel level which allows quick iterations. 
+    - Quic manages the packet ordering part of stream. 
 
   - Bit Torrent
     - Torrent file (.torrent) describes file to download.
-	- file broken into pieces, each with a SHA1 hash.
-	- Client find peers via Distributed Hash Tables
-	- Client connect via TCP/IP, exchanges metadata on what pieces they have
-	- Clients try to download rarest-piece-first 
-	- Client choke most peers, send data to P best peers. 
+    - file broken into pieces, each with a SHA1 hash.
+    - Client find peers via Distributed Hash Tables
+    - Client connect via TCP/IP, exchanges metadata on what pieces they have
+    - Clients try to download rarest-piece-first 
+    - Client choke most peers, send data to P best peers. 
 	
   - DNS : Domain Name System 
     - read only or most read only db 
-	- loose consistency 
-	- udp/tcp 53 
-	- udp size 512 byte message limit 
+    - loose consistency 
+    - udp/tcp 53 
+    - udp size 512 byte message limit 
     - dns name architecture, has . (root) at bottom, followed by TLD, followed by domain names, followed by Sub-domain names 
-	- dns query
-	  - recursive: ask the server to resolve the entire query. Generally Client to dns server, sometimes small dns server to google/cloudflare etc 
-	  - non-recursive: ask to resolve one step of query. Resolver to root or tld or designated name servers for domain. 
-	- DNS Message Structure 
-	  - Header
-	  - Question 
-	  - Answer (Empty in queries) 
-	  - Authority (Empty in queries) 
-	  - Additional (Empty in queries) 
-	- DNS Header 
-	  - 12 bytes ; first 2 bytes are ID; second 2 bytes are flags
-	- User Wireshark and Dig for better packet analysis
+    - dns query
+      - recursive: ask the server to resolve the entire query. Generally Client to dns server, sometimes small dns server to google/cloudflare etc 
+      - non-recursive: ask to resolve one step of query. Resolver to root or tld or designated name servers for domain. 
+    - DNS Message Structure 
+      - Header
+      - Question 
+      - Answer (Empty in queries) 
+      - Authority (Empty in queries) 
+      - Additional (Empty in queries) 
+    - DNS Header 
+      - 12 bytes ; first 2 bytes are ID; second 2 bytes are flags
+      - User Wireshark and Dig for better packet analysis
 
   - DHCP: Dynamic host configuration protocol 
     - Discover (client sends), offer(dhcp servers sends it), request(client select one of the dhcp server and sends request), ack(server accepts and creates a lease entry), release (client can release ip before lease expires). 
     - client has to renew lease	
-	- Garbage collection via lease expiration 
-	- udp port 67 (server) and 68 (client), client broadcast at 255.255.255.255
-	- L3 devices use relays to forward across links. 
+    - Garbage collection via lease expiration 
+    - udp port 67 (server) and 68 (client), client broadcast at 255.255.255.255
+    - L3 devices use relays to forward across links. 
 	
 	  
 Routing Principle:
   - Problem: How decide the path packet will take from A to B, does it take shortest path, least congested path, path dictated by Host or  Network or someone else ?
   - Types of routing
     - unicast 
-	- multipath 
-	- multicast 
+    - multipath 
+    - multicast 
   - Bellman Ford Routing Algorithm
     - Distance vector protocol which uses the minimum cost spanning-tree 
     - Assume Router know cost of link to each neighbor 
@@ -484,66 +484,66 @@ Network Security:
     - DDOS or DOS to prohibit communication. 
   - Network security needs:
     - Secrecy/confidentiality: No one can listen-in to communication, use encryption. 
-	- Integrity - Data is not being altered in transit. 
-	- Authentication - Confirm the identity of the other party. Signatures and certificates. 
+    - Integrity - Data is not being altered in transit. 
+    - Authentication - Confirm the identity of the other party. Signatures and certificates. 
   - Layer 2 Attacks 
     - Mac address table exhaustion to force traffic broadcast
-	- Rouge DHCP/DNS information 
-	- ARP Masquerade or ARP Poisoning 
+    - Rouge DHCP/DNS information 
+    - ARP Masquerade or ARP Poisoning 
   - Layer 3 Attacks 
     - ICMP redirect messages 
-	- BGP Hijacking using more specific prefix or Block hole traffic for a path, advertise someone else prefix etc 
+    - BGP Hijacking using more specific prefix or Block hole traffic for a path, advertise someone else prefix etc 
   - Denial of Service or Distributed DoS 
     - Something that prevents service to perform regularly by flooding it with random traffic
-	- Wireless 
-	  - using cordless phone to jam a wireless network 
-	  - Exploit Net Allocation Vector (NAV) to reserve net repeatedly for max num of seconds 
-	- Flood Ping / Smurf attack 
-	- Amplification attacks : ex EDNS can response with 40x response of query 
-	- TCP attacks 
-	  - syn attack, ack attack 
-	  - x-mas attack 
-	- IP Fragment flooding 
-	  - kernel must keep IP Fragments, flood it with bogus fragments to fill tables 
-	- Application layer attacks
-	  - DNS attack on TCP .. not in use much now 
-	  - SSL congestion flood 
+    - Wireless 
+      - using cordless phone to jam a wireless network 
+      - Exploit Net Allocation Vector (NAV) to reserve net repeatedly for max num of seconds 
+    - Flood Ping / Smurf attack 
+    - Amplification attacks : ex EDNS can response with 40x response of query 
+    - TCP attacks 
+      - syn attack, ack attack 
+      - x-mas attack 
+    - IP Fragment flooding 
+      - kernel must keep IP Fragments, flood it with bogus fragments to fill tables 
+      - Application layer attacks
+	- DNS attack on TCP .. not in use much now 
+        - SSL congestion flood 
   - Security Principle
     - Confidentiality, Integrity and Availability
-	  - Cryptography 
-	    - Set of mathematical principles and ideas for security communication 
-		- Helps with Confidentiality by encryption of data 
-		- Hashes, signatures and MACs to protect from tampering. Helps with Integrity
-		- Authenticity: certificate , MACs, signatures to confirm correct owner. 
-	  - Symmetric Encryption 
-	    - Uses a pre shared Key 
-		- same Key is used to encrypt/decrypt message. encrypted Message M is known as ciphertext
-		- Encrypt/Decrypt uses the same Key hence the name Symmetric Encryption 
-		- Ex: AES, Blowfish, DES, RC4 
-	  - Stream Ciphers and Block Ciphers 
-	    - Stream ciphers are pseudo-random pad and can be broken. Ex: 802.11 WEP was using stream cipher 
-		- Block cipher operate on fixed sized blocks and maps plaintext blocks to ciphertext blocks
-		- Ex AES and many other algorithms
-	  - Cipher Block Chaining (CBC) uses initialization vector for each message. 
-	  - Encryption provides confidentiality, for integrity you need a method to confirm message originated from correct source. 
-	    - Two integrity examples:
-		  - cryptographic hashes : no secrets required, anyone can hash, useful in storage. 
-		  - Message authentication Codes (MACs) : Generator has secret key for verify authenticity, useful in networks. 
-	- Public Key Cryptography 
-      - Can give public key freely, only someone with the private key can decrypt the encrypted message. 
-	  - encryption is randomized
-	  - ex: RSA, Rabin, ELGamal 
-	  - Transport Layer Security (TLS) 
-	    - Secure session layer on top of TCP/UDP 
-		- adds confidentiality, integrity and authenticity
-		- TLS session negotiate four ciphers 
-		  - cipher used for authentication of server and optionally client (RSA/DSS)
-		  - cipher used for key exchange 
-		  - cipher used for symmetric confidentiality
-		  - cipher used for integrity
-		- TLS Cipher negotiation 
-		  - Client -- supported ciphers & client random (Clear text) -> Server 
-		  - Server -- Chosen cipher & server random, certificate (clear text) -> Client 
-		  - client -- encrypted pre-master secret, encryption done with server public key -> Server  [Client/Server generate keys for symmetric confidentiality] 
-		  - Client -- Finish message, encrypted and MACed with symmetric keys generated with randoms and pre-master secret --> server 
-		  - Server -- finish message and MACed with symmetric keys generated with randoms and pre-master secret --> Client
+  - Cryptography 
+    - Set of mathematical principles and ideas for security communication 
+    - Helps with Confidentiality by encryption of data 
+    - Hashes, signatures and MACs to protect from tampering. Helps with Integrity
+    - Authenticity: certificate , MACs, signatures to confirm correct owner. 
+  - Symmetric Encryption 
+    - Uses a pre shared Key 
+    - same Key is used to encrypt/decrypt message. encrypted Message M is known as ciphertext
+    - Encrypt/Decrypt uses the same Key hence the name Symmetric Encryption 
+    - Ex: AES, Blowfish, DES, RC4 
+  - Stream Ciphers and Block Ciphers 
+    - Stream ciphers are pseudo-random pad and can be broken. Ex: 802.11 WEP was using stream cipher 
+    - Block cipher operate on fixed sized blocks and maps plaintext blocks to ciphertext blocks
+    - Ex AES and many other algorithms
+    - Cipher Block Chaining (CBC) uses initialization vector for each message. 
+    - Encryption provides confidentiality, for integrity you need a method to confirm message originated from correct source. 
+    - Two integrity examples:
+      - cryptographic hashes : no secrets required, anyone can hash, useful in storage. 
+      - Message authentication Codes (MACs) : Generator has secret key for verify authenticity, useful in networks. 
+  - Public Key Cryptography 
+    - Can give public key freely, only someone with the private key can decrypt the encrypted message. 
+    - encryption is randomized
+      - ex: RSA, Rabin, ELGamal 
+    - Transport Layer Security (TLS) 
+    - Secure session layer on top of TCP/UDP 
+      - adds confidentiality, integrity and authenticity
+    - TLS session negotiate four ciphers 
+      - cipher used for authentication of server and optionally client (RSA/DSS)
+      - cipher used for key exchange 
+      - cipher used for symmetric confidentiality
+      - cipher used for integrity
+    - TLS Cipher negotiation 
+      - Client -- supported ciphers & client random (Clear text) -> Server 
+      - Server -- Chosen cipher & server random, certificate (clear text) -> Client 
+      - client -- encrypted pre-master secret, encryption done with server public key -> Server  [Client/Server generate keys for symmetric confidentiality] 
+      - Client -- Finish message, encrypted and MACed with symmetric keys generated with randoms and pre-master secret --> server 
+      - Server -- finish message and MACed with symmetric keys generated with randoms and pre-master secret --> Client
