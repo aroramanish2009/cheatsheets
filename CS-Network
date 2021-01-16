@@ -547,3 +547,47 @@ Network Security:
       - client -- encrypted pre-master secret, encryption done with server public key -> Server  [Client/Server generate keys for symmetric confidentiality] 
       - Client -- Finish message, encrypted and MACed with symmetric keys generated with randoms and pre-master secret --> server 
       - Server -- finish message and MACed with symmetric keys generated with randoms and pre-master secret --> Client
+
+TLS:
+  - Enycrption protocol
+  - Processs handshake in which client/server ack eachother, verify eachother, establish encyrption algorithms they will use and agree on session keys.
+  - SSL was original protocol that was replaced by TLS. TLS handshakes are called SSL handshakes in the wild.
+  - TLS Handshake occur after TCP Handshake has completed
+  - TLS Handshake client/server process
+    - Specifiy version of TLS they will use.
+    - decide on which cipher suites they will use.
+    - authenticate server using server public key and SSL certificate signature
+    - generate session keys for symmetric encryption after handshake is complete
+
+TLS Handshake with RSA Key Exchange
+  - Client sends Hello, Cipher Suite and Client Random
+    - If server can't see this the supported cipher suite then it will send failure alert and close the connection.
+  - Server Hello, Server Random and SSL Certificate (Public Key) along with cipher suite
+    - Server will select highest supported TLS version.
+    - Server will select cipher suite from the list sent by client.
+    - server will also send the certificate of the server with the certificate chain.
+  - Authentication: Client Verifies the SSL Certificate Information
+  - The Premaster Secret: Client sends Pre-Master Key encrypted using the Server Public Key
+    - Server verifies Client Certificare (if required)
+    - Server decrypts Pre-Master Key using Private Key
+  - Session keys created: Both Client and Server generate "session keys" from client random, server random and premaster secret. They should arrive at the same result.
+  - Client/Server sends "finished" message using session key
+  - Secure symmetric encryption achieved: The handshake is completed, and communication continues using the session keys.
+
+TLS Handshake with EDH (ephemeral Deffi-Hellman)
+  - Client Hello: Client sends Hello, Cipher Suite and Client Random
+  - Server Hello + Server digital signature: Server Hello, Server Random and SSL Certificate (Public Key) along with cipher suite. In EDH, Server uses its private key to encrypt Client Random, Server Random and DH parameter. This Server digital signature is used to confirm Server ownership of public key from the SSL Certificate.
+  - Digital signature confirmed: Client decrypts the server's digital signature with the public key, verifying that the server controls the private key and is who it says it is. Client DH parameter: The client sends its DH parameter to the server.
+  - Client and server calculate the premaster secret: Unlike RSA where Client generates and sends pre-master secret to server. The Client/Server use the DH parameters to calculate matching premaster secret separately.
+  - Session Keys: Client/Server then create session keys from these pre-master secret.
+  - Client/Server sends "finished" message using session key
+  - Secure symmetric encryption achieved: The handshake is completed, and communication continues using the session keys.
+
+DH parameter in Epheneral Diffe-Hellman is calculated as follows:
+  - Lets say Server side DH Parameter is X, to calclute X, servers generates a random "G" and prime number "N"
+  - X = "G^t mod N" where t is a secret num that only server knows.
+  - This DH is sent from server to client
+  - Client generate its own DH parameter using the same values of "G" and "N" as server. Client side DH = "Y" = "G^s mod N"
+  - After exchanging these DH parameters, both Client and server can generate pre-master secret to create session keys
+  - Server Pre-Master : K = "Y ^ t mod N"
+  - Client Pre-Master : K = "X ^ s mod N"
