@@ -1,0 +1,1144 @@
+DevNet - A
+==========
+Tools Needed:
+  - git
+  - bash
+  - Python 2/3
+  - nodejs/npm
+  - postman 
+  - ngrok
+  - docker
+
+SDLC : Software Development Life Cycle (waterfall method) 
+  - Requirements & Analysis: Needs and Requirements based on real and current conditions. 
+    - Problem Definition 
+      - Who are the stakeholders?
+	  - What are their pressing challenges ?
+	  - How are challenges met today? What solution/processes are being used ? What does new solution need to replace or rethink ? 
+	  - What are their organizational/cultural constraints? Technical expertise? Appetite for risk? Tolerance of change?
+	  - What is the organization's current infrastructure, application ecology, and development culture like? 
+	  - What is the organization's current IT process, roadmap, headcount, role breakdown? Where are they with respect to web, mobile, cloud, DevOps, testing, monitoring, continuous delivery, and other modern paradigms for building, updating, and operating software? 
+	- Software details 
+	  - What features should the software have ?
+	  - how many users will the software need to support ?
+	  - User Experience requirements ?
+	  - Integration requirement to other softwares ?
+	  - Scale for this software ?
+	- Post Recon Assessment 
+	  - Is it possible to create software for these requirement and can it be on-budget ? 
+	  - Risks 
+	  - How will the software be tested ? 
+	  - When and how will it be delivered ?
+	- In Agile method, Minimum Viable Product "MVP" is defined at this stage. 
+  - Design: 
+    - Developers build prototypes as proof of concept using Software Requirement Specification (SRS) gathered in Requirement phase. 
+	- Design stage ends with High-Level Design (HLD) and Low Level Design (LLD) docs. HLD is 10,000 foot view of software whereas LLD provides details into protocols, classes etc being used. 
+	- In Agile, it is preferred to move design and delivery of the features of MVP instead of documentation. 
+  - Implementation 
+    - AKA coding Phase. 
+	- longest phase of the life cycle of software, all components are build based on the design phase doc. 
+	- Test plan or software is written during this phase. 
+	- More modern method, create automated testing from very early stage and test every code before committing. 
+  - Testing 
+    - Traditionally a test plan is created that tests integration, performance and security testing. 
+  - Deployment 
+    - Software is deployed in Production like environment, tested for features and stability before being released. 
+	- Modern methods employ continuous integration and delivery (CI/CD) with testing. 
+  - Maintenance 
+    - Support, bug fixes, improvements and new features are completed in this stage. 
+	- Agile moves into shorter sprints, delivering few features with each sprint and evolving software continuously. 
+	
+Popular Software Development Methodologies:
+  - Waterfall
+  - Agile 
+  - Lean 
+ 
+Waterfall software development
+  - The idea that each phase cannot overlap and must be completed before moving on remains the same. Documentation from each step is used as input for next step. 
+  - New requirements cannot be incorporated until the next waterfall iteration. This could be costly and might delay new features or critical bugs for Business. 
+  - Phases
+    - System Requirements
+	- Software Requirements
+	- Analysis
+	- Program Design
+	- Coding 
+	- Testing 
+	- Operations 
+
+Agile software development
+  - Agile Values 
+    - Individuals and interactions over processes and tools
+	- Working software over comprehensive documentation
+	- Customer collaboration over contract negotiation
+	- Responding to change over following a plan
+  - 12 Agile Principle 
+    - Customer Focus 
+	- Embrace change and adapt 
+	- Frequent delivivery of working software 
+	- Collaboration between Business & Developers
+	- Motivated Teams 
+	- Face to Face conversations 
+	- Working software 
+	- work at a sustainable pace 
+	- Agile Environment 
+	- Simplicity : the art of maximizing the amount of work done is essential.
+	- Self-organizing teams: The best architectures, requirements, and designs emerge from self-organizing teams.
+	- Continuous Improvement 
+  - Agile Methods
+    - Agile Scrum: Small, self-organizing teams that meet daily for short periods and work in iterative sprints, constantly adapting deliverables to meet changing requirements.
+	- Lean: Lean method emphasizes elimination of wasted effort in planning and execution, and reduction of programmer cognitive load.
+	- Extreme Programming: Focuses more on best-practices, and more deliberately addresses the specific kinds of quality-of-life issues (overwork, toil, dependency management, etc.) facing software development teams. Ideas used from XP are CI, Coding Standards etc 
+	- Feature-Driven Development (FDD): Argues software development should proceed in terms of an overall model, broken out, planned, designed, and built feature-by-feature. 
+  - Agile Scrum terms and concepts
+    - Sprints: It is a time-boxed iteration which is usually between two weeks and four weeks, but preferably as short as possible. When the sprint is over, the software should be working and deliverable, but that doesn't necessarily mean that it will be delivered; a sprint doesn't always lead to a release, but Agile requires the software to remain deliverable.
+	- Backlog: Product Owner creates backlog, new features can be added and PO can alter backlog based on Customer Feedback. 
+	- User stories: When a feature gets close to the top of the priority list, it gets broken down into smaller tasks called user stories. This user stories needs to small enough to be completed in one sprint or they need to be broken down further. Completing a user story requires completing all of the phases of the SDLC.
+	- Scrum Teams: Normally less than 10 people but large enough to handle User Stories per Sprint. Must have small 15 mins standups where each person states what was completed yesterday, whats for today and if anything is blocking. 
+
+Lean software development:
+  - Focused on minimizing waste and maximizing value to the customer.
+  - Lean Software Development 7 Principles
+    - Eliminate Waste : Waste is anything that does not add direct value to the customer.
+	- Amplify Learning 
+	- Decide as late as possible 
+	- Deliver as fast as possible
+	- Empower the team 
+	- Build integrity in 
+	- Optimize the whole 
+	
+Hands-on practice with Python development:
+  - python -v # version 
+  - which Python #directory where python command runs
+  - echo $PATH # your path env 
+  - python -m venv virtu_env # create a python virtual environment
+  - source virtu_env/bin/activate # Activates the virtual env 
+  - deactivate # to exit virtual env 
+  - pip freeze # Command that list installed python modules with version information 
+  - pip install -r requirements.txt # will install packages listed in requirements.txt
+  
+Software Design Patterns 
+  - 3 design categories 
+    - Creational: Patterns used to guide, simplify, and abstract software object creation at scale.
+	- Structural: Patterns describing reliable ways of using objects and classes for different kinds of software projects.
+	- Behavioral:  Patterns detailing how objects can communicate and work together to meet familiar challenges in software. 
+  - Observer design pattern
+    - It is a subscription notification design that lets objects (observers or subscribers) receive events when there are changes to an object (subject or publisher) they are observing.
+	- subscription mechanism
+	  - The subject must have the ability to store a list of all of its observers.
+	  - The subject must have methods to add and remove observers.
+	  - All observers must implement a callback to invoke when the publisher sends a notification, preferably using a standard interface to simplify matters for the publisher.
+	- Ex: Social Media Feeds 
+  - Model-View-Controller (MVC)
+    - User --User Input--> Controller  --Manipulated Data--> Model --Updated Data--> View --Display Data--> User 
+	- MVC abstracts code and responsibility into three different components: model, view, and controller.
+	  - Model: It is app data structure and is responsible for managing data, logic and rules of app. It gets input from Controller. 
+      - View: Visual representation (the presentation) of the data.
+	  - Controller: Middleman between the model and view. It takes in user input and manipulates it to fit the format for the model or view.
+	- MVC can be built in parallel with input and output info other 2 components. 
+
+Version control systems:
+  - benefits of version control
+    - Collaboration capabilities: Multiple people can work on a project at the same time without overriding eachother. 
+	- Accountability and visibility: The "who", "what", "when" and (hopefully) "why" of changes. 
+	- Isolation for a work environment: Build new features independently without affecting the existing software.
+	- Safety with backup and restore: Files can be reverted when a mistake is made.
+	- Work anywhere: Any device have copy of repo to work on. 
+  - 3 Types of version control 
+    - Local version control system 
+	- Centralized version control system, means ones downloaded the file is locked in central storage position. 
+	- Distributed version control system
+  - GIT 
+    - Distributed version control system, meaning each client has full copy of repo. 
+	- Git stores data as snapshots instead of differences. If the file does not change, git uses a reference link to the last snapshot in the system instead of taking a new and identical snapshot.
+	- 3 GIT Stages 
+	  - repository ( the .git directory)
+	  - working directory
+	  - staging area 
+	- 3 GIT States 
+	  - committed : version pushed to repo 
+	  - modified : file changed but not added to staging
+	  - staged : modification is ready to be committed in repo 
+    - Local vs Remote GIT Repo 
+	  - A local repository stored on the filesystem of a client machine, which is the same one on which the git commands are being executed.
+	  - A remote repository is stored somewhere other than the client machine, usually a server or repository hosting service. 
+	- GIT Branches 
+	  - New repo has automatically created branch Master 
+	  - Branching enables users to:
+	    - Work on multiple or single feature independently. 
+		- Experiment with code ideas 
+		- Keep production, development and feature code separate
+		- Keep Master line stable
+	  - Branches can be local or remote, and they can be deleted.
+	  - Merging a branch back to the parent branch is not mandatory.
+	  - Git branches are essentially just pointers to the appropriate commit.
+	- GitHub and other providers]
+	  - Git is an implementation of distributed version control and provides a command line interface, while GitHub is a service, that implements a repository hosting service with Git.
+	  - Github private repos visible only to designated teams
+	  - Gitlab and Bitbuckets are other providers. 
+	- Git commands
+	  - git config --global key value
+	    - git config --global key value
+		- git config --global key value
+	  - git init <NewProject> # Initiates new repo 
+	  - git clone <repository> [target directory] # Cloning a repo 
+	  - git clone does following
+	    - creats working directory with name of repo or specified name. 
+		- creates .git directory inside it
+		- Copies metadata of the repo to the newly created .git directory
+		- Creates working copy of the latest version of project files. 
+		- Duplicates the branch structure of the cloned, remote repository and enables tracking of changes made to each branch, locally and remotely
+	  - git status # View modified files in working directory
+	  - git diff # Compare changes between files 
+	    -  git diff <file path>
+		- git diff <commit id> <file path>
+		- git diff <file path 1> <file path 2> 
+	  - git add # Adding modified/new files from working directory to staging
+	  - git rm #Removing files from GIT 
+	  - git commit #Updating local repo with changes in staging area 
+	  - git push # Updating the remote repo 
+	  - git pull / git fetch # Updating local copy of repo 
+	  - git check -b <new_branch> # creates new branch and makes it working directory 
+	  - git branch -v #List available branches 
+	  - git branch -d <delete_branch> #Delete branch 
+
+Coding Basics:
+  - Clean Code 
+    - Easier to understand, more compact, and better-organized, which tends to result in code that works correctly (fewer bugs) and performs as required.
+	- Modular, easier to test using automated methods such as unit testing frameworks. 
+    - Standardized, easier to scan and check using automated tools like linters, grep etc 
+  - Methods and functions
+    - best-practices for determining whether a piece of code should be encapsulated: 
+      - Code that performs a discrete task, even if it happens only once, may be a candidate for encapsulation. Ex: compare 2 strings for length
+	  - Task code that is used more than once should probably be encapsulated. If you are copy same code in multiple places, it should be a method or function. 
+    - Arguments and parameters
+	  - Variables passed during function execution are called arguments. Function should be written to accept those variables. 
+	  - Parameters can be of any data type and each parameter in a method or function can have a different data type.
+	  - Parameters and arguments add flexibility to methods and functions.
+	- Return statements
+	  - Methods and functions perform tasks, and can also return a value.
+	- Methods vs. functions
+	  - The difference between methods and functions is that functions are standalone code blocks while methods are code blocks associated with an Object, typically for Object-Oriented programming.
+  - Modules
+    - They are a way to build independent and self-contained chunks of code that can be reused.
+	- Modules consists of a set of functions and typically contains an interface for other modules to integrate with.
+  - Classes
+    - In most OOP, classes are a means of bundling data and functionality. Each class declaration defines a new object type.
+	- Functions defined within a class are known as class methods. 
+	- Classes may have class variables and object variables, such that as a new class object is created, new class data members and object data members (variables) are created.
+	- A class may be instantiated (created) multiple times, and each with its own object-specific data attribute values. (Python classes also support class variables that are shared by all objects of a class.)
+	- Used as CLASS.METHOD
+  - Python Refresh 
+    - python -i # to access python interpreter 
+	- Basic Data Types You can use "type()" to  see data type 
+	  - int = No decimal integer ex -128, 0 , 45 
+	  - float = decimal or whole num 
+	  - bool = True/False 
+	  - str = Any string 
+	  - bytes = b"Cool \xf0\x9f\x98\x8e"
+	- Numeric Operators 
+	  - +, -, *, / 
+	  - // Floor divsion 
+	  - % Modulus (remainder) 
+	  - ** (Power or exponential) 
+	- string operators 
+	  - + concatenation 
+	  - * Multiplication 
+	- String Manipulation 
+	  - .format()
+	  - My name is {name}, and there's a {howmany} things I haven't done.".format(name="Alexander Hamilton", howmany="million")
+	  - .split() = "a b c".split(" ") -> ['a', 'b', 'c']
+	  - .join() = ",".join(['a', 'b', 'c']) -> 'a,b,c'
+	- Python code comments : Either use # or """ Comment """
+	- variables : values a program stores in computer memory
+	  - program can retrieve the variable value and use it in a calculation or other operation when needed.
+	  - To define a variable in Python, simply use the assign = operator to assign a value to the variable name. Ex: a = 3 
+	  - Variable names cannot start with number or conflict with language keyword
+	  - See PEP-8 (https://www.python.org/dev/peps/pep-0008/) for naming standards 
+	  - Python Unpacking : a, b, c = [1, 2, 3] = This will assign a = 1, b = 2 and c = 3
+	- Python Objects
+	  - Objects are purpose-built groupings of variables (called attributes) and functions that work together to do something useful.
+	  - To access the attributes (variables) or methods (functions) contained within an object, all you need to remember is that you use "." dot-syntax to do so. Putting a period (dot) after any object lets you access the attributes and methods available within the object.
+	  - Ex: a = 57 -> a.bit_length() -> 6 
+	  - dir(<object>) = Will list attributes and methods defined inside the object 
+	- Common Python Data Structures 
+	  - list = [1,2,3,a,b] = Ordered list of items, mutable (can be changed after created), items can be different data types, and it can contain duplicate items.
+	  - tuple = ('a', 1, 18.2) = Like list but immutable
+	  - dict = {"apples": 5, "pears": 2, "oranges": 9} = Ordered key-value pairs, keys don’t have to be same data type, values don’t have to be same data type. Keys are unique; must be immutable.
+	  - Python List 
+	    - Ordered list of items that are mutable 
+		- index starts at 0 
+		- You can 'append', 'clear', 'copy', 'count', 'extend', 'index', 'insert', 'pop', 'remove', 'reverse', 'sort'
+	  - Python Tuple 
+        - immutable
+        - index starts at 0 
+		- You can 'count', 'index'
+	  - Python Dictionaries 
+	    - Analogous to "hashes" in some other languages.
+		- data structure that stores simple key-value pairs.
+		- Values in a Python dictionary can be anything.
+		- key has to be immutable and hash-able. This means that you could use a tuple as a key (immutable), but not a list (mutable).
+		- Key is used as index 
+		- you can 'clear', 'copy', 'fromkeys', 'get', 'items', 'keys', 'pop', 'popitem', 'setdefault', 'update', 'values'
+	  - Python SET
+	    - A set is an unordered collection with no duplicate elements.
+		- you can 'add', 'clear', 'copy', 'difference', 'difference_update', 'discard', 'intersection', 'intersection_update', 'isdisjoint', 'issubset', 'issuperset', 'pop', 'remove', 'symmetric_difference', 'symmetric_difference_update', 'union', 'update'
+	- Python collections
+	  - "collection" module standard lib provide access to special cases data structures. 
+	  - ex: OrderedDict = dict subclass that remembers the order entries were added
+	  - ex: ChainMap = dict-like class for creating a single view of multiple mappings
+    - Python Loops 
+	  - A for loop iterates through a sequence or collection, essentially taking one item at a time and running the block of statements until all of the items have been iterated through (or you manually break out of the loop from within the code block).
+	  - Conditional loops (while loops in Python) evaluate an expression before each iteration of the loop. If the expression evaluates to True, the loop statements are executed. If the expression evaluates to False, the loop statements are not executed and the script continues with the first line after the loop block.
+	- Python script structure and execution
+	  - Interpreter works synchronously, it waits for I/O before moving to next line. 
+	  - script usually indicates that it is intended to be executed.
+	  - module, typically its contents are meant to be imported and used by another calling script.
+	  - "#!/usr/bin/env python" -> Tells Shell attempting to run the script what interpreter should be used to "execute" the script.
+	  - "Global" Variables: Every function and class within the module will have at least "read access" to these variables as they exist at the top-level "global" scope within a module.
+	  - *args (Non Keyword Arguments) and **kwargs (Keyword Arguments) in Python
+	    - Used as an argument when we are unsure about the number of arguments to pass in the functions.
+===============================
+def adder(*num):
+    sum = 0
+    
+    for n in num:
+        sum = sum + n
+
+    print("Sum:",sum)
+
+adder(3,5)
+adder(4,5,6,7)
+===============================
+        - Use **kwargs for passing keywork argument
+===============================
+def intro(**data):
+    print("\nData type of argument:",type(data))
+
+    for key, value in data.items():
+        print("{} is {}".format(key,value))
+
+intro(Firstname="gita", Lastname="Sharma", Age=22, Phone=1234567890)
+intro(Firstname="John", Lastname="ops", Email="johnwood@nomail.com", Country="Wakanda", Age=25, Phone=9876543210)
+===============================
+      - if __name__ == '__main__' # Python by default gives script name as "__main__", here we are telling interpreter that if you are executing the main the script then please run function named "main"
+    - Debugging basics
+	  - A stack trace shows the calling "stack" of statements all the way from the top-level script that is being executed down to the statement that has produced the error.
+	  - Debugging your code
+	    - Use print statements
+		- Use the Python interactive shell
+		- Use logging module with logging decorators 
+		- Use PDB (python debugger)
+	- Python CLASS 
+	  - Classes are often described as a 'blueprint' or 'template', from which 'instances' or 'objects' are then created. 
+	  - If an __init()__ method is defined in a class, it is called upon object instantiation (creation), with a special variable called self, and all variables passed at the time it is invoked.
+	  - Ex: Lets say Class Circle takes radius as variable 
+	  - invoking Circle twice would be : big_circle = Circle(100) and small_circle = Circle(10) 
+
+Coding Review:
+  - It is best to have reviewers who understand the purpose of the code so that they can give quality and relevant feedback. 
+  - goal of code reviews is to make sure that the final code:
+    - Easy to Read and Understand
+	- Follow Coding Best Practices
+	- Uses Correct formatting
+	- Free of bugs 
+	- has proper comments and documentation
+  - Types of code reviews
+    - Formal code review : Meeting in person, going over each line of code. Details are discussed/documented and then worked upon as agreed. 
+	- Change-based code review: also known as a tool-assisted code review, reviews code that was changed as a result of a bug, user story, feature, commit, etc.
+	- over-the-shoulder code review: With this method, if the fix is not difficult, the code may be changed on the spot so that the reviewer can re-review it on the spot. Performed during live incidents as approved by Team lead. 
+	- Email pass-around : piggybacks on the automatic emails sent by source code management systems when a checkin is made.
+
+Code Testing: 
+  - 2 Software testing categories
+    - Functional testing seeks to determine whether software works right: whether it behaves as intended in a logical sense, from the lowest levels of detail examined with Unit Testing to higher levels of complexity explored in Integration Testing.
+	- Ex: Lib and components are working correctly, integration is working as intended. 
+	- Non-functional testing examines usability, performance, security, resiliency, compliance (with standards and regulations, for example), localization, and many other issues, with an eye to finding out if software is fit for purpose, provides intended value, and minimizes risk.
+  - Unit Testing
+    - Detailed functional testing of small pieces of code (lines, blocks, functions, classes, and other components in isolation) is usually called Unit Testing.
+	- Python test frameworks
+	  - unittest — A framework included in Python by default that enables creation of test collections as methods extending a default TestCase class. A testcase is created by subclassing unittest.TestCase. 
+===============================
+import unittest
+
+class TestStringMethods(unittest.TestCase):
+
+    def test_upper(self):
+        self.assertEqual('foo'.upper(), 'FOO')
+
+    def test_isupper(self):
+        self.assertTrue('FOO'.isupper())
+        self.assertFalse('Foo'.isupper())
+
+    def test_split(self):
+        s = 'hello world'
+        self.assertEqual(s.split(), ['hello', 'world'])
+        # check that s.split fails when the separator is not a string
+        with self.assertRaises(TypeError):
+            s.split(2)
+
+if __name__ == '__main__':
+    unittest.main()
+
+Result verbose:
+test_isupper (__main__.TestStringMethods) ... ok
+test_split (__main__.TestStringMethods) ... ok
+test_upper (__main__.TestStringMethods) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.001s
+
+OK
+===============================
+	  - PyTest can run unittest tests without modification, but also simplifies testing by letting coders build tests as simple functions rather than class methods. Installation: pip install pytest
+	  - PyTest automatically executes any scripts that start with test_ or end with _test.py, and within those scripts, automatically executes any functions beginning with 'test_' or 'tests_'. 
+===============================
+# in file tests_mytest.py
+import pytest
+
+def add5(v):
+    myval = v + 5
+    return myval
+
+def tests_add5():
+    r = add5(1)
+    assert r == 6
+    r = add5(5)
+    assert r == 10
+===============================
+  - Integration testing
+    - Integration testing makes sure that all of those individual units you’ve been building fit together properly to make a complete application.
+  - Test should be run before any changes are made for the start, whenever significant changes are made and before closing for the day. 
+  - If you’re using Continuous Integration, any errors you find must be corrected before you do anything else.
+  - Test-Driven Development (TDD)
+    - Building small, simple unit and integration tests around small bits of code helps us ensure that units are fit for purpose and Catch bugs locally (such as at the unit level) and fix them early. 
+	- 5 Step TDD repeating process:
+	  - Create a new test (or add to existing) based on requirement of the unit or application. 
+	  - Run tests to see if any fail for unexpected reasons. (expected failures are accepted) 
+	  - Write application code to pass the new test
+	  - Run tests to see if any fail: If they do, correct the application code and try again.
+	  - Refactor and improve application code
+
+Understanding Data Format 
+  - Parsing XML, JSON, or YAML is a frequent requirement of interacting with REST interfaces. An oft-encountered pattern is:
+    - Auth using POST user/pass to retrieve time sensitive token or use token
+	- Execute GET to retrieve resource in XML, JSON or YAML output format 
+	- Modify the returned XML, JSON, or YAML.
+	- Execute a POST (or PUT) to the same endpoint (again, authenticating as required) to change the state of the resource, again requesting XML, JSON, or YAML as the output format and interpreting it as needed to determine if the operation was successful.
+  - XML 
+    - Extensible Markup Language (XML), is a generic methodology for wrapping textual data in symmetrical tags to indicate semantics.
+	- XML tag names are user-defined. Best-practice is to pick tag names that clearly express the meaning of data elements, their relationships, and hierarchy.
+	- When XML is consumed by API, documentation is provided by API Provider. 
+	- XML prologue : the first line in an XML file : <?xml version="1.0" encoding="UTF-8"?>
+	- XML Comment: <!-- This is an XML comment. It can go anywhere -->
+	- XML attributes : you can embed attributes within tags to convey additional information. Ex below: 
+=============================
+<vms>
+  <vm vmid="0101af9811012" type="t1.nano" />
+  <vm vmid="0102bg8908023" type="t1.micro"/>
+</vms>
+=============================
+    - Attribute values must always be included in single or double quotes. An element may have multiple attributes, but only one attribute with a specific name.
+	- XML namespaces: Some XML messages and documents must incorporate a reference to specific namespaces to specify particular tagnames and how they should be used in various contexts. Namespaces are defined by the IETF and other internet authorities, by organizations, and other entities, and their schema are typically hosted as public documents on the web. 
+	- XML namespace example:
+=============================
+NETCONF XML schema:
+<rpc message-id="101" xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+  <kill-session>
+    <session-id>4</session-id>
+  </kill-session>
+</rpc>
+=============================
+  - JSON
+    - JavaScript Object Notation, is a data format derived from the way complex object literals are written in JavaScript (which is in turn, similar to how object literals are written in Python).
+	- JSON basic data types
+	  - numbers
+	  - strings
+	  - boolean
+	  - nulls
+	- JSON objects: individual objects in JSON comprise key/value pairs, which may be surrounded by braces. 
+	- JSON does not support any kind of standard method for including unparsed comments in code.
+	- Whitespace in JSON isn't significant, and files can be indented using tabs or spaces as preferred, or not at all.
+  - YAML: "YAML Ain't Markup Language," is a superset of JSON designed for even easier human readability.
+    - YAML file structure: conventionally open with three dashes (--- alone on a line) and end with three dots (... likewise).
+    - YAML data types
+	  - Same as JSON 
+	- String values in YAML are often left unquoted. Quotes are only required when strings contain characters that have meaning in YAML.
+	- YMAL indentation: Items indented below a label are "members" of that labeled element. The indentation amount is user defined. 
+	- YMAL Long strings : Use > or | : The greater than (>) indicator gives us the folding syntax (No Line breaks), where the pipe (|) does not.
+	- YMAL Comment: # this is a comment
+  - Parsing and serializing
+    - Parsing means analyzing a message, breaking it into its component parts, and understanding their purposes in context.
+	- Serializing: To communicate information with a REST interface, for example, you may be called upon to take locally-stored data (e.g., data stored in Python dictionaries) and output this as equivalent JSON, YAML, or XML in string form for presentation to the remote resource.
+  - Parsing XML in Python
+    - Python's xml.etree.ElementTree module is used to do the parse.
+	- "fromstring" method, which parses XML in a string, rather than a file.
+  - Parsing JSON in Python
+    - When interacting with REST interfaces:
+	  - Authenticate using POST. Normally with user/pass with a Token
+	  - Execute a GET request to a given endpoint (authenticating as required) to retrieve the state of a resource, requesting JSON as the output format.
+	  - Modify the returned JSON.
+	  - Execute a POST (or PUT) to the same endpoint (again, authenticating as required) to change the state of the resource, again requesting JSON as the output format and interpreting it as needed to determine whether the operation was successful.
+	- Python JSON lib can be installed using PIP 
+  - Parsing YAML with Python
+    - Install pyYAML and import YAML into your code.
+	- Use similar methons to load/dump the content as needed. More details in module documentation. 
+
+Understanding and Using API
+===========================
+API:
+  - An Application Programming Interface (API) defines the ways users, developers, and other applications can interact with an application's components.
+  - Basically backend complexity is hidden behind this interface. 
+  - API Use Cases 
+    - Automation tasks: Build a script that performs your manual tasks automatically and programmatically.
+	- Data integration: An application can consume or react to data provided by another application.
+	- Functionality: An application can integrate another application's functionality into its product.
+
+API Design Styles:
+  - Synchronous APIs: Synchronous APIs respond to a request directly, usually providing data (or another appropriate response) immediately.
+    - APIs are usually designed to be synchronous when the data for the request is readily available, such as when the data is stored in a database or in internal memory.
+	- Synchronous APIs enable the application to receive data immediately.
+	- Works well when design correctly, bad design can result in bottleneck as applications wait for response.
+  - Asynchronous APIs: Asynchronous APIs provide a response to signify that the request has been received, but the response won't have any actual data. The server processes the request, which may take time, and sends a notification or triggers a callback with the data after the request has been processed. The client can then act on that returned data.
+    - APIs are usually designed to be asynchronous when the request is an action that takes some time for the server to process, or if the data isn't readily available.
+	- Asynchronous APIs enable the application to continue execution without being blocked for the amount of time it takes for the server to process the request.
+
+API architectural Styles: 
+  - Three most popular types of API architectural styles: RPC, SOAP, and REST.
+  - Remote Procedure call (RPC)
+    - Request-Respose model that enables an application (acting as a client) to make a procedure call to another application (acting as a server).
+	- RPC is an API style that can be applied to different transport protocols. Example implementations include:
+	  - xml-rpc
+	  - json-rpc 
+	  - NFS 
+  - Simple Object Access Protocol (SOAP) 
+    - Messaging protocol for communicating between applications that may be on different platforms or built with different programming languages.
+	- SOAP can be used over any protocol, including HTTP, SMTP, TCP, UDP, or JMS.
+	- SOAP messages : XML document that can contain four elements:
+	  - Envelope
+	  - Header
+	  - Body
+	  - Fault 
+  - REpresentational State Transfer (REST)
+    - Six constraints applied to elements within the REST architecture, when applied to any protocol, it is addressed as RESTful:
+	  - Client-Server: Client and Server should be independent of each other. 
+	  - Stateless: Requests from the client to the server must contain all of the information the server needs to make the request. The server cannot contain session states.
+	  - Cache : Responses from the server must state whether the response is cacheable or non-cacheable. If cacheable, client should be able reuse data for further requests.
+	  - Uniform Interface : The interface between the client and the server must adhere to these four principles:
+	    - Identification of resources: A resource must be identified in the request as the individual object that the server will access and manipulate. Ex: request to change IP of interface, interface must be given in information. 
+		- Manipulation of resources through representations:  The client receives a representation of the resource from the server. This representation must contain enough data or metadata for the client to be able to manipulate the resource. Ex: GET means that you want to retrieve data about the URI identified resource. You can describe an operation with a HTTP method and an URI.
+		- Self-descriptive messages: Each message must contain all of the information for the recipient to process the message. Ex: protocol type, data format of message etc 
+		- Hypermedia as the engine of application state: The data sent by the server must include additional actions and resources available for the client to access supplemental information about the resource.
+	  - Layered System: The system is made up of different hierarchical layers in which each layer provides services only to the layer above it.
+	  - Code-on-Demand (optional):  This constraint is optional, and references the fact that information returned by a REST service can include executable code (e.g., javascript) or links to such code, intended to usefully extend client functionality. Not a good idea to execute code sent by server hence optional. 
+
+Introduction to RESTAPIs: 
+  - REST web service APIs: REST API is a programming interface that communicates over HTTP while adhering to the principles of the REST architectural style.
+  - REST API requests: 
+    - These requests are essentially HTTP requests that follow the REST principles. 
+	- REST API requests are made up of 4 major components:
+	- Uniform Resource Identifier (URI): AKA Uniform Resource Locater (URL) : identifies which resource the client wants to manipulate.
+	  - A URI is essentially the same format as the URL you use in a browser to go to a webpage. It contains Scheme, Authority, path and query.
+	  - Format: scheme:[//authority][/path][?query] - Ex: http://localhost:8080/v1/books/?q=cisco
+	  - scheme = http or https 
+	  - Authority = Host:Port 
+	  - Path = resource path that represents the location of the resource, the data or object, to be manipulated on the server.
+	  - Query = (optional) It provides additional details for scope, for filtering, or to clarify a request. If the query is present, it is preceded with a question mark ( ? ). There isn't a specific syntax for query parameters, but it is typically defined as a set of key-value pairs that are separated by an ampersand ( & ). For example:http://example.com/update/person?id=42&email=person%40example.com
+	- HTTP Method for REST API. The suggested mapping for HTTP Methods looks like this:
+	  - POST : Create : Create a new object or resource
+	  - GET : Read : Retrieve resource details from the system 
+	  - PUT : Update/Replace 
+	  - PATCH : Partial Update 
+	  - DELETE : Delete/Remove resource
+	- Header : REST APIs use the standard HTTP header format to communicate additional information between the client and the server, but this additional information is optional.
+	  - Two types : Request headers (Additional info that doesn't relate to content of message .. for ex: Auth Token) and Entity headers (additional information that describes the content of the body of the message. ex: content-type) 
+	- Body : It contains the data pertaining to the resource that the client wants to manipulate. REST API requests that use the HTTP method POST, PUT, and PATCH typically include a body.
+
+  - REST API responses: 
+    - REST API responses are essentially HTTP responses as result of Client's HTTP Request. 
+	- REST API responses are similar to the requests, but are made up of 3 major components:
+	  - HTTP Status: REST APIs use the standard HTTP status codes in the response to inform the client whether the request was successful or unsuccessful. Common status codes: https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
+        - 1xx -- Informational
+		- 2xx -- Success
+		- 3xx -- Redirection
+		- 4xx -- Client Error
+		- 5xx -- Server Error
+	  - Header: Just like the request, the response's header also uses the standard HTTP header format and is also optional.
+	    - 2 Types 
+		  - Response headers: Contain additional information that doesn't relate to the content of the message. Ex: Set-Cookie or Cache-Control 
+		  - Entity headers: additional information that describes the content of the body of the message. Ex: Content-Type, Content-Encoding etc 
+	  - Body: Data that the client requested in the REST API request. If the REST API request was unsuccessful, the body may provide additional information about the issue or an action that needs to be taken for the request to be successful.
+	    - Response pagination : Some APIs, such as a search API, may need to send a huge amount of data in the response. In order to reduce the bandwidth usage on the network, these APIs will paginate the response data. No standard for pagination, look at documentation for API in regards to chunk size etc. 
+		- Compressed response data: When the server needs to send very large amounts of data that cannot be paginated, compressed data is another way to reduce the bandwidth. This data compression can be requested by the client through the API request itself. To request a data compression, the request must add the Accept-Encoding field to the request header. 
+  
+  - Using sequence diagrams with REST API
+    - Sequence Diagrams are used to explain a sequence of exchanges or events. They provide a scenario of an ordered set of events. They are also referred to as event diagrams.
+	- Formalized sequence diagrams are closely linked to and are considered a subset of a standardized modeling system known as UML - Unified Modeling Language. Used to standardized and explain user interfaces, class definitions and objects, and interaction behavior.
+	- sequence diagrams are great in explaining the API synchronous and asynchronous interaction with the API subsystem. 
+
+REST API authentication:
+  - Authentication is required for security reasons. Without Auth, a REST API permits anyone to access the features and system services that have been exposed through the interface.
+  - Authentication vs. Authorization
+    - Authentication: Act of verifying the user's identity. The user is proving that they are who they say they are. Like Passport, DL etc 
+	- Authorization: Proving that User have the permissions to perform the requested action on that resource. Ex: RFID to enter specific area. 
+  - Authentication mechanisms
+    - Basic Authentication: Basic Auth, uses the standard Basic HTTP authentication scheme. Basic Auth transmits credentials as username/password pairs separated with a colon ( : ) and encoded using Base64. In REST API, it is provided in Header. Insure when used with HTTP, HTTPS helps encrypt the user/pass. 
+	- Bearer authentication: AKA Token Authentication, uses the standard Bearer HTTP authentication scheme. Typically used with OAuth or SSO where a token string is generated by an authentication server. 
+	- API Key: AKA API Token, is a unique alphanumeric string generated by the server and assigned to a user. To obtain their unique API key, the user typically logs into a portal using their credentials. This key is usually assigned once and will not be regenerated. All REST API requests for this user must provide the assigned API key as the form of authentication. Only Secure when used with HTTPS. 
+  - Authorization mechanisms:
+    - Open Authorization, also known as OAuth, combines authentication with authorization.
+	- OAuth 2.0 authorization framework enables a third-party application to obtain limited access to an HTTP service, either on behalf of a resource owner by orchestrating an approval interaction between the resource owner and the HTTP service, or by allowing the third-party application to obtain access on its own behalf.
+
+REST API Lab:
+  - You can use "requests" or "urllib" python packages to make Method calls to REST API. 
+
+API Rate Limits:
+  - Rate limiting helps:
+    - avoid a server overload from too many requests at once
+	- provide better service and response time to all users
+	- protect against a denial-of-service (DoS) attack
+  - Common Rate limit algorithms
+    - Leaky bucket: All incoming requests into a request queue in the order in which they were received. The incoming requests can come in at any rate, but the server will process the requests from the queue at a fixed rate. If the request queue is full, the request is rejected. Client should be able handle delayed response or rejected requests. 
+	- Token bucket: Algorithm gives each user a defined number of tokens they can use within a certain increment of time, and those tokens accumulate until they're used. Client request is allowed only if Token is present, if token present then request is accepted and token is removed. All requests made before token replenishment will be rejected. Once the tokens are replenished, the user can make requests again.
+	- Fixed window counter: Algorithm is similar to the token bucket, except for two major differences: first, it uses a counter rather than a collection of tokens, and second, the counter cannot be accumulated. 
+	- Sliding window counter: Algorithm allows a fixed number of requests to be made in a set duration of time. This duration of time is not a fixed window and the counter is not replenished when the window begins again. For example, if the rate is five requests per minute, when the server receives a new request, it checks how many requests have been made in the last 60 seconds. If five requests have already been made, then the new request will be rejected.
+  - Knowing the rate limit:
+    - API Documentation provide the rate limits and unit of time. 
+	- API response header also contains details about the rate limit. 
+	- Commonly used API rate limit key-value are:
+	  - X-RateLimit-Limit: The maximum number of requests that can be made in a specified unit of time
+	  - X-RateLimit-Remaining: The number of requests remaining that the requester can make in the current rate limit window
+	  - X-RateLimit-Reset: The time the rate limit window will reset
+  - Exceeding the rate limit:
+    - Server rejects new requests and sends back meaningful HTTP response. No clear standard, normally gets 429:Too Many Requests or 403 or response saying "rate limit exceeded". 
+
+Working with Webhooks:
+  - What is a webhook? : A webhook is an HTTP callback, or an HTTP POST, to a specified URL that notifies your application when a particular activity or “event” has occurred in one of your resources on the platform.
+  - Webhook provider basically provide information of event firing. 
+  - Webhook are more efficient when compared to polling mechanism. 
+  - Webhook are real time whereas polling happens at fixed intervals.
+  - Webhooks are also known as reverse APIs, client subscribe to webhook server and during registration process, the application provides a URI to be called by the server when event occurs. 
+  - Ex: Github/Jenkins webhook, Oxidized to Slack webhook etc 
+  - Using Webhook 
+    - Requirements for consuming webhook: 
+	  - The application must be running at all times to receive HTTP POST requests.
+	  - The application must register a URI on the webhook provider so the provider knows where to send a notification when target events occur.
+
+Troubleshooting REST API: 
+  - Common Client side error:
+    - Is the URI correct?
+	- Has this request worked before?
+	- Reachability issues 
+	- Invalid Certificates 
+  - Common Server side errors:
+    - Is the API server functioning? (reachable and listening at correct port)
+	- API usage documented correctly?
+  - Error codes for REST API 
+    - https://tools.ietf.org/html/rfc7231 provides codes information ex: 200 == success etc 
+
+Application deployment and security
+===================================
+Deployment environments:
+  - Large organizations use a four-tier structure: development, testing, staging, and production.
+  - Development environment:
+    - Mocks production environment and test data. 
+	- Each developer has their own dev environment.
+  - Testing Environment:
+    - Once you believe your code is finished, you may move on to a second environment that has been set aside for testing the code, though when working on small projects, the development and testing environments are often combined.
+	- Automated testing is conducted using tools such as Jenkins, CircleCI, or Travis CI, as well as integration with a version control system, and is shared among the entire team.
+	- May include code review tools such as Gerrit. 
+  - Staging Environment:
+    - Staging should be as close as possible to the actual production environment, so that the code can undergo final acceptance testing in a realistic environment.
+  - Production environment:
+    - Tested, Error free code is deployed for end user access in customer facing environment. 
+	- This environment is sized and constructed to handle expected traffic and surges. 
+
+Deployment models:
+  - Bare metal
+  - Virtual Machines 
+  - Container-based infrastructure
+  - Serverless computing
+  
+Types of infrastructure:
+  - On-premises
+  - Private Cloud : vmware, openstack, K8 etc 
+  - Public Cloud 
+  - Hybrid Cloud 
+  - Edge Cloud 
+  
+Containerize an Application:
+  - Docker: Wraps Namespaces, control groups (cgroups) and union file systems to create containers. 
+  - Container workflow 
+    - create new image using "docker build" or pull existing image using "docker pull" from registry. 
+	- Run using "docker run"
+	- Docker daemon check if it has local copy of container otherwise pull from registry. 
+	- Daemon creats container based on image and executes the requested command.
+  - Creating container image using Dockerfile:
+    - Simple text file called dockerfile that defines steps "docker build" uses to create an image. 
+	- Most Simple Dockerfile: FROM ubuntu and build using "docker build -t myubuntu ." 
+  - Common Docker Commands
+    - Build container named test-build in directory with Dockerfile "sudo docker build -t test-build ."
+    - Start Docker container locally "sudo docker run -d -P my-container-name test-build" #"-d" means detach (run in background) and -P to expose port 
+	- "sudo docker ps" List running containers 
+	- "sudo docker exec -it my-container-name /bin/sh" # shell into my-container-name container cli 
+
+Introduction to CI/CD
+  - Continuous Integration
+    - Continuous Integration process provides a number of benefits, the pipeline might be set up to perform these tasks:
+	  - Code Compilation
+	  - Unit test execution 
+	  - static code analysis 
+	  - integration testing 
+	  - packaging and versioning 
+	  - Publishing the version package to Docker Hub or other package repositories
+  - Continuous Delivery
+    - Continuous Delivery is the process of performing development in sprints that are short enough that the code is always in a deployable state.
+	- Note that Continuous Delivery doesn’t mean you DO deploy constantly — that’s Continuous Deployment. Continuous Delivery ensures that you always have a version you can deploy.
+  - Continuous Deployment
+    - Once changes are made, tested, integrated with the main branch, and tested again, they are deployed to production in an automated way.
+	- Continuous Deployment is a special case of Continuous Delivery, in which every build that gets marked as ready for production gets deployed. Some prefer human push button before approval process. 
+  - CI/CD Basic Process
+    - CI 
+	  - Dev write code -> commit to repo -> automatically build code -> if error, go back to Dev, if not -> Run Automated Testing 
+	- Human Approve 
+	- CD (continuous delivery): Happens if Automated testing Pass in CI 
+	  - deploy to staging -> run QA test -> if error,back to Dev, if no error -> Human press button to -> Continuous Deployment to Production. 
+  - Way to preventing impact to users
+    - Rolling upgrades: Periodically rolled out. 
+	- Canary Pipeline: new version is rolled out to a subset of users. If these users experience problems, the changes can be easily rolled back. If these users don't experience problems, the changes are rolled out to the rest of production.
+	- Blue-Green deployment: An entirely new environment is created with the new code on it, but the old environment is held in reserve. If users on the new environment experience problems, traffic can be diverted back to the original environment.	
+  - CI/CD benefits
+    - Integration with agile methodologies: CI/CD enables that with every commit a version of the “deliver a working version of the software” concept.
+	- Shorter Mean Time To Resolution (MTTR): Smaller changes makes it easier to isolate faults which can be rolled back or fixed quickly. 
+	- Automated deployment: Easier implementation of Blue/Green deployment. 
+	- Less disruptive feature releases: Small incremental changes. Less large changes for Customer. 
+	- Improved quality and time to production. 
+  - Jenkins Build Job
+    - Project aka Job: Fundamental unit of Jenkins. Job can do all sorts of things like getting code from repo, build app using script or running it on servers. Ex: Creating New Jenkins Job to pull code from git and build app with script: 
+      - click "create new job"
+      - select "freestyle" project, scroll down to code mgmt to select git and provide url for code. 
+      - choose execute shell and enter "./runmybuildscript.sh". This will execute the build script. 
+	  - Click "Build Now" on left pane to run the Job 
+	  - Click on "Console Output" on Build number to see what Jenkins Job is executing 
+  - Jenkins Pipeline 
+    - Pipeline has stages that run serially, if anyone of them fails, the pipeline stops. 
+	- Click "Build Now" on left pane to run the Pipeline
+	- GUI will show Pipeline errors at stages if any happens, logs can be viewed by hovering over the mouse
+
+Application Security 
+====================
+Securing the data:
+  - Encrypt your Data 
+    - two-way encryption: Use a Key to encrypt and decrypt data if needed
+    - one-way encryption: Get hashed out data that can be compared in future. Data cannot be decrypted for other functions
+  - Address your Software vulnerabilities
+    - Use code scanning tools like Bandit, Brakeman, visualcodegrepper to scan code for well known issues. 
+	- Keep eye on latest vulnerabilities and patch them on time. 
+  - Storing too much data: Avoid storing data that you have no use. 
+  - Transporting Data
+    - Use encryption on network to avoid any MIM. Use SSH, TLS, VPN etc to encrypt traffic before putting it on wire. 
+
+Common Application Security vulnerabilities:
+  - SQL Injection: Inserting malicious SQL statements into entry fields for execution
+  - Either use framework that by default filters out sql injections or put in checks to clean user inputs
+  - Use tools like SQLmap or SQL ninja to identify code vulnerabilities
+  - Common tools against SQL Injections
+    - Database Firewalls: Filters OR and UNION etc 
+	- Use prepared statements: Parameterized queries force the developer to first define all the SQL code, and then pass in each parameter to the query later. This coding style allows the database to distinguish between code and data, regardless of what user input is supplied.
+	- Use Stored Procedures:  The difference between prepared statements and stored procedures is that the SQL code for a stored procedure is defined and stored in the database itself, and then called from the application.
+	- Whitelist Input Validation: Input validation is also recommended as a secondary defense in ALL cases.
+	- Escaping all user-supplied input: Input validation is probably a better choice as this methodology is frail compared to other defenses and we cannot guarantee it will prevent all SQL Injection in all situations.
+	- Least privilege: To minimize the potential damage of a successful SQL injection attack, you should minimize the privileges assigned to every database account in your environment. Do not assign DBA or admin type access rights to your application accounts.
+	- Multiple database users : Create different accounts per app with least privilege access to their db only. Better to have multiple users to separate out read/write access. 
+
+Open Web Application Security Project (OWASP)
+  - Provides education, tools, and other resources to help developers avoid some of the most common security problems in web-based applications. 
+  - Tools such as OWASP ZAP (Zed Attack Proxy), OWASP Dependency Check for known vulnerabilities, OWASP DefectDojo for testing etc 
+  - OWASP Mode Security Rule Set for WAF 
+  - OWASP CSRFGuard to prevent Cross-Site Request Forgery
+  - OWASP App security verification standard, OWASP Top Ten etc vulnerabilities documentation. 
+
+OWASP Top Ten Issues
+  - SQL Injections, use mitigations described earlier
+  - Cross-site scripting (CSS): When user-submitted content that hasn’t been sanitized is displayed to other users. Use tools like OWASP Java HTML Sanitizer, Python Bleach 
+  - Cross Site Request Forgery (CSRF): AKA Sea Surf, the attacker intends for the user to execute the attacker’s code, usually without even knowing it. The difference is that CSRF attacks are typically aimed not at the target site, but rather at a different site — one into which the user has already authenticated. Use CSRF Token to prevent this attack. 
+  - Broken Authentication: Mitigate with no default passwords, require multi-factor, incremental wait time for failed passwords
+  - Sensitive Data Exposure: Leak of password or personal data. Use encryption to store data.
+  - XML External Entities (XXE)
+  - Broken Access Control: Providing more privileges to regular users than required
+  - Security Misconfiguration
+  - Insufficient Logging & Monitoring
+  - Using Components with Known Vulnerabilities
+  - Insecure Deserialization: For example, if a users’ information is passed around as a JSON object that includes their access privileges, they could conceivably give themselves admin privileges by changing the content of that object. Because objects can include executable code, this exploit can be particularly dangerous, even if it is not necessarily simple to exploit.
+  
+Password Systems:
+  - Simple plain text password aka Bad Bad 
+  - Password Hashing: Store the one way hash and compare going forward
+  - Salted password: To guarantee the uniqueness of the passwords, increase their complexity, and prevent password attacks even when the inputs are the same, a salt -- random data -- is added to the input of a hash function.
+  - Single Factor Auth (only user/pass) vs Two factor Auth (user/pass + mobile App etc ) vs Multi-Factor Authentication (method of computer access control in which a user is only granted access after successfully presenting several separate pieces of evidence to an authentication mechanism) 
+  
+Infrastructure and automation
+=============================
+  - Why : Speed, Repeatability and ability to work at scale with reduced risk 
+  - Chaos Engineering principles
+    - Minimize the Blast Radius 
+	- self heal broken systems 
+	- Monitor events for RCA 
+  - Modern application architectures are increasingly distributed: built up out of small and relatively light components that are
+  sometimes called microservices.
+  - Benefits of microservices
+    - Scalability: Microservices can be scaled and load-balanced as needed across many networked servers. 
+	- Infrastructure automation tools: Using container "orchestrators" like Kubernetes or Mesos, which automate on-demand scaling, self-healing, and more.
+  - SRE approach:
+    - Shared responsibility
+	- Embrace the risk 
+	- Acknowledgement of failure as normal 
+	- Use automation to reduce or eliminate "toil"
+	- Measure everything 
+	- Qualifying Success in terms of meeting quantitative service-level objectives 
+  - Core principles of DevOps
+    - relentless focus on automation
+	- idea that "failure is normal"
+	- reframing of "availability" in terms of what a business can tolerate
+  - Service Level Indicators: SLIs are engineered to map to the practical reality of delivering a service to customers: they may represent a single threshold or provide more sophisticated bracketing to further classify outliers results.
+  - Service Level Objective (SLO)
+  
+Basic Automation scripting:
+  - Basic tools for automation scripting: Bash aka unix shell is default on most Linux and macos distros. Simple scripts or CLI command chains using pipes allow us basic automation when dealing large log files etc. 
+  - High level languages like Python can be used when more complex data sets or libraries are required. 
+  - Idempotency Principles 
+    - Look before you leap: Make no change if none needed. 
+	- Get to a known-good state, if possible, before making changes: mostly imply to build new, destroy old and replace it. 
+	- All components needs to be idempotent. 
+
+Automation Tools:
+=================
+  - Automation tools vs One off scripts 
+    - Automation tool modules enable best practices that make code safer and idempotency easier to achieve.
+	- Automation tools "wrap" operating system utilities and API functions to simplify and standardize access.
+    - One-Scripts : more used for more legacy config for which automation tools doesn't have a feature yet. 
+	- Automation tools comes with many features out of the box. 
+	- They Facilitate reusability, segregate concerns, promote security
+	- Perform discovery and manage inventory
+  - Must Have Concepts for Automation Tools
+    - Idempotency
+	- Procedure vs. declarative (ex: chef is more inherently procedural vs Ansible/Puppet are declarative)
+	- Provisioning vs. configuration vs. deployment vs. orchestration
+	  - Provisioning: Getting Compute/Storage/Network ready for service. 
+	  - Configuration: Deploy base App, services, performing ops, tasks and tests. 
+	  - Deployment: building, arranging, integrating, and preparing multi-component applications across multiple computes/locations
+	  - Orchestration: Refer simply to processes or workflows that link automation tasks to deliver business benefits, like self-service.
+	- Statelessness: An app that persists its state to a separate database or that provides service that requires no memory of state between invocations.
+  - Ansible
+    - Control node can run on any Linux machine with Python 3. 
+	- Connects to resources over SSH. Ansible can then run shell commands on a remote server or transact with a remote router or other network entity via its REST interface. Can Inject Python scripts into targets and remove them after they run (install python if needed). 
+	- Ansible code structure, work is separated into YAML files that contain a sequence of tasks, executed in top-down order.
+	- Playbooks:  monolithic document with a series of modular, named tasks.
+	- Roles: low-level playbook task sequences that can be reused or shared. (much like Modules in python)
+	- Ansible Tower (paid) gives web interface, REST API, and rich, role-based access control options.
+	-  Ansible Vault, a built-in feature that enables encryption of passwords and other sensitive information and provides a straightforward and easily-administered alternative to storing sensitive information in playbooks, roles, or elsewhere as plaintext.
+	- ansible-doc $command = similar man on linux 
+  - Puppet
+    - Designated server to host main application components: Puppet Server aka Puppet Master, Facter (the fact-gathering service) and PuppetDB(stores facts, node catalogs, and recent configuration event history)
+	- A secure client, also known as a Puppet Agent, installed and configured on target machines.Client-Server authenticated via cert and use SSL for comms. Agents gather facts and make changes as directed by Puppet Master. 
+	- For cloud APIs and hardware that can't run an agent, Puppet has modules available to enable these connections.
+	- Manifest files typically end in the extension .pp, and are written in Puppet's declarative language, which looks something like Ruby and was inspired by the Nagios configuration file format.
+
+Infrastructure as code:
+=======================
+  - GitOps Process: "operations by pull request."
+  - Branches called "Development," "Testing/UAT," and "Production" typically used in this process. 
+  - Development: Developers make changes in the Development branch, filing commits and making pull requests. These requests are fulfilled by an automated "gating" process and queued for automated testing. 
+  - Test: When changes are merged from Development into Test, the code is deployed to a larger test environment and is subjected to a more extensive set of automated tests.
+  - Production: Tested changes are again reviewed and merged to Production, from which release deployments are made.
+  - Blue/green deployments: Method for reducing or eliminating downtime in production environments. It requires you to maintain two identical production environments and develop the new capability of quickly redirecting application traffic to one or the other (e.g., through ACI automation; load balancing; programmable DNS; or other means).
+  - Canary testing is similar to rolling blue/green (red/black) deployment, but somewhat more delicate. The migration between old and new deployments is performed on a customer-by-customer (or even user-by-user) basis, and migrations are made intentionally to reduce risk and improve the quality of feedback. 
+
+Automated test and validation:
+==============================
+  - pyATS is a Python-based network device test and validation solution developed by Cisco and is partially open-sourced. 
+  - pyATS key features:
+    - pyATS framework and libraries can be leveraged within any Python code.
+	- AEtest executes the test scripts and Easypy is the runtime engine that enables parallel execution of multiple scripts, collects logs in one place, and provides a central point from which to inject changes to the topology under test.
+	- A CLI enables to enable rapid interrogation of live networks, extraction of facts, and helps automate running of test scripts and other forensics. 
+  - More Info: https://developer.cisco.com/docs/pyats-getting-started/
+  
+Cisco SDK: 
+==========
+  - Most SDKs are a package, integrated with libraries, documents, code examples etc and require installation. 
+  - Cisco has many different SDKs for its platform, for ex Cobra for ACI, Jabber SDK for Unified communication. 
+
+Network Programmability and device models:
+==========================================
+  - model-driven programmability: inherits the power of models, matching devices' abilities and services to standardized models making it easier to configure network devices.
+  - data model: Structured method to describe any object, whether it's a person, a car, a building, or some other object. For example, the personal data on a passport or driver's license can describe a person in an individual way, so those are both "data models".
+  - Model driven key components: YANG is a modeling language. NETCONF and RESTCONF are protocols used for data model programmable interfaces.
+  - YANG: RFC6020, stands for Yet Another Next Generation. 
+  - Open YANG Models: Developed by vendors and standards bodies, such as IETF, ITU, OpenConfig, and so on. They are designed to be independent of the underlying platform and normalize the per-vendor configuration of network devices.
+  - Native Models: Developed by vendors, such as Cisco, juniper. They relate and are designed to integrate to features or configuration only relevant to that platform.
+  - YANG defines four types of nodes for data modeling: Leaf Nodes, Leaf-List Nodes, container nodes and List Nodes. 
+  - YANG module contains a sequence of statements where statement = keyword [argument] (";" / "{" *statement "}")
+============================================
+Understanding "pyang -f tree ietf-interfaces.yang" output
+module: ietf-interfaces <-- Module Name 
+   +--rw interfaces  <-- Container
+   |  +--rw interface* [name]  <-- Key 
+   |     +--rw name                        string  <-- Leaf 
+   |     +--rw description?                string
+   |     +--rw type                        identityref <-- "rw" read/write  
+   |     +--rw enabled?                    boolean  <-- "?" Optional 
+   |     +--rw link-up-down-trap-enable?   enumeration {if-mib}?
+   +--ro interfaces-state
+      +--ro interface* [name]
+         +--ro name               "string"  <-- Data type 
+         +--ro type               identityref  <--"ro" read only 
+         +--ro admin-status       enumeration {if-mib}?
+         +--ro oper-status        enumeration
+         +--ro last-change?       yang:date-and-time
+         +--ro if-index           int32 {if-mib}?
+         +--ro phys-address?      yang:phys-address
+         +--ro higher-layer-if*   interface-state-ref
+         +--ro lower-layer-if*    interface-state-ref
+         +--ro speed?             yang:gauge64
+         +--ro statistics
+            +--ro discontinuity-time    yang:date-and-time  <-- Leaf List 
+            +--ro in-octets?            yang:counter64
+            +--ro in-unicast-pkts?      yang:counter64
+            +--ro in-broadcast-pkts?    yang:counter64
+            +--ro in-multicast-pkts?    yang:counter64
+            +--ro in-discards?          yang:counter32
+            +--ro in-errors?            yang:counter32
+            +--ro in-unknown-protos?    yang:counter32
+            +--ro out-octets?           yang:counter64
+            +--ro out-unicast-pkts?     yang:counter64
+            +--ro out-broadcast-pkts?   yang:counter64
+            +--ro out-multicast-pkts?   yang:counter64
+            +--ro out-discards?         yang:counter32
+            +--ro out-errors?           yang:counter32
+===============================================
+  - Netconf: protocol defined by the IETF to “install, manipulate, and delete the configuration of network devices”
+  - NETCONF operations are realized on top of a Remote Procedure Call (RPC) layer using an XML encoding and provide a basic set of operations to edit and query configuration on a network device.
+  - RESTConf: Similar to NETCONF, it uses the datastore models and command 'verbs' defined in the Network Configuration Protocol (NETCONF), encapsulated in HTTP messages.
+  - NETCONF is more comprehensive, flexible, and complex than RESTCONF.
+  - NETCONF supports running and candidate data stores, while RESTCONF supports only a running datastore as any edits of candidate data store are immediately committed.
+  - RESTCONF does not support obtaining or releasing a data store lock. If a datastore has an active lock, the RESTCONF edit operation will fail.
+  - A RESTCONF edit is a transaction limited to a single RESTCONF call.
+  - RESTCONF does not support transactions across multiple devices.
+  - Validation is implicit in every RESTCONF editing operation, which either succeeds or fails.
+  - NETCONF operations and RESTCONF methods mapping
+    - POST = <edit-config>, </edit-config>
+	- GET = <get-config>, <get> , </get-config>
+	- PUT = <edit-config> (nc:operation="create/replace") 	
+	- DELETE = <edit-config> (nc:operation="delete")
+  - Example for RESTCONF +Yang model 
+================================================
+    $pyang -f tree ietf-interfaces.yang
+    module: ietf-interfaces
+       +--rw interfaces
+       |  +--rw interface* [name]
+       |     +--rw name                        string
+       |     +--rw description?                string
+       |     +--rw type                        identityref
+       |     +--rw enabled?                    boolean
+       |     +--rw link-up-down-trap-enable?   enumeration {if-mib}?
+       +--ro interfaces-state
+          +--ro interface* [name]
+EX: 		  
+https://<device_IP>/restconf/data/ietf-interfaces:interfaces/interface=GigabitEthernet1
+=================================================
+  - RESTConf Media Types: "application/yang-data+xml" and "application/yang-data+json"
+  - When using RESTCONF, the response content is JSON formatted and When using NETCONF, the response is XML formatted.
+
+
+Network management platforms:
+============================
+  - Automation Use cases 
+    - Device provisioning
+	- Device software management
+	- Compliance checks
+	- Reporting
+	- Troubleshooting
+	- Data collection and telemetry
+  - Cisco DNA (Digital Network Architecture) Center: It provides a single dashboard for network management, network automation, network assurance, monitoring, analytics, and security.
+  - Cisco DNA Center dashboard (GUI) organizes services and activities into 'Design', 'Policy', 'Provision', 'Assurance' and 'Platform'.
+    - Design your network using intuitive workflows, starting with locations where your network devices will be deployed.
+	- Policy: Define and manage user and device profiles to facilitate highly secure access and network segmentation.
+	- Provision: Deployment, and Policy-based automation to deliver services to the network based on business priority and to simplify device deployment. Includes ZTP and Software Mgmt 
+	- Assurance: Telemetry and notification for application performance and user connectivity events in real-time.
+	- Platform: Information and documentation for the DNA Center Intent API supporting the use of third-party applications and processes for data gathering and control via the API.
+  - Cisco ACI: Centralized management system is the Application Policy Infrastructure Controller (APIC), a cluster of controllers. The APIC manages and provides for automation and management, policy programming, application deployment, and health monitoring for the fabric.
+  - ACI use cases
+    - Programmability as a single fabric, with access to read and write object models representing all attributes in the system.
+	- Desired state defined and enforced.
+	- Extension to AWS or Azure public clouds (via Multi-Site Orchestrator (MSO) and its API)
+  - Open source tools or frameworks such as the ACI toolkit, Cobra (Python), ACIrb (Ruby), Puppet, and Ansible to automate and program the APIC. Also provide RESTAPI interface. 
+  - Cisco NX-OS platform: NX-OS also provides a REST API service and model-driven programmatic access via RESTCONF, NETCONF, and OpenConfig.
+  - Cisco Open NX-OS leverages the native Linux networking stack, instead of a custom-built userspace stack (NetStack) that was used in prior versions of NX-OS.
+  - Both the NX-API CLI and NX-API REST API interfaces are served by an NGINX web server.
+
+Cisco Network Services Orchestrator (NSO): Model-driven with service-models expressed in YANG
+==========================================
+  - Three components:
+    - Model-driven programmable interface (YANG models)
+	- Configuration db 
+	- Device and service abstraction layers
+  - The NSO architecture is logically comprised of two layers: a Device Manager that simplifies device integration and manages device configuration scenarios, and a Service Manager that applies service changes to devices.
+  - The purpose of the Device Manager is to manage different devices using a YANG and NETCONF view.
+  - The Service Manager lets you develop service-aware applications, such as switch port modification, MPLS, VPN, and so on, to configure devices.
+  - FASTMAP algorithm, used by NSO, transforms from service models to device models.
+  - An NSO service is a function provided by network devices. Creating, modifying,or deleting the service manipulates the actual configuration of the end devices. 
+  - Northbound interfaces allow integration of NSO with applications and portals. NSO has a set of northbound interfaces, including human interfaces like web UI and a CLI; programmable interfaces including RESTCONF, NETCONF, and language bindings including Java, Python, and Erlang. 
+  - Southbound interfaces allow the configuration and management of network elements using NETCONF, SNMP, CLI, NED for IOS & IOS XR. 
+
+Cisco Collaboration Platforms:
+=============================
+  - Cisco Unified Communications Manager (Unified CM) 
+    - Used to configure and automate the provisioning of devices, the routing of calls, and the management of profiles and settings in a single solution.
+	- Deployed in hospitals, banks, universities, and government agencies to manage the increasing number of devices and user profiles.
+  - Contact Center is used to manage and route high-volume calls, text, video, and data to the right agent at the right time with the right information.
+  - Finesse is an agent and supervisor desktop. The Finesse API provides Cisco partners and developers with more flexibility and customization of the desktop to deliver customer-driven care.
+  - Webex encompasses Meetings, Teams, and Devices. Webex simplifies the needs of voice, video, and data into one solution so that people can collaborate more efficiently.
+  - Unified CM, CUCM or CallManager. Cisco Unified Communications Manager is:
+    - An IP-based communications solution to support mobile and remote workers in small, medium, or enterprise-level businesses.
+	- An integration for voice, video, and data into a single on-premise solution for call control and session management.
+	- Highly extensible, with various APIs for configuration, management, monitoring, and call control.
+  - Primary function of Unified CM is to manage phone users, IP phones, directory numbers, and to connect and manage calls to the desired
+  destinations. Unified CM enables you to:
+    - Define gateways, trunks, remote destinations, and more telephony-related information.
+	- Configure a full range of call handling tasks, including hold, transfer, call forward, and starting conference calls. Unified CM stores configuration data in an internal database, with a Publisher→Subscriber cluster architecture.
+  - Administrative XML Layer: XML/SOAP based interface that provides a mechanism for inserting, retrieving, updating, and removing data from the Unified Communication configuration database. Developers can use AXL and the provided Web Services Description Language (WSDL) to create, read, update, and delete objects such as gateways, users, devices, route-patterns and much more.
+    - The AXL API is for administration and configuration. 
+	- You can perform almost every action with AXL that can with the Unified CM Administration Console web GUI. 
+	- The AXL schema version is backwards-compatible for up to two major releases. This means developers can use AXL schema version 10.0(1) for Unified CM release 10.0(1) through 12.5(1).
+	- AXL has Change Notification Feature which can be used to check for changes since last time change run. 
+  - User Data Services: User Data Services (UDS) is a REST-based API that provides a mechanism for inserting, retrieving, updating and removing data from the Unified Communication configuration database. Developers can use the UDS API to create, read, update, and delete user resources, including devices, subscribed services, and speed dials.
+    - The UDS API is designed for end users to configure settings. For example, the API provides authenticated access to enable end users to update their personal settings for their own devices.
+	- Things like "Call Forward", "Do not distrub", "directory search for users" etc 
+	- UDS is a REST-based interface that sends and receives XML-formatted data.For example GET /speedDials returns a list of the user's speed dials, and PUT /speedDials updates that user's speed dials.
+  - Cisco Finesse: Finesse is Cisco's browser-based contact center agent and supervisor desktop.
+  - Finesse has REST APIs and JavaScript APIs that can be used to build fully custom agent desktops, integrate contact center functionality into applications, and integrate applications into the Finesse agent and supervisor desktop.
+  - Contact centers have two categories of tasks:
+    - Inbound tasks: When customers initiate communication with customer service. 
+	- Outbound tasks: A customer interaction made from the contact center agent to a customer.
+  - Agent states : Not Ready, Ready, Talking, Work and Logout 
+  - Finesse REST APIs: can be used to build custom agent desktops, integrate into existing applications, and/or build a script to automate tasks. 
+  - Finesse REST APIs that use the GET verb are synchronous and the rest of the Finesse REST APIs are asynchronous.
+  - Cisco Webex Teams is an online collaboration solution to connect people and teams through chat, voice, and video. With the Webex Teams app, you gain access to secure virtual work spaces.
+  - Webex Teams documentation at https://developer.webex.com/
+
+Cisco Security Platform:
+========================
+Cisco Advanced Malware Protection (AMP): 
+  - AMP provides API access to automate security workflows and includes advanced sandboxing capabilities to inspect any file that looks like malware in a safe and isolated way.
+  - AMP works with Windows, Mac, Linux, Android, and iOS devices through public or private cloud deployments.
+  - AMP product continuously analyzes file activity across the extended network. With the information provided by the AMP API, you can detect, contain, and remove advanced malware.
+  - Manage AMP via centralized web-based console, and you deploy AMP on devices including mobile phones, on email servers, or on web servers.
+  - Three main categories of capabilities that AMP offers: 
+    - Prevention: AMP uses global threat intelligence and can block file-based or non-file-based malware, IP addresses from a list, or block applications.
+	- Detection: AMP continuously monitors and records all file activity to detect malware. It ensures visibility into endpoint file activity and incoming threats, as well as reporting which endpoints have been compromised. TETRA is an antivirus engine delivered as part of the AMP Connector for Windows, and ClamAV is a similar engine for macOS and Linux.
+	- Responses and automation: Accelerate investigations and automatically remediate malware across PCs, Macs, Linux, servers, and mobile devices (Android and iOS). Provides advanced sandboxing so you can inspect malware. 
+  - The AMP API enables you to request isolation of an identified computer or device. Isolating a computer or device blocks all network traffic except for communication to the AMP Cloud and any other IP addresses configured in your IP isolation allow list. An unlock code that you can provide with the API call enables management of the isolation session.
+  - AMP Docs: https://console.amp.cisco.com/docs
+  
+Cisco Firepower products: 
+  - Firepower Management Center (FMC) is a central management console for the Firepower Threat Defense (FTD) Next-Generation Firewall.
+  - Firepower Device Manager (FDM) is a "single" device manager for small and medium customers with small number of devices with simple dashboards and easy to use configuration wizards. It contains the FDM and Next Generation Firewall APIs.
+  - FMC API you use an access token to authenticate to the REST API. The token lasts for 30 minutes before the client must refresh it. 
+  - API Limits: 120 messages/min/IP. Max payload 20480 bytes. 
+  - API's upper limit value is 1000 for number of responses. 
+
+Cisco Identity Services Engine (ISE):
+  - ISE provides a rule-based engine for enabling policy-based network access to users and devices. It enables you to enforce compliance and streamline user network access operations. With the ISE APIs, you can automate threat containment when a threat is detected
+  - ISE Node types:
+    - Administration node: In this node you perform all administrative operations on Cisco ISE. It handles all system-related configurations such as authentication, authorization, and accounting.
+	- A Cisco ISE node with the Policy Service persona provides network access, posture, guest access, client provisioning, and profiling services. 
+	- Monitoring node: A Cisco ISE node with the Monitoring persona is the log collector. It stores log messages from all the Administration and Policy Service nodes in a network.
+	- pxGrid node: The pxGrid framework integration enables the system to exchange policy and configuration data between nodes. This is how the system can share tags and policy objects between Cisco ISE and third party vendors.
+
+Cisco Threat Grid: 
+  - With Threat Grid you can review and analyze potential threats or behavior indicators of malware activity. 2 models, on-prem and cloud based. 
+  - A Threat Grid appliance delivers on-premises malware analysis with threat analytics and content. Organizations with compliance and policy restrictions can analyze malware locally by submitting samples to the appliance.
+  - Threat Grid offers malware analysis capabilities, both static (analysis of file, file headers and contents) and dynamic (enable/interact with malware in GloveBox). 
+
+Cisco Umbrella:
+  - Umbrella uses Domain Name Servers (DNS) to enforce security on the network. You configure your DNS to direct traffic to Umbrella, and Umbrella applies security settings on their global domain name list based on your organization's policies.
+  - Umbrella's protection capabilities include:
+    - Guest Wi-Fi protection: When providing guests with Wi-Fi, you must address security concerns but also legal liability protection.
+	- Application discovery and blocking: Umbrella enables you to see what is being accessed, order the applications by risk elements, and then block as needed with an included automated blocking workflow.
+	- Off-network endpoint security: Umbrella can stop breaches from traffic from mobile devices not on VPN, or other endpoints not always using the VPN.
+	- Web filtering and content filters: With Umbrella, you can filter content and also enable specific teams to access named sites as needed for their job role.
+	
+
+Cisco compute solutions:
+========================
+
+Cisco Unified Computing System:
+  - UCS is a data center server computer product line composed of computing hardware, switching fabric, embedded management software, and virtualization support.
+  - Cisco Integrated Management Controller (CIMC) can manage a single physical server.
+  - Cisco UCS Manager (UCSM) can manage up to 160 servers 
+  - Cisco UCS Central (UCSC) can manage up to 10k servers 
+  - UCSM runs on the primary fabric interconnect and is assigned a virtual IP address (VIP), with failover capability to the subordinate fabric interconnect.
+  - UCSM requests are encoded in XML. 
+  - Cisco UCS Manager was the first server management methodology to provide complete control over server component configuration with a single structure called a Service Profile.
+  - UCS Manager provides address pools and policy definitions that can be consumed by Service Profiles. UCS Manager also provides templates for Service Profiles and templates for network and storage adapters.
+  - Service Profiles are run-time associated with Physical servers. 
+  - Cisco UCS Manager servers are either blades that reside in chassis (B-Series Servers) or rack-mounted (C-Series servers). Both are connected to a redundant pair of switches are called UCS Fabric Interconnects (FIs).
+  - UCS Manager also keeps track of events, alerts, errors, and statistics and is able to report these items using various industry-standard management protocols like SNMP and Syslog.
+
+Cisco UCS Unified API:
+  - Unified because same API methodology is used for the CIMC, Cisco UCS Manager, and Cisco UCS Central.
+  - The Cisco UCS Manager XML API, like other APIs, provides methods to authenticate, query, and configure.
+    - aaaLogin: Initial method for logging in and retrieving an authentication cookie
+	- aaaRefresh: Refreshes the current authentication cookie.
+	- aaaLogout: Exits the current session and deactivates the authentication cookie.
+  - Cisco UCS API documentation is typically referred to as the UCS Object Model documentation. The Object Model documentation is available with the UCS Platform Emulator or online at https://developer.cisco.com/site/ucs-mim-ref-api-picker/.
+  - UCS Python SDK is a set of Python modules, each containing one or more classes, developed specifically to automate UCS Manager via the UCS XML API.
+  - UCS Ansible is available for UCS Manager and the Cisco Integrated Management Controller.
+  - Cisco UCS Manager XML API summary: XML defines the Object Model schema, encodes the object in the MIM, and is used in the API to encode the requests and responses from the UCS platforms. The UCS XML API provides complete coverage of the objects presented through the UCS management interfaces, enabling any tool or SDK built on top of XML API the ability to control all the objects in the UCS Object model.
+ 
+Cisco Unified Computing System Director:
+  - It is an orchestration, and automation solution for a wide array of Cisco and non-Cisco data center infrastructure components, and for converged infrastructure solutions based on the UCS and Cisco Nexus platforms.
+  - 64-bit appliance that uses Open Virtualization format or virtual hard disk. 
+  - Cisco UCS Director enables you to build workflows that provide automation services and to publish the workflows and extend their services to your users on demand.
+  - Cisco UCS Director can automate a wide array of tasks on supported Cisco and non-Cisco hardware and software data center components: 
+    - VM provisioning and lifecycle management
+	- Network resource configuration and lifecycle management
+	- Storage resource configuration and lifecycle management
+	- Tenant onboarding and infrastructure configuration
+	- Application infrastructure provisioning
+	- Self-service catalogs and VM provisioning
+	- Bare metal server provisioning, including installation of an operating system
+  - Cisco UCS Director programmability
+    - The REST API and the REST API Browser enable the management of UCS Director. The management of policies, groups, virtual entities, etc. The REST API also provides a way to launch UCS Director workflows.
+	- Tasks are either provided out-of-the-box or can be created as custom tasks. Tasks can be atomic or monolithic and are written in CloupiaScript, a JavaScript-like language.
+	- Script Libraries: Can contain CloupiaScript methods, Java jar files, lists of values, and more.
+	- Use PowerShell Cmdlets with UCS Director via the PowerShell Host.
+	- UCS Director supports integrations with a variety of services to provide everything from issue tracking, to payment services, to source code control.
+  - REST API access key as an HTTP Header Format: X-Cloupia-Request-Key: F90ZZF12345678ZZ90Z12ZZ3456FZ789
+
+Cisco Intersight:
+  - Cisco Intersight is a Software as a Service (SaaS) systems management platform capable of managing infrastructure at the edge and remote locations as well as in the data center.
+  - Cisco Intersight builds on the UCS Unified Fabric and UCS Management experience with a Cisco-hosted and maintained management platform.
+  - Intersight API capabilities: 
+    - Provides access to the Intersight MIM.
+	- Uses JSON documents and uses HTTP over TLS as the transport protocol.
+  - API Docs: https://intersight.com/apidocs/introduction/overview/
+
+=========================================
+More Resources: 
+DevNet Events:
+https://developer.cisco.com/events
+
+Basics Videos:
+https://developer.cisco.com/codeexchange/github/repo/CiscoDevNet/netprog_basics
+
+Code Exchange:
+https://developer.cisco.com/codeexchange/
+
+Automation Exchange:
+https://developer.cisco.com/network-automation/
+
+PyATS:
+https://github.com/CiscoDevNet/pyats-sample-scripts.git
+https://pubhub.devnetcloud.com/media/pyats/docs/topology/schema.html#production-yaml-schema
+Genie:
+https://developer.cisco.com/docs/genie-docs/

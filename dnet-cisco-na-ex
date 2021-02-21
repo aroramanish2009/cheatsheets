@@ -1,0 +1,359 @@
+Code Examples:
+==============
+
+Webex Teams Code Examples:
+==========================
+################################
+# Fill in this file with the authentication code from the Webex Teams exercise
+
+import requests
+import json
+# This access token may be a (limited duration) personal access token, a Bot token, or an OAuth token from an Integration or Guest Issuer application.
+# IMPORTANT
+# Make sure to replace access_token with YOUR access token.
+access_token = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+url = 'https://api.ciscospark.com/v1/people/me'
+headers = {
+    'Authorization': 'Bearer {}'.format(access_token)
+}
+res = requests.get(url, headers=headers)
+print(json.dumps(res.json(), indent=4))
+################################
+
+################################
+  - By default, the Webex Teams API will only return a max of 100 items prior to requiring you to use pagination. However, in the above code, we are specifying to the Webex Teams API that we want only one item returned for this API request. We are doing that by specifying the "max" parameter to 1.
+# Fill in this file with the pagination code from the Webex Teams exercise
+
+import requests
+import json
+
+access_token = '' # Make sure to add your access token here!
+url = 'https://api.ciscospark.com/v1/memberships'
+headers = {
+    'Authorization': 'Bearer {}'.format(access_token),
+    'Content-Type': 'application/json'
+}
+params = {
+    "max": 1
+}
+res = requests.get(url, headers=headers, params=params)
+formatted_message = """
+Webex Teams API Response
+----------------------------------
+Response Status Code   : {}
+Response Link Header   : {}
+Response Body          : {}
+-----------------------------------
+""".format(res.status_code,  res.headers.get('Link'), json.dumps(res.json(), indent=4))
+print(formatted_message)
+################################
+
+
+Emoji Encoding: 
+################################
+from enum import Enum
+class emoji(Enum):
+  seenoevil = '\U0001F648'
+  hearnoevil = '\U0001F649'
+  speaknoevil = '\U0001F64A'
+  
+for monkey in emoji:
+  print(monkey.name, monkey.value)
+  
+################################
+
+Python Unit Testing
+################################
+PyTest:
+# in file tests_mytest.py
+import pytest
+
+def add5(v):
+    myval = v + 5
+    return myval
+
+def tests_add5():
+    r = add5(1)
+    assert r == 6
+    r = add5(5)
+    assert r == 10
+    r = add5(10.102645)
+    assert r == 15.102645
+	
+Unit Test:
+# in file tests_mytest.py
+import pytest
+
+def add5(v):
+    myval = v + 5
+    return myval
+
+def tests_add5():
+    r = add5(1)
+    assert r == 6
+    r = add5(5)
+    assert r == 10
+    r = add5(10.102645)
+    assert r == 15.102645
+	
+Unittest Example: 
+# Further improvement for the json_search function 
+
+from test_data import *
+
+def json_search(key,input_object):
+    """
+    Search a key from JSON object, get nothing back if key is not found
+    key : keyword to be searched, case sensitive
+    input_object : JSON object to be parsed
+    inner_funtion() is actually doing the job
+    return a list of key:value pair
+    """
+    ret_val=[]
+    def inner_funtion(key,input_object):
+        if isinstance(input_object, dict): # Handle dict
+            for k, v in input_object.items():
+                if k == key:
+                    temp={k:v}
+                    ret_val.append(temp)
+                if isinstance(v, dict):
+                    inner_funtion(key,v)
+                elif isinstance(v, list):
+                    for item in v:
+                        if not isinstance(item, (str,int)):
+                            inner_funtion(key,item)
+        else: # handle a list, some APIs return JSON object in a list
+            for val in input_object:
+                if not isinstance(val, (str,int)):
+                    inner_funtion(key,val)
+    inner_funtion(key,input_object)
+    return ret_val
+print (json_search("issueSummary",data))
+print (json_search("XY&^$#*@!1234%^&",data))
+
+
+import unittest
+
+from best_json_search import *
+from test_data import *
+
+class json_search_test(unittest.TestCase):
+    """test module to test search function in `best_json_search.py` """
+
+    def test_search_found(self):
+        """key should be found, return list should not be empty"""
+        self.assertTrue([]!=json_search(key1,data))
+    def test_search_not_found(self):
+        """key should not be found, should return an empty list"""
+        self.assertTrue([]==json_search(key2,data))
+    def test_is_a_list(self):
+        """Should return a list"""
+        self.assertIsInstance(json_search(key1,data),list)
+
+if __name__ == '__main__':
+    unittest.main()
+
+******************
+##python -m unittest test_best_json_search
+
+{'issueSummary': 'Network Device 10.10.20.82 Is Unreachable From Controller'}]
+[]
+...
+----------------------------------------------------------------------
+Ran 3 tests in 0.000s
+******************
+
+Parsing:
+################################
+XML Parsing Example:
+import xml.etree.ElementTree as ET
+import re
+
+xml = ET.parse("myfile.xml")
+root = xml.getroot()
+
+ns = re.match(r'{.*}', root.tag).group(0)
+editconf = root.find(f"{ns}edit-config")
+defop = editconf.find(f"{ns}default-operation")
+testop = editconf.find(f"{ns}test-option")
+
+print("The default-operation contains: %s" % defop.text)
+print("The test-option contains: %s" % testop.text)
+
+JSON Parsing:
+
+import json
+import yaml
+
+with open('myfile.json','r') as json_file:
+    ourjson = json.load(json_file)
+
+json_file.close()
+print(ourjson)
+
+print(ourjson['expires_in'])
+
+print("The access token from JSON is: %s" % ourjson['access_token'])
+
+print("\n\n---")
+
+print(yaml.dump(ourjson))
+
+
+YAML Parsing:
+
+import json
+import yaml
+
+yaml_file = open("myfile.yaml","r")
+
+pythondata = yaml.safe_load(yaml_file)
+
+print(pythondata['expires_in'])
+
+print("The access token from YAML is: %s" % pythondata['access_token'])
+
+print("\n\n")
+
+print(json.dumps(pythondata))
+
+################################
+
+API REST Examples:
+################################
+GET:
+import requests
+import json
+# Next, we will define a variable named `url` which will contain the url needed to retrieve a list of books currently inside of the virtual library.
+url = "http://localhost:8080/v1/books"
+# Now, making an HTTP request is as simple as using the following line of python code.
+# This will make a HTTP GET request to `http://localhost:8080/v1/books` and
+# store the HTTP response in a variable called `books`.
+books = requests.get(url)
+
+# If everything went well, we can now print out the contents of the HTTP response to the screen.
+# Since the virtual library API is producing Content-Type "application/json"
+# We can leverage the .json() function that will transform the HTTP Response body to a Python dictionary.
+print(json.dumps(books.json(), indent=4))
+
+POST:
+import urllib.request
+import json
+url = "http://localhost:8080/v1/books"
+book = {
+    "name": "The Art of Computer Programming",
+    "authors": ["Donald Knuth"],
+    "date": 1968,
+    "isbn": "0-201-03801-3"
+}
+payload = json.dumps(book).encode('utf8')
+request = urllib.request.Request(url, data=payload, headers={'Content-Type': 'application/json'})
+response = urllib.request.urlopen(request)
+print(response.status)
+
+PUT:
+import requests
+import json
+url = "http://localhost:8080/v1/books"
+book = {
+    "name": "The Art of Computer Programming",
+    "authors": [
+    "Donald Nuth"       # Typo
+    ],
+    "date": 1968,
+    "isbn": "0-201-03801-3"
+}
+
+# Add the Book with a Typo to the author's name
+response = requests.post(url, json=book)
+book_data = response.json()
+
+print("Response after ADDING the book to the library")
+print(json.dumps(book_data, indent=4))
+
+
+# Let's now update the Book with the correct author's name.
+book_data["authors"] = ["Donald Knuth"]
+update_book_url = "http://localhost:8080/v1/books/{}".format(book_data['uuid'])
+response = requests.put(update_book_url, json=book_data)
+
+print("http status code after updating the book: ", response.status_code)
+
+DELETE:
+
+import requests
+import json
+url = "http://localhost:8080/v1/books"
+book = {
+    "name": "The Art of Computer Programming",
+    "authors": [
+    "Donald Knuth"
+    ],
+    "date": 1968,
+    "isbn": "0-201-03801-3"
+}
+
+# Add the Book
+response = requests.post(url, json=book)
+book_data = response.json()
+
+
+# Let's now delete the book that we just added to the library.
+delete_book_url = "http://localhost:8080/v1/books/{}".format(book_data['uuid'])
+response = requests.delete(delete_book_url)
+
+print("http status code after deleting the book: ", response.status_code)
+
+
+Auth:
+
+import requests
+from requests.auth import HTTPBasicAuth
+import json
+import sys
+# Here we will attempt to retrieve all user accounts from the library
+# Since user accounts are considered a protected resource, only those who have
+# admin credentials should be able to access it.
+url = "http://localhost:8080/v1/accounts"
+
+## This is unsafe as the username and password are stored in plain text
+username = 'MOM'
+password = 'XXXXXXXXXXXXXXXXXXXXXXXXXXX'
+
+# Leverage the HTTPBasicAuth class provided by the requests package
+accounts = requests.get(url, auth=HTTPBasicAuth(username, password))
+try:
+    accounts.raise_for_status()
+except requests.exceptions.HTTPError as e:
+    # this code will not be executed if the username and password are correct!
+    print("Error: {}".format(e))
+    sys.exit()
+# This code will be executed
+print(accounts.status_code)
+
+################################
+
+PyATS:
+################################
+pyats run job basic/basic_example_job.py
+pyats logs list
+pyats logs view
+https://pubhub.devnetcloud.com/media/pyats/docs/topology/schema.html#production-yaml-schema
+devices:
+  router1:
+    type: router
+    os: nxos
+    platform: n9kv
+    alias: under_test
+    credentials:
+      default:
+        username: "%ENV{MY_USERNAME}"
+        password: "%ENV{MY_PASSWORD}"
+    connections:
+        cli:
+            protocol: ssh
+            ip: "<device_ip>"
+
+pyats validate testbed testbed.yaml
+
+################################
