@@ -13,40 +13,40 @@ SDLC : Software Development Life Cycle (waterfall method)
   - Requirements & Analysis: Needs and Requirements based on real and current conditions. 
     - Problem Definition 
       - Who are the stakeholders?
-	  - What are their pressing challenges ?
-	  - How are challenges met today? What solution/processes are being used ? What does new solution need to replace or rethink ? 
-	  - What are their organizational/cultural constraints? Technical expertise? Appetite for risk? Tolerance of change?
-	  - What is the organization's current infrastructure, application ecology, and development culture like? 
-	  - What is the organization's current IT process, roadmap, headcount, role breakdown? Where are they with respect to web, mobile, cloud, DevOps, testing, monitoring, continuous delivery, and other modern paradigms for building, updating, and operating software? 
-	- Software details 
-	  - What features should the software have ?
-	  - how many users will the software need to support ?
-	  - User Experience requirements ?
-	  - Integration requirement to other softwares ?
-	  - Scale for this software ?
-	- Post Recon Assessment 
-	  - Is it possible to create software for these requirement and can it be on-budget ? 
-	  - Risks 
-	  - How will the software be tested ? 
-	  - When and how will it be delivered ?
-	- In Agile method, Minimum Viable Product "MVP" is defined at this stage. 
+      - What are their pressing challenges ?
+      - How are challenges met today? What solution/processes are being used ? What does new solution need to replace or rethink ? 
+      - What are their organizational/cultural constraints? Technical expertise? Appetite for risk? Tolerance of change?
+      - What is the organization's current infrastructure, application ecology, and development culture like? 
+      - What is the organization's current IT process, roadmap, headcount, role breakdown? Where are they with respect to web, mobile, cloud, DevOps, testing, monitoring, continuous delivery, and other modern paradigms for building, updating, and operating software? 
+    - Software details 
+      - What features should the software have ?
+      - how many users will the software need to support ?
+      - User Experience requirements ?
+      - Integration requirement to other softwares ?
+      - Scale for this software ?
+    - Post Recon Assessment 
+      - Is it possible to create software for these requirement and can it be on-budget ? 
+      - Risks 
+      - How will the software be tested ? 
+      - When and how will it be delivered ?
+- In Agile method, Minimum Viable Product "MVP" is defined at this stage. 
   - Design: 
     - Developers build prototypes as proof of concept using Software Requirement Specification (SRS) gathered in Requirement phase. 
-	- Design stage ends with High-Level Design (HLD) and Low Level Design (LLD) docs. HLD is 10,000 foot view of software whereas LLD provides details into protocols, classes etc being used. 
-	- In Agile, it is preferred to move design and delivery of the features of MVP instead of documentation. 
+    - Design stage ends with High-Level Design (HLD) and Low Level Design (LLD) docs. HLD is 10,000 foot view of software whereas LLD provides details into protocols, classes etc being used. 
+    - In Agile, it is preferred to move design and delivery of the features of MVP instead of documentation. 
   - Implementation 
     - AKA coding Phase. 
-	- longest phase of the life cycle of software, all components are build based on the design phase doc. 
-	- Test plan or software is written during this phase. 
-	- More modern method, create automated testing from very early stage and test every code before committing. 
+    - longest phase of the life cycle of software, all components are build based on the design phase doc. 
+    - Test plan or software is written during this phase. 
+    - More modern method, create automated testing from very early stage and test every code before committing. 
   - Testing 
     - Traditionally a test plan is created that tests integration, performance and security testing. 
   - Deployment 
     - Software is deployed in Production like environment, tested for features and stability before being released. 
-	- Modern methods employ continuous integration and delivery (CI/CD) with testing. 
+    - Modern methods employ continuous integration and delivery (CI/CD) with testing. 
   - Maintenance 
     - Support, bug fixes, improvements and new features are completed in this stage. 
-	- Agile moves into shorter sprints, delivering few features with each sprint and evolving software continuously. 
+    - Agile moves into shorter sprints, delivering few features with each sprint and evolving software continuously. 
 	
 Popular Software Development Methodologies:
   - Waterfall
@@ -58,12 +58,12 @@ Waterfall software development
   - New requirements cannot be incorporated until the next waterfall iteration. This could be costly and might delay new features or critical bugs for Business. 
   - Phases
     - System Requirements
-	- Software Requirements
-	- Analysis
-	- Program Design
-	- Coding 
-	- Testing 
-	- Operations 
+    - Software Requirements
+    - Analysis
+    - Program Design
+    - Coding 
+    - Testing 
+    - Operations 
 
 Agile software development
   - Agile Values 
