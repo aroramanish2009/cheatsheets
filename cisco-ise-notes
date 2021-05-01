@@ -1,0 +1,97 @@
+ISE Basics 
+----------
+  - ISE is a network access/admission control solution. It provides support for 802.1x wired/wireless, RVPN access, Guess Access, Profiling, byod etc 
+  - ISE deployment terminologies 
+    - Node: Indiviual instance that runs the cisco ISE software. ISE is available as an applicance or vm. 
+    - Node persona: Cisco ISE node can be Admin node, policy node, monitoring and pxGrid node. 
+    - Node Service: Policy Node provides network access services, guest services, client provisioning services etc. Admin node provides administrative services like handling of policies, system-related config etc. Monitoring and troubleshooting node provides insight into other nodes and their operation. 
+    - Node Role: determines if node is standalone, primary or secondary node. Applies only Admin or Monitoring nodes. 
+  - Radius Terminologies
+    - Supplicant: Client device or software running on device that provides credentials to authenticator. Ex: Laptop, iPhone etc 
+    - Authenticator: Network device to which supplicant is connected to for network services. Ex Switch, AP. 
+    - Authentication Server: Radius or AAA server that performs client authentication. Ex freeradius, ise. 
+    - Authentication Domain: An identity store or identity mgmt db (ex active director) that a RADIUS server can use for verifying clinet credentials. 
+  - ISE Nodes:
+    - Policy Administration Node (PAN): Node that handles all system-related configurations that are related to AAA. In distributed deployment, you can have a maximum of 2 nodes running the administration persona. 
+    - Monitoring and Troubleshooting (MnT) Node: Log collector that stores logs from admin and policy nodes in the deployment. Reports can generated based on log data collected. 2 monitoring nodes in primary/secondary roles for HA with hot failover for Primary Monitoring Node. 
+    - Policy Service Node (PSN): Provides network access, posture, guest access, client provisioning and profiling service. This node evaluates the policies and makes the decision. Typically more than one PSN is present in distributed deployment.
+    - pxGrid Node: Used for policy and tags sharing with other vendors. 
+  - Operational ISE: Policies are configured on PAN and pushed to PSN. Logs from PAN/PSN are sent to MnT node. Authenticator (switches or AP or WLCs) AAA configurations are pointing to PSN nodes. 
+  - ISE deployments
+    - standalone: admin, policy and monitoring personas are running on a single node. 
+    - Small Network deployment: 2x ISE nodes running all 3 personas in primary/secondary roles. 
+    - Medium Sized deployment: 2x nodes running admin and monitoring personas. Upto 5 Policy nodes (PSN) using admin nodes. 
+    - Large Scale deployment: 4x nodes running primary/secondary admin and monitoring personas each on different nodes. You can have upto 50 PSN nodes for this deployment. 
+  - Cisco ISE Installation:
+  - CLI commands: 
+    - "show application status ise" : Provides status of different processes, if application server not running that means no access to GUI. Processes starts eventually after system restart. 
+    - "show running-config" : Displays ISE config such as interface IP, Domain Name, name-server, timezone, default gateway, NTP server etc 
+  - Cisco ISE and AD Integration:
+  - Admin Node --> Administration -> Identity Management -> External Identity Sources 
+  - External Identity Sources --> Active Directory -> Join Name + AD server name + Submit 
+  - Join ISE nodes to domain controller using domain admin account. Successful join notification + you can domain join under AD in left pane. 
+  - Test user auth via ISE using "Test User" tab 
+  - You can retrive all groups from AD to ISE, these groups can be used as auth policy conditions. 
+  - Click "Save" 
+  - NTP is critical for ISE/AD integration, time should sync with AD servers. 
+  - ISE System Certificates:
+  - Admin Certificate: Server cert used to autheticate and provide TLS for communication with ISE Admin portal. Also used to establish trust relationship and secure communication between ISE node in a multi-node deployment.
+  - EAP Authentication: This certificate is a server certificate used for SSL/TLS tunneling which is needed by EAP protocols for secure credential exchange. 
+  - Production recommendation is to use enterprise signed certificates for ISE usage
+  - Radius DTLS: This certificate is a server cert used for RADIUS DTLS authentication. This is used to secure communication between NAD (access switch, wlc etc)  and Radius DTLS server. 
+  - Portal Certificate: Server certificate used with all Cisco ISE web or end user portals. Ex: CWA, Sponsor portal etc 
+  - Security Assertion Markup Lanuage (SAML) certificate certifcates used to secure communication between ISE and SAML Idp (identity providers). Certificate dedicated for SAML cannot be used for any other purpose in ISE. 
+  - Certificate Installation:
+    - Admin Node --> System -> certficate -> csr --> select use case for certficate and node for which certficate is being generated. 
+    - Generate CSR after filling up CN, OU etc values. Export and send for signing. 
+    - Install root certificates in "Trusted certficates" if using on-prem cert authority. 
+    - To add the server certificate, click csr -> bind certificate -> give name and attached signed certificate. Select usage for the certificate, process will be restarted. 
+  - Wired 802.1x on domain computer
+    - Configuration pushed via GPU or SSCM etc. 802.1x is enabled via services on windows using "Wired AutoConfig" using automatic at startup times. 
+    - After starting "Wired AutoConfig", authentication tab is visible on Ethernet properties page. 
+    - Enable EAP + PEAP, you will need root certificates so ISE Certificate can be verified. 
+    - Auth mode should be user or computer authentication. 
+  - Wired 802.1x on non domain computer
+    - Uses EAP with MS-CHAPv2 with user bases authentication only. 
+  - By default ISE will drop RADIUS requests coming from unrecoganized NADs, to allow this access, please add devices to ISE or enable blanket access to any device. 
+  - To Update NAD, Administration --> Network Resources -> Network Devices. Update devices here. TACACS can be enabled in the same manner. 
+  - ISE Policy Set:
+  - Policy set is an container for Authentication Policy -> Local exception authorization policy -> global exception authorization policy -> Authorization Policy 
+  - Policy Set config Admin node --> Policy -> Policy set 
+  - Disable default policy before adding new policy 
+  - You can use predefined Wired or wireless 802.1x then edit to add conditions etc 
+  - Non pre defined 802.1x condition can be built using Radius type as Ethernet AND radius service type Framed. 
+  - Allowed Protocol section can limit the authentication procotol allowed for 802.1x. Policy -> policy elements -> Authentication -> Allowed Protocol
+  - Wired Phased Deployment:
+  - Cisco Doc: https://www.cisco.com/c/en/us/td/docs/solutions/Enterprise/Security/TrustSec_1-99/Phased_Deploy/Phased_Dep_Guide.html#wp392247
+  - Phase 1 Monitor Mode: Audit mode where data related to 802.1x or MAB is logged and can be reviewed for phase 2 deployment. 
+  - Phase 2 are Low impact Mode (pre-auth allows certain protocols) or Closed Mode (pre auth only EAPOL is allowed).
+  - All phase allow EAPoL traffic in pre/post auth.   
+  - Monitor Mode: 
+    - "authentication open" in switch side config will enable Monitor Mode. 
+    - This mode can help collect logs without impacting user and configurations can be updated accordingly. 
+  - Low Impact mode:
+    - Create an extended ACL that will allow certain traffic is authentication/authorization fails. 
+    - This ACL is applied to the interface along with "authentication open" dot1x command. Please verify TCAM and PACL feature on your gear. 
+    - If using failpass mode with 802.1x when it is unable to reach policy node, PACL will still continue filter traffic as per ACEs. 
+  - Closed Mode: 
+    - By default port is in Closed mode. If Auth fails then switchport only allows EAPoL. 
+  - Wired 802.1x Authorization:
+  - Authorization Profile
+    - Composed of authorization rules
+    - Rule has 3 elements: Name, Attribute/conditions and Permission (or results) 
+  - An authorization profile acts as a container where a no. of permissions allow access to a set of network services. This is where network access to ACL, DACL, VLAN etc are granted. 
+  - DACL are applied to inbound direction to the switchport. 
+  - Dynamic Vlan assignment: Configured via autorization policies. Vlan needs to be present on the switch. 
+  - 802.1x User and Machine Authentication:
+  - Machine Auth is needed to confirm only corpration machines can be used on the LAN. 
+  - Machine auth for wired does not crossover to wireless as MAC for NIC vs wifi card are different. 
+  - Machine authentication record (MAR aging time) was introduce to over come hibernation on PCs. 
+  - Machine certficate based auth example https://www.teradici.com/web-help/PCoIP_ZC_Host_Admin_HTML5/07_HowTo/802.1x.htm
+  - Machine authentication also requires Login Prompt policy to allow for login screen. 
+  - 802.1x Wireless:
+  - Create SSID, add AAA servers, enable 802.1x for SSID and point to AAA servers. 
+  - Confirm Network device (WLC) is allowed to query ISE and external idp is configured for ex AD. 
+  - Create policy for wireless authentication and authorization
+  - Flexconnect ACLs are applied for inbound/outbound ACLs and configured on APs. 
+  - WLC ACLs are applied in inbound direction.
