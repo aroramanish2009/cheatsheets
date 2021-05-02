@@ -1,0 +1,1478 @@
+PyATS Introduction:
+  - pyATS and the pyATS Library provide sanity, feature, solution, system, and scale test automation for any type of device or virtual device. pyATS is currently used with devices such as routers and switches, access points, firewalls, Linux servers, phones, cable CPEs, and many more.
+  - Integrate with Ansible, Robot Framework, Jenkins etc 
+  - Genie Library for parsers, reusable testcases, reusable APIs, etc and has CLI interface. 
+  - Genie Framework for automation libs, lib foundation etc 
+  - (pyats) $ pyats --help # to the CLI options with pyats lib aka Genie
+  - Installation: On Linux system with 3.7 or 3.8 python in venv "pip install pyats[full]" and test "pyats version check"
+  - Install Doc: https://pubhub.devnetcloud.com/media/pyats-getting-started/docs/install/installpyATS.html
+  - Check outdated packages: pyats version check --outdated
+  - Update version: pyats version update or via PIP : pip install pyats[full] --upgrade
+  - pyATS supported platforms: https://pubhub.devnetcloud.com/media/unicon/docs/user_guide/supported_platforms.html
+  - If os=iosxe and platform=abc, since abc is not found in the iosxe table, it will fallback to use the generic iosxe plugin. If os=iosxe and platform=cat3k, it will use the specific plugin iosxe/cat3k.
+  - Ex for Device type connectivity :
+=======================
+#In ex below Unicon will use iosxe/iosxe/csr1000v/vewlc which is type/os/platform/model. 
+devices:
+  router_hostname:
+    os: iosxe
+    platform: csr1000v
+    model: vewlc
+    type: iosxe
+    credentials:
+      default:
+        username: xxx
+        password: yyy
+      enable:
+        password: zzz
+    connections:
+      a:
+        protocol: telnet
+        ip: 1.1.1.1
+        port: 17017
+      vty:
+        protocol: ssh
+        ip: 2.2.2.2
+=======================
+TestBed:
+  - 2 ways of creating testbed file, one is by manually creating YAML file and other is using excel file and let pyats create testbed file. 
+  - Writing Testbed File Manually should follow topology schema  https://pubhub.devnetcloud.com/media/pyats/docs/topology/schema.html#topology-schema
+    - "devices" : This section is the only required section in testbed file. 
+    - "extends" : Use this field to extend an existing yaml testbed file, create an inheritance hierarchy.
+    - "testbed" : Block for information concerning/common to the whole testbed. 
+    - It can have "name" which is testbed name, "alias" for testbed, "class" which can be used for creating sub-classes for testbed file, common "credentials" for connecting, "servers" which are servicing the entire testbed and accessible by all devices. 
+    - "devices" block has Name, alias, class, type, region, role, chassis_type (Eg: single_rp/dual_rp/stack/quad optional), os, series, platform, model, power, hardware, peripherals, credentials, connections (describes ways of connecting with the device eg, telnet, ssh, netconf, etc).
+    - "topology" describes the actual interfaces and links. "<device>" each device's interface/link gets its own block named using the device name/hostname. the device mentioned here must be also described under the device block. 
+  - Creation from Excel File
+    - You can define all of your device data in a CSV (.csv) or Excel (.xls, .xlsx) file. The pyats create testbed command automatically converts the input and creates an equivalent YAML file.
+    - "pyats create testbed file --path my_devices.xls --output yaml/my_testbed.yaml"
+    - Or interactivily "pyats create testbed interactive --output yaml/my_testbed.yaml --encode-password" 
+    - Excel to have basic device info like "hostname", "ip" (ip:port combo), username, password, protocol, os and platform. 
+  - Validate TestBed using "pyats validate testbed [file]"
+  - Connecting to device using Genie Library
+    - from genie.testbed import load
+    - tb = load('mock.yaml')  # Where mock.yaml is testbed.yaml file, specify absolute or relative path. 
+    - dev = tb.devices['nx-osv-1']
+    - dev.connect()
+    - exit()
+
+Parse Device Output:
+  - "genie.metaparser" converts output gather via CLI, REST, NETCONF, and others into Python dictionary.
+  - Cisco Command parser example: https://pubhub.devnetcloud.com/media/genie-feature-browser/docs/#/parsers
+  - CLI Ex: "pyats parse "show version" --testbed-file mock.yaml --devices uut"
+========================
+(pyats) root@ubuntu-2020:~/development# pyats parse "show version" --testbed-file testbed.yaml --devices switchn9k
+  0%|                                                                                                                         | 0/1 [00:00<?, ?it/s]                                                              {
+  "platform": {
+    "hardware": {
+      "bootflash": "3509454 kB",
+      "chassis": "Nexus9000 9000v",
+      "cpu": "",
+      "device_name": "switch",
+      "memory": "8129664 kB",
+      "model": "Nexus9000 9000v",
+      "processor_board_id": "9KIFCXPD34K",
+      "rp": "None",
+      "slots": "None"
+    },
+    "kernel_uptime": {
+      "days": 0,
+      "hours": 6,
+      "minutes": 16,
+      "seconds": 13
+    },
+    "name": "Nexus",
+    "os": "NX-OS",
+    "reason": "Unknown",
+    "software": {
+      "system_compile_time": "8/27/2020 5:00:00 [08/27/2020 06:11:00]",
+      "system_image_file": "bootflash:///nxos.7.0.3.I7.9.bin",
+      "system_version": "7.0(3)I7(9)"
+    }
+  }
+}
+
+======================
+
+  - Parser pyats interactive
+    - from genie.testbed import load
+    - tb = load('mock.yaml')
+    - dev = tb.devices['nx-osv-1']
+    - dev.connect()
+    - p1 = dev.parse('show inventory')
+    - print('My serial for slot1 is: ' + p1['name']['Slot 1']['serial_number'])
+    - exit()
+
+Learn Device Features:
+  - "learn" function of the pyATS Library "Ops" module for stateful network validation of device features, such as protocols, interfaces, line cards, and other hardware.
+  - difference between learn and parser: Parser output for different devices can result in different data structures whereas learn function, by contrast, results in a consistent set of keys, which means that you can write one script that works on different devices.
+  - you can learn multiple features like bgp, ospf or all 
+
+Configure Devices:
+  - "device.configure" : You can pass multi-line configurations to the configure() method, and the configuration would be applied accordingly. This can be done using various programming techniques such as variable subsitution, and/or string templating (eg, Jinja2).
+  - Conf Module lets you define Object and apply config. Ex below:
+========================
+uut = testbed.devices['uut']
+from genie.conf.base import Interface
+uut.connect()
+nxos_interface = Interface(device=uut, name='Ethernet4/3')
+nxos_interface.ipv4 = '200.1.1.2'
+nxos_interface.ipv4.netmask ='255.255.255.0'
+nxos_interface.switchport_enable = False
+nxos_interface.shutdown = False
+print(nxos_interface.build_config(apply=False))
+nxos_interface.build_config(apply=False)  #change True if wants to apply config 
+nxos_interface.build_unconfig(apply=False) #change True if wants to unapply config 
+========================
+  - Other conf Libs: from genie.libs.conf.ospf import Ospf, from genie.libs.conf.isis import Isis etc 
+
+Compare Network States:
+  - pyATS "diff" allows you to compare Network Snapshots
+  - Ex:
+========================
+pyats learn ospf --testbed-file testbed.yaml --output prechange
+Make change on any router OSPF config 
+pyats learn ospf --testbed-file testbed.yaml --output postchange
+
+(pyats) root@ubuntu-2020:~/development# genie diff prechange/ postchange/
+1it [00:00, 379.75it/s]
++==============================================================================+
+| Genie Diff Summary between directories prechange// and postchange//          |
++==============================================================================+
+|  File: ospf_nxos_switchn9k_ops.txt                                           |
+|   - Identical                                                                |
+|------------------------------------------------------------------------------|
+|  File: ospf_iosxr_iosxr1_ops.txt                                             |
+|   - Diff can be found at ./diff_ospf_iosxr_iosxr1_ops.txt                    |
+|------------------------------------------------------------------------------|
+
+(pyats) root@ubuntu-2020:~/development# cat ./diff_ospf_iosxr_iosxr1_ops.txt
+--- prechange/ospf_iosxr_iosxr1_ops.txt
++++ postchange/ospf_iosxr_iosxr1_ops.txt
+ info:
+  vrf:
+   default:
+    address_family:
+     ipv4:
+      instance:
+       100:
+        areas:
+         0.0.0.0:
+          interfaces:
+-          Loopback0:
+-           bfd:
+-            enable: False
+-           cost: 1
+-           demand_circuit: False
+-           enable: True
+-           interface_type: loopback
+-           name: Loopback0
+========================
+
+Run Test Scripts:
+  - Select from a pool of pre-written test cases (triggers).
+  - Tell the system to run them in a specific order, and the data to use for each case.
+  - You can also specify any pre- and post-processing that you want to apply.
+  - "Harness" is modular, and you can customize all of the components, including a trigger or verification to meet your automated testing requirements.
+  - "trigger" is an action or sequence of actions performed on a device, which changes the device state or configuration.
+  - "verification" is the execution of a show command to retrieve the current state of one or more devices. A verification typically runs before and after an action (trigger) to compare the previous and current device states.
+  - A job file defines how the system creates and runs a dynamic test script:
+    - pyATS Library functionality to import
+    - gRun command 
+    - Trigger UUIDs to indicate which trigger classes to execute
+    - Verification UUIDs to indicate which verifications to execute
+  - CLI Test Case:
+genie run --testbed-file mock.yaml --trigger-uids="TriggerShutNoShutBgp" --verification-uids="Verify_BgpProcessVrfAll" --devices uut
+  - Running Job File with gRUN: https://github.com/CiscoTestAutomation/examples/blob/master/libraries/harness_triggers/demo2_harness_triggers_job.py
+pyats run job demo2_harness_triggers_job.py --testbed-file cisco_live.yaml --replay mock_device
+
+Device APIs:
+  - The pyATS Library can perform operations on a Device via specific Device api functions. Similar to parsing a device, you can perform an operation on a Device using the appropriate device.api.function_name() call.
+  - Example using Device api 
+========================
+# Load testbed and connect to the device
+>>> from genie.testbed import load
+>>> testbed = load('mock.yaml')
+>>> device = testbed.devices['csr1000v-1']
+>>> device.connect()
+>>> routes = device.api.get_routes()
+>>> print(routes)
+['0.0.0.0/0', '10.0.1.0/24', '10.0.1.1/32', '10.0.2.0/24', '10.0.2.1/32', '10.1.1.1/32', '10.11.11.11/32', '10.2.2.2/32', '10.22.22.22/32', '10.255.0.0/16', '10.255.8.19/32']
+>>> device.api.shut_interface(interface='GigabitEthernet3')
+
+API Info: https://pubhub.devnetcloud.com/media/genie-feature-browser/docs/#/apis
+========================
+Lab done: 
+Test Genie command using: pyats learn ospf --testbed-file testbed.yaml --output output_folder
+Test pyats "parse": pyats parse "show version" --testbed-file testbed.yaml --devices switchn9k
+
+pyATS Documentation:
+===================
+  - Python implementation, support v3.5.x, v3.6.x and v3.7.x
+  - pip install pyats[full] in virtual env
+  - YAML Testbed and simple script ex: https://pubhub.devnetcloud.com/media/pyats/docs/getting_started/index.html
+  - AEtest module can be used to quickly write unittest like scripts. 
+  - Run script:  python connectivity_check.py --testbed ios_testbed.yaml
+  - pyats Job: A job is a step above simply running testscripts as an executable and getting output in STDOUT. Job files enables the execution of testscripts as tasks in standardized runtime environment, allowing testscripts to run in series or in parallel, and aggregates their logs and results together into a more manageable format.
+  - Job = file running multiple individual pyats scripts 
+  - Run Job: pyats run job ios_job.py --testbed-file ios_testbed.yaml --html-logs
+  - pyATS command-line utilities: 
+    - pyats <command> [options] : Top-level command-line entry point for pyATS. All other functions are loaded as subcommands of this command.
+    - pyats create project: ( pyats create project --project_name my-project --testbed_name my-testbed) 
+      - creates a new folder for your project
+      - create the basic project job file and script file
+      - creates testcases using the names you provide
+    - pyats run : offering subcommands that runs jobs and scripts defined in pyATS. ( pyats run job [file] [options] ) 
+    - pyats run robot: Shortcut to running Robot scripts within Easypy environment, indentical to "run job" but instead require Robot script. 
+    - pyats logs view: subcommand will host a local webpage with a graphical view of the pass/fail summary,results table, logs, and excuted commands of a job run. It not only supports previous finished runs, but also gives a live dashboard for current runs.
+    - pyats shell --testbed-file tb.yaml : Command that loads a testbed YAML file into topology objects, and makes it available to the user in a Python interactive shell.
+    - pyats validate : Helper command, offering subcommands that focuses on validating various pyATS related input files, formats, and content.
+    - pyats version : Command with subcommands that displays and manipulates the currently installed pyATS and sub-package versions.
+    - pyats secret : This command offers subcommands providing utilities to work with Secret Strings. Provides decode, encode and keygen subcommands.
+  - pyATS config file: /etc/pyats.conf or $VIRTUAL_ENV/pyats.conf if in virt env 
+    - Set up SMTP information here 
+    - logs, easypy, aetest, reports, timestamps, etc information set here
+
+AEtest - Test Infrastructure:
+  - AEtest (Automation Easy Testing) is the standard test engineering automation harness. It offers a simple and straight-forward way for users to define, execute and debug testcases and testscripts, serving as a basis for other testscript templates & engines.
+  - Each testscript is split into three major container sections which are then further broken down into smaller, method sections. 
+  - Common Setup, Testcase(s) and Common Cleanup
+  - Common Setup is where all common configuration, prerequisites and initialization shared between testcases should be performed. 
+    - check the validity of script inputs (arguments)
+    - connect to all testbed devices & check images, features, hardware, licenses etc 
+    - configure/bring up the device interface and/or topology
+    - setup/load base configuration common/shared between all testcases
+    - setup dynamic looping of testcases/sections based on current environment
+  - CommonSetup is an optional container section within each testscript. It is defined by inheriting the aetest.CommonSetup class, and declaring one or more Subsections inside. CommonSetup is always run first, before all testcases. Ex:
+=======================
+# Example
+# -------
+#   an example common setup
+
+# import the aetest module
+from pyats import aetest
+
+# define a common setup section by inherting from aetest
+class ScriptCommonSetup(aetest.CommonSetup):
+
+    @aetest.subsection
+    def check_script_arguments(self):
+        pass
+
+    @aetest.subsection
+    def connect_to_devices(self):
+        pass
+
+    @aetest.subsection
+    def configure_interfaces(self):
+        pass
+=======================
+  - "Testcase" is a container/collection of smaller tests. Testcases are the workhorse of every testscript, carrying out the assessments that determines the quality of the product under scrutiny.
+  - Each Testcase is defined by inheriting aetest.Testcase class, and defining one or more Test Sections inside.
+  - Testcases are run in the order as they are defined/appear in the testscript.
+  - Example:
+=======================
+#   two example testcase
+
+# import the aetest module
+from pyats import aetest
+
+# define a simple testcase by inheriting aetest.Testcase
+# this testcase's uid is defaulted to "SimpleTestcase"
+class SimpleTestcase(aetest.Testcase):
+
+    @aetest.test
+    def trivial_test(self):
+        assert 1 + 1 == 2
+
+# testcases could also have its own setup/cleanups
+class SlightlyMoreComplexTestcase(aetest.Testcase):
+
+    # providing this testcase a user-defined uid
+    uid = 'id_of_this_testcase'
+
+    @aetest.setup
+    def setup(self):
+        self.value = 1
+
+    @aetest.test
+    def another_trivial_test(self):
+        self.value += -1
+        assert self.value == 0
+
+    @aetest.cleanup
+    def cleanup(self):
+        del self.value
+=======================
+  - CommonCleanup is the last section to run within each testscript. Any configurations, initializations and environment changes that occured during this script run should be cleaned up (removed) here.
+  - CommonCleanup is an optional container section within each testscript. It is defined by inheriting the aetest.CommonCleanup class, and declaring one or more Subsections inside.
+  - Example:
+=======================
+#   an example common cleanup
+
+# import the aetest module
+from pyats import aetest
+
+# define a common cleanup section by inherting from aetest
+class ScriptCommonCleanup(aetest.CommonCleanup):
+
+    @aetest.subsection
+    def remove_testbed_configurations(self):
+        pass
+
+    @aetest.subsection
+    def disconnect_from_devices(self):
+        pass
+=======================
+
+  - "Subsections" are the bricks-and-mortars that make up CommonSetup and CommonCleanup. 
+  - When a CommonSetup or CommonCleanup class method is decorated with @subsection, the corresponding method name is used as the subsection name for result reporting.
+  - setup section is defined by decorating a Testcase class method with @aetest.setup decorator. It is optional to each testcase: if defined, it always runs before all other sections.
+  - "test" sections are the smallest units of testing and the most basic building block that makes up Testcase. Each test should carry out a single identifiable check/evaluation to be completed as part of the greater section.
+  - test section is defined by decorating a Testcase class method with @aetest.test decorator.
+  - cleanup is the last sub-division section within each Testcase. Any configurations, initializations & changes that occured during this testcase should be cleaned up (removed) here.
+
+AEtest Object Model:
+  - aetest testscripts: they import the AEtest module (from pyats import aetest), and has section definitions such as CommonSetup, Testcase, and CommonCleanup.
+  - During aetest execution, the infrastructure internally wraps the running testscript module into a "TestScript class" instance.
+  - "Container Classes" : CommonSetup, Testcase and CommonCleanup are the 3 different container classes in aetest. They are called container classes because they “house” other test sections, and all inherit from the base TestContainer.
+    - Container classes are seen directly in the user script: they are inherited directly within testscripts to define their corresponding sections.
+    - Container classes instances are iterables.
+    - Container class instances are callable.
+  - "Function Classes" : Subsection, SetupSection, TestSection and CleanupSection classes are function classes: they carry out a specific test function, and inherits from the base TestFunction class.
+  - Function classes and their object instances during execution is not normally directly accessible by the user .
+
+AEtest Runtime Behavior: 
+  - The word runtime, in this context, refers to the behavior and/or objects available when aetest scripts are executed
+  - variables are currently accessible through runtime:
+    - uids: current script execution Run IDS configuration
+    - groups: current script Testcase Grouping configuration
+  - Self: Within container classes such as CommonSetup, Testcase and CommonCleanup, self refers to the instance of that class, and remains consistent throughout the execution of that container.
+  - Self.value created is carried throughout the testcase. 
+  - Note: Each container class is only instantiated once, and every section (method) within it shares the same instance object, and can influence each other’s behaviors.
+
+AEtest Test Parameters:
+  - The collection of dynamic data that artificially affects the behavior of testscripts and testcases in aetest is called parameters.
+  - In a data-driven testing, testscripts are the doers, performing the act of testing a facet of some product. Its arguments and parameters are thus the input data that influences the specific acts of testing being carried out.
+  - Parameters enables users to write testcases and testscripts that are capable of being driven by inputs, varying the degree of testing, etc.
+  - Parameters are relative. TestScript parameters -> Testcase parameters -> TestSection parameters. in other words, childs inherits but shadows parent parameters. This is similar to Python Variable Scoping concept.
+  - Any arguments passed to the testscript before startup becomes part of the TestScript parameter.
+  - A callable parameter is a one that evaluates to True using callable. When a callable parameter is filled as a function argument to test sections, the infrastructure “calls” it, and uses its return value as the actual argument parameter.
+  - The only limitation with callable parameters is that they cannot have arguments. aetest would not know how to fulfill them during runtime.
+
+AEtest Loops
+  - CommonSetup/CommonCleanup : Unique within each testscript. They are run only once per testscript execution, and are not loopable.
+    - subsection within CommonSetup/CommonCleanup : Loopable, When a subsection is marked for looping, each of its iterations is reported as a new subsection.
+  - Testcases: Loopable,  Each iteration of a looping Testcase is reported individually as new testcase instances with different uid. When a Testcase is looped, all of its contents (setup, tests and cleanup) are run fully per each iteration.
+    - Setup and cleanup sections within each testcase is unique, and are run only once per Testcase. They cannot be looped individually, but if their parent Testcase is looped, then they are run once per Testcase iteration.
+    - Test sections within Testcase are loopable individually.
+  - Sections are marked for looping when they are decorated with @loop, and its looping parameters provided as decorator arguments.
+  - Arguments to the @loop decorator may also be callable, iterable, or a generator. 1> if an argument value is a callable, it is called, and its returns are then used as the actual loop argument value. 2> if an argument value is an iterable or a generator, the loop engine picks only one element from it at a time to build the next iteration, until it is exhausted.
+  - Dynamic Loop Marking: loop.mark() arguments & behaviors (including loop parameters & etc) are exactly identical to its sibling @loop decorator, with the only exception that its first input argument must be the target section method/class. Eg: loop.mark(Testcase_Two, a=[1,2,3]).
+
+AEtest Section Results:
+  - all script section have a result attribute, storing its current result using the corresponding result object
+  - TestContainer section’s result attribute represents the combined roll-up of all of its child section results. Eg, common setup’s result attribute stores the current combined rolled-up result of all of its subsections that ran so far.
+  - The default result for all sections is Passed, even if no meaningful actions and/or testings were carried out. 
+  - When python Exceptions are raised during the execution of any test sections and are caught by the aetest infrastructure, depending on the type of exception, a corresponding result is assigned to that running section:
+    - AssertionError exceptions and all of its subclasses corresponds to section result Failed, indicating a failed assertion test.
+    -  Exception and all of its subclasses corresponds to section result Errored, indicating of occurance of an un-handled test-code error.
+    - Ex: assert 1 == 0, "unfortunately 1 doesn't equal to 0" = Failed 
+    - Ex: KeyError: 'key does not exist' = ERRORED
+  - Within your test sections, use try ... except ... statements to handle any exceptions that are expected. This makes sure these expected exceptions do not propagate to the test infrastructure, polluting the results of current running sections.
+  - Result APIs
+    - Upon calling, the current section execution terminates immediately, returns and is set with the corresponding result. In other words, result apis can only be called once per script section, and all code immediately after it is not executed (similar to how return statement works).
+    - EX: TestItem.passed(reason, goto, from_exception, data), TestItem.skipped(reason, goto, from_exception, data) etc 
+    - All results apis accept optional arguments like reason, goto, from_exception, data. 
+  - Interaction Results:
+    - The class WebInteraction can pause test execution and notify a user via email that input is required. This email has a link to a webpage hosted by WebInteraction that has a form for the user to submit to give a result.
+    - Uses: from pyats.aetest.utils.interaction import WebInteraction
+    - rare to use it. 
+  - Result Counting: 
+    - In aetest, only TestContainer class’ results counts in the summary result numbers. Even though child sections within TestContainer classes have their own results, they are considered to be a part of its parent container, and their results is thus not counted for in the summary.
+    - Results only count : CommonSetup, Testcase and CommonCleanup.
+    - Results do not count: Subsection, SetupSection, TestSection and CleanupSections
+
+
+AEtest Section Steps:
+  - In aetest, testscripts are naturally broken down into TestContainers and TestFunctions.
+  - To divide sections into smaller steps, define section methods with the Reserved Parameters "steps" in its function arguments. 
+  - Each step is started by calling steps.start(), and providing it a short descriptive name for that new step. 
+  - When a script section is segmented using steps feature, that section’s result is calculated using the combined roll-up results of all its contained steps.
+  - The Step Objects also offers result APIs to that enables manual assignment of results to each step.
+  - By default, when a step’s result is not Passed, Passx, or Skipped, all remaining steps are avoided and the engine terminates the current test section immediately to achieve time-savings. This behavior can be avoided by providing continue_ = True to steps.start().
+  - Ex: with steps.start('the failed first step', continue_ = True):
+  - Nesting Steps
+    - Steps can be nested. If a new step is started before the current one finishes, it is called a child step of the current step. The . separator separates child indexes from the parent index. 
+    - Basically running sub-steps inside of steps test. Ex: Step1 , Step 1.1 and 1.2, 1.2.1 and 1.2.2 etc 
+  - Details and Report:
+    - When steps are created within script sections, a STEPS Report is always logged at the end of that section. This provides visual details in the log file on all steps taken during this section, their names and corresponding results.
+    - "report()" : generate the same steps report based on the current step and all of its child steps. 
+    - "details" : read-only property, returns a list of StepDetail namedtuple objects, listing out the current step and all of its child step information. Each StepDetail contains "index", "name" and "result".
+  - Step Debugging:
+    - It allows the user to send cli commands to currently connected testbed devices and/or run custom debugging functions before and after each step, without modifying the testscript.
+    - To use step debugging, a step debug input file (in YAML format) needs to be provided to aetest. The content of this file specifies where during script execution & what clis to send to which testbed devices and which functions to run.
+    -  The output of each command (regardless of error) is then logged to log file for debugging purposes. Also, users can provide functions/callables to run with the func keyword.
+  - Step Objects: Step feature is internally implemented using two classes "steps" and "step".
+    - "steps" is base container class, containing one or more "Step". Allows the creation, reporting and handling of more steps within.
+    - Step is a Context Manager, intended to be used in conjunction with python with statement. This is the workhorse class that offers, result apis, error/exception handling, continue on fail (continue_) feature, etc . 
+
+AEtest Running TestScripts:
+  - 2 Methods of running testscripts. 
+    - Standalone: running the testscript directly through Linux command-line, within a pyats instance. This allows independent execution of aetest scripts, with all logging outputs defaulted to screen printing only. Best for rapid, lightweight script development & iteration cycles without the need to create log archives, etc.
+    - There are many other possible use cases of aetest.main() under standalone execution. This mechanism provides maximum flexibility & debuggability to the end user, and simply runs aetest test infrastructure as is. For example, it can also be called directly in a python interactive shell, as long as you provide it the right arguments.
+    - Through Easypy: running the testscript as a task through Easypy Jobfiles. This method requires the use of Easypy - Runtime Environment, leverages all of the benefits it has to offer, and produces log & archives. Best suited for sanity/regression (official) executions where standard environments, reporting & log archiving is required, and when post-mortem debugging is necessary.
+  - Argument Propagation: 
+    - In Ex: sys.argv = ['python script.py', '-loglevel=INFO', '-my_arg=1', '-your_arg=2'] = aetest takes away -loglevel=INFO, and leave the rest in sys.argv for users to pass additional arguments to the testscript from the command line, and create their own parsers (eg, within a subsection) to make use of that additional information.
+  - Easypy Execution: Scripts executed with Easypy - Runtime Environment is called Easypy Execution. In this mode, all environment handling and control is set by the Easypy launcher.
+  - following features are available:
+    - multiple aetest test scripts can be executed together, aggregated within a job file.
+    - initial logging configuration is done by Easypy - Runtime Environment
+    - TaskLog, result report and archives are generated.
+    - uses Reporter for reporting & result tracking, generating result YAML file and result details and summary XML files.
+  - Each aetest script ran within a job file is called a task. 
+  - Standard Arguments: 
+    - aetest accepts a number of standard arguments that can be used to influence and/or change script execution behaviors. They can be provided either as command line arguments when running directly under Linux shell, or used as keyword arguments to aetest.main() and easypy.run().
+    - Ex: -help, -datafile, -max_failures etc 
+  - Testable: The definition of a testable in aetest is any object that can be loaded by aetest.loader module into a TestScript class instance and executed as a testscript without throwing errors.
+
+AEtest Section Processors:
+  - In aetest, functions and methods scheduled to run immediately before and after testscript sections are called pre-processors, post-processors, exception-processors. These programs possess the ability to process the given section based on its id, parameters and results, dynamically and directly affecting the outcome of testing.
+  - Use Cases for Section Processors:
+    - Pre-Processors: take snapshots of the current test environment information (eg, testbed configuration) or check the test environment and determine if the current section should run or not
+    - Post-Processors: access/validate the result of the section that just finished execution or check current test environment against previous snapshots (eg, router health-checking) or execute debug commands, collect dump files & etc
+    - Exception-Processors: take post exception snapshots of the current test environment information (eg, testbed configuration) when exception occurs or execute debug commands, collect dump files & etc when exception occurs or suppress a specified Exception and assign a result to the section.
+  - Definition & Arguments: Pre/post/exception processors are affixed to each script sections using @processors decorator, and providing it lists of objects for each condition.
+===========================
+Syntax
+------
+
+    @processors(pre = [list of pre-processor objects],
+                post = [list of post-processor objects],
+                exception = [list of exception-processor objects])
+===========================
+  - Pre/post/exception processors can be applied independently towards both test containers (CommonSetup, Testcase, CommonCleanup) and test sections (subsections, setup, test, cleanup).
+  - Results: Processors also have a result, which can be set in multiple ways. The section object and the processor object both have Result APIs which act in slightly different ways.
+  - Any result apis called from the processor object behave as expected, setting a result for that processor before moving on with execution. This result rolls up to the result of the parent section, so failing a processor will also mark a Testcase as failed. 
+  - Context Processors: Typical pre/post/exception-processors are just functions with a specific purpose. Context-processors, on the other hand, are similar to Python’s context managers in the sense that they can handle the before, after, and exceptions within a single class.
+  - Think of a context-processor as pre + post + exception processor all-in-one
+  - Global Processors: In addition to the ability to attach processors to classes & sections, it is also possible to define processors that run globally: before and after each and every defined script section (common setup/cleanup, subsection, testcases, setup/cleanup/tests), or on Exception occurance.
+    - To use global processors in your testscript, define a script-level dictionary named global_processors with pre, post and exception as the keys, and the values being a list of processor functions.
+===========================
+Global Processors Syntax
+------------------------
+
+    global_processors = {
+        'pre': [list of global pre-processor objects],
+        'post': [list of global post-processor objects],
+        'exception': [list of global exception-processor objects],
+        'context': [list of global context processor classes/functions]
+    }
+===========================
+    - global processors may be extremely useful in cases where you wish to run some functions before and after everything - for example, collecting code coverages (Cflow), and router healths (router health check), etc.
+  - Reporting: Processors dy default are not reported as sections of a test. This can be changed using the configuration option, or by using the processor.report decorator on the processor function itself
+  - Each processor appears as a child section of the Testcase/Test Section it is being applied to, similar to adding another Test Section to a Testcase, or a Step to a Test Section.
+
+AEtest Datafile Inputs:
+  - The datafile feature in AEtest allows users to run their testscript with an additional YAML based input file, allowing dynamic updates and/or overwrites to the current test script module with more information. 
+  - Usages & Behavior: To leverage this feature, run your testscript and provide the datafile Standard Arguments with full path/name to a YAML data file written in accordance to the Datafile Schema.
+  - Datafile can be used for dynamically update your testscript objects. As below:
+    - datafile updates the script’s module and classes directly, after the script is imported, before execution starts.
+    - Only module & classes level attributes and features may be provided via the datafile (eg, CommonSetup, Testcases, CommonCleanup). Function based sections such as test, subsection etc are not affected.
+    - Datafiles cannot assign and/or remove testcase loop feature: it may only update the base class’s attributes & parameters.
+    - Only a single datafile may be provided. However, each datafile may extend one or more datafiles, creating a chaining relationship effect. 
+  - Datafile Schema:
+    - extends (optional) : Use this field to extend an existing datafile. Allows datafiles to be chained together in extension relationships.
+    - parameters (optional): all key/values here becomes the testscript's base parameters
+    - processor (optional): global Pre/post processors to be used as part of this script run
+    - common_setup (optional): everything related to script's common_setup section
+      - common_setup can contain "parameters" and "processors" 
+    - testcases (optional): all testcase related info gets defined under here
+    - common_cleanup (optional): everything related to script's common_cleanup section
+  - Ex: https://pubhub.devnetcloud.com/media/pyats/docs/aetest/datafile.html#id1
+=========================
+# Example
+# -------
+#
+#   the following is an example datafile yaml file
+
+extends: sanity_data.yaml
+
+parameters:
+    ip_seed: 1.1.1.1
+    vlan: 4382
+    traffic_streams: 50
+
+processors:
+    pre:
+        - cflow.init_instrumentation
+        - router_health.reset
+
+    post:
+        - cflow.collect_results
+        - router_health.collect_health_info
+
+testcases:
+    MyTestcase_One:
+        uid: alternative_uid_1
+        groups: [sanity, regression, ha]
+
+        parameters:
+            input_one: 1000
+            input_two: 2000
+
+        expected_routes: 35
+
+    MyTestcase_Two:
+        uid: alternative_uid_2
+        groups: [sanity, regression, ha, stability]
+
+        parameters:
+            input_x: 2000
+            input_y: 3000
+=========================
+  - Basically you can write a script for many eVPN based DC and then supply datafile per DC to supply parameters etc 
+
+AEtest Flow Control: Control features described in this section are entirely optional.
+  - Control features allows users to master the flow of the testscript, performing actions such as breaking the execution continuity and jumping ahead, skipping or only executing specific testcases by uid, grouping testcases together, etc.
+  - Skip Conditions
+    - @aetest.skip(reason = 'message'): unconditionally skip the decorated section. reason should describe why that section is being skipped.
+    - aetest.skip.affix(testcase, reason): depending on one testcase result, the other testcases can be skipped.
+    - @aetest.skipIf(condition, reason = 'message'): skip the decorated test section if condition is True.
+    - aetest.skipIf.affix(testcase, condition, reason): It can be used to assign skipIf decorator to the testcases, condition can be a callable or a boolean.
+    - @aetest.skipUnless(condition, reason = 'message'): skip the decorated test section unless condition is True.
+    - aetest.skipUnless.affix(testcase, condition, reason): Can be used on the fly to assign decorators to the testcases
+  - Run IDS:  Run uids is the concept of only executing testcases & sections with uids that matches up to a particular requirement. It provides users direct, finer control before and during execution, over which sections to run, and which sections to skip over.
+    - two methods of providing: a. through Standard Arguments as part of script run arguments  or b. by setting runtime variable, runtime.uids dynamically during execution.
+    - from pyats.datastructures.logic import And, Or, Not : 
+=========================
+# run the testscript with a bunch of logic involved
+# eg: both common_setup and common_cleanup,
+#     and all bgp and ospf non-sanity traffic tests.
+run('example_script.py', uids = Or('common_setup',
+                                   And('^bgp.+', '.*traffic.*', Not('sanity')),
+                                   And('^ospf.+', '.*traffic.*', Not('sanity')),
+                                   'common_cleanup'))
+=========================
+  - Testcase Grouping: Enables testcases to be “associated” together by certain keywords, allowing a testscript execution be limited to only running testcases of one or more particular groups that matches up to input criterion.
+  - Ex:
+=========================
+from pyats.easypy import run
+
+# import the logic objects
+from pyats.datastructures.logic import And, Not
+
+# same as above, run sanity non-traffic testcases
+run('example_script.py', groups = And('sanity', Not('traffic')))
+
+=========================
+  - Requisite Testcase: Allows users to mark important testcases as must pass: if such testcases failed, the current script execution is aborted automatically by jumping forward to "CommonCleanup" section using "Goto".
+  - To mark testcases as requisite or must pass, set its attribute must_pass to True. By default, no testcase is “requisite”, eg, must_pass = False.
+  - "must_pass = True" test fails then testscript moves to "Common Cleanup". It marks test criticallity and not as dependency. 
+  - "Testcase Randomization" 
+    - By default, testcase randomization is turned off, and all testcases are executed in the order described by Section Ordering. To turn on randomization, set Standard Arguments random=True. This causes all testcases within the current testscript to be shuffled before execution.
+    - Run as "aetest.main(random = True)" 
+  - Maximum Failures: To use this feature, set Standard Arguments "max_failures" to an integer value. During execution, if the total number of failed Testcases reaches the provided value, the script auto-aborts by jumping forward to CommonCleanup section using Goto.
+    - Run as "aetest.main(max_failures = 1)" 
+  - Goto: Allows a one-way transfer of control to another line of code.
+    - This was born out of pure necessity: router testing is a heavily time-consuming process, and any time saving measures is a plus.
+    - Sections bypassed after section "Passed" jump are marked as "Skipped" and Sections bypassed after section "Not Passed" jump are marked as "Blocked".
+    - If a goto target is invalid or does not exist, the test engine gives the current section a result of Errored and continues executing.
+  - Custom Discovery and Order (Advanced feature) : ScriptDiscovery finds testcases within a testscript. TestcaseDiscovery finds testsections within a testcase CommonDiscovery finds subsections within a common section
+    - This is basically used when you want to extend classes like Discover, Setup and Cleanup. 
+
+AEtest Report Details: When aetest finishes running a testscript, an overall summary report is provided to the user. This report provides an outlook of what testcases were run, and what their results are. Depending on the execution mode, this reporting behavior may differ.
+  - Standalone Reporter: Default reporter used when aetest scripts are run directly from the commandline via Standalone Execution. 
+    - Directly prints testcases, sections and steps information to the screen at the end of of the run in a tree-structure format.
+  - AETest Reporter: When testscripts are run under Easypy Execution mode, Reporter is used to collect test run information.
+
+AETest Debugging Resources: 
+  - PDB & Multiprocessing: Note: pdb does not play well with python Multiprocessing module. When multiprocessing forks a child process, it closes the stdin as part of the default child process bootstrap. Thus, as pdb relies on stdin to provide an interactive session, it crashes with cryptic exception like : f self.quitting: raise BdbQuit etc 
+    - To avoid above issue, use "Easypy Task argument pdb = True, which automatically opens /dev/stdin in the given task process, and also turning on PDB on Failure." 
+    - Can be run as "aetest.main(pdb = True)", USE IT FOR Debugging ONLY 
+  - Pause on Phrase: Allows you to pause on any log messages generated by the current script run, without requiring any modifications to the scripts and/or its libraries. When enabled, it actively filters all log messages propagated to the logging.root logger, and pauses when a match is found.
+    - It can send email with pause file, pause and open up pdb at caller stack or pauses and opens a Python Interactive Shell at the caller stack.
+    - the default action is email: when the script is paused after matching a log phrase, it sends a notification email to the current executing user, including with it the instructions on how to resume execution (eg, remove the pause file).
+    - use "import logging" in conjunction with logger.info('i should pause') && aetest.main(pause_on = dict(action = 'code', patterns = [{'pattern': 'i should pause'}]))
+
+AETest Examples: 	
+  - Check one-off directory on dev box 
+  - running with easypy job creates archives that can be accessed via json, xml and send via email etc 
+  - Feature Usage: Although loops and Flow Control features can be used (hard-coded) directly in your main testscript, a good practice to follow is to always:
+    - develop a library of testcases, then
+    - build and control your testscripts by reference and inheritance.
+    - See ex of class inheritance
+
+Easypy - Runtime Environment
+============================
+  - Easypy provides a standardized runtime environment for testscript execution in pyATS. It offers a simple, straight-forward way for users to aggregate testscripts together into jobs, integrates various pyATS modules together into a collectively managed ecosystem, and archives all resulting information for post-mortem debugging.
+  - Features:
+    - Jobs: aggregation of multiple testscripts into one job.
+    - TaskLog: stores all runtime log outputs to TaskLog.
+    - E-mail Notification: emails the user result information upon finishing.
+    - Multiprocessing Integration: executes each jobfile Task in a child process, and configures the environment to allow for hands-off forking.
+    - Clean: clean/brings up the current testbed with new images & fresh configuration.
+    - Plugins: plugin-based design, allowing custom user injections to alter and/or enhance the current runtime environment.
+  - Easypy can be installed and upgraded using pip 
+
+Easypy Jobfile & Tasks:
+  - Job: The aggregation of multiple testscripts together and executed within the same runtime environment. 
+  - Jobfile: a standard python file containing the instructions of which testscripts to run, and how to run them.
+    - Allows aggregation of multiple testscripts to run under the same environment as tasks, sharing testbeds, and archiving their logs and results together. 
+  - Jobfiles are required to satisfy the following criterion:
+    - each job file must have a main() function defined. This is the main entry point of a job file run.
+    - the main() function accepts an argument called runtime. When defined, the engine automatically passes the current runtime object in.
+    - inside the main() function, use easypy.run() or easypy.Task() to define and run individual testscripts as Tasks.
+    - the name of the job file, minus the .py extension, becomes this job’s reporting name. This can be modified by setting runtime.job.name attribute.
+  - Easypy task : It is essentially a testscript being executed by a test-harness like aetest in a child process. They exhibit the following properties:
+    - each task is encapsulated in its own child process, forked from main easypy program.
+    - each task contains a single TaskLog where all messages are logged to.
+    - all tasks report to their results via Reporter.
+    - the rolled up script result of each task is returned to the caller.
+  - when a task is running, its Linux process name shows up as easypy task: <taskid> - <testscript>
+  - run() API: Shortcut to Task Class for running tasks in a sequential (serial) fashion. It helps the user to avoid boilerplate code that handles Task class overheads, and always performs the following:
+    - create & start a Task() with the given arguments
+    - wait for it to finish (optionally, safeguard against runaway situations with max_runtime)
+    - return the task’s result back to the caller.
+  - run() Function Arguments:
+    - testscript: testscript to be run in this task
+    - taskid: unique task id (defaults to Task-# where # is an incrementing number)
+    - max_runtime: maximum tax runtime in seconds before termination
+    - runtime: easypy runtime object
+    - kwargs: any other keyword-arguments to be passed to the testscript as script parameters
+  - Task Class: Task class objects represent the task/testscript being executed in a child process. It is a subclass of Python multiprocessing.Process class, and always uses multiproessing.get_context('fork') to fork and create child processes.
+    - The task is started only when its start() method is called to start the child process’s activity.
+    - Ex:  task_1 = Task(testscript = 'script_one.py', runtime = runtime, taskid = 'example_task_1') then task_1.start()
+    - The main advantage of using Task class directly is the ability to run tasks asynchronously (in parallel), and an added level of more granular controls over each task process.
+  - Easypy Log Levels:Jobfiles are the perfect location to configure log levels for your testscripts and libraries. To do so, import the logging module and set your desired log levels for each of your modules and libraries.
+    - the default TaskLog logging level is logging.INFO.
+    - Use general python logging process. 
+  - Shared States: As all Tasks are encapsulated in its own child process, sharing information between tasks can be done via the use of shared memory, eg: using Pipes and Queues, Shared ctypes Objects or Server Processes.
+    - runtime provides a multiprocessing manager instance called runtime.synchro
+
+Using Easypy:
+  - Easypy comes with its own command line entrypoint: pyats run job.
+  - jobfile is a positional argument, and must be provided first before all other arguments.
+  - use as an argument with directory where HTML logs should be put to: "yats run job /path/to/jobfile.py --html-logs /path/to/directory/" 
+  - --html-logs: generates an HTML formatted, user-friendly log file TaskLog.html in addition to existing text-based log file.
+  - More Standard Arguments : https://pubhub.devnetcloud.com/media/pyats/docs/easypy/usages.html#standard-arguments
+  - Argument Propagation: Parsers only take what they know, and leave behind what they don’t know for the next parser to continue parsing. This allows parsing to occur in sequential stages, wherever needed.
+    - Because argument propagation only parses known arguments, any typos would be treated as an unknown argument and propagated further.
+
+Easypy Behavior & Flow: 
+  - Easypy Return Codes
+    - Code 0: Success
+    - Code 1 : Non-100% testcase success rate
+    - Code 2 : Incorrect command-line arguments
+    - Code 3 : Some errors/exceptions are seen while running plugins
+    - Code 4 : All other exceptions unhandled by the infrastructure (unknown)
+  - Return codes give test runners such as Jenkins one way of determining if the pyats run job run was successful.
+  - Graceful Termination: On first ctrl-c, all child processes should begin aborting the current execution (quick-exit). The main Easypy process continues to wait for all child processes and Tasks to wrap-up execution. The email report, archive, upload logs etc still occur after everything finalizes.If second ctrl-c is received, the main Easypy process is quickly aborted & crashed out.
+  - runtime: When a job is running, the runtime object allows users to query to current Easypy states, objects and input argument information.
+  - TestBed:
+    - When a Task executes a testscript, a testbed parameter is always provided by default. Testing is always done on a testbed.
+    - TestBed can loaded from CLI using --testbed-file or manually inside the job file like below:
+==================
+# import topology module
+from pyats import topology
+
+# manually load your testbed files
+testbed_1 = topology.loader.load('/path/to/testbed_1.yaml')
+testbed_2 = topology.loader.load('/path/to/testbed_2.yaml')
+testbed_3 = topology.loader.load('/path/to/testbed_3.yaml')
+==================
+  - runinfo: During Easypy execution, runinfo folder contains all the logs, files & etc generated by the running jobfile and tasks. Each job is assigned its own unique runinfo directory, based on its name and the time of launch.
+  - archive: By default, at the end of Easypy execution, the contents of runinfo is archived into a zip file, and the jobfile runinfo directory is deleted. This behavior can be averted by using --no-archive option.
+  - Archives are stored under each user’s ./users/<userid>/archive/YY-MM/ directory, where YY-MM represents the current year and month in double digits, providing some level of division/classification between jobs.
+
+Easypy Plugin System:
+  - It is intended for advanced developers to provide optional pluggable Easypy features for other developers to use.
+  - Plugins offers optional functionalities that may be added to Easypy. Each plugin must be configured first via a configuration YAML file before they can be loaded, instantiated and run at various stages of execution.
+  - Creating Plugins: To create a plugin, simply subclass "easypy.plugins.bases.BasePlugin" class and define the stages where your plugin needs to run.
+  - By default, all plugin errors are automatically caught and handled by BasePlugin.error_handler() method, which registers the error and prevent the system from crashing.
+
+Easypy Automatic Reruns:
+  - Rerun Plugin provides an important functionality that allows users to rerun some of their testcases. These testcases are determined either through explicit selection, or the results of the same testcases in a previous run. Any testcases that do not match the provided criteria are not executed and do not appear in the final report.
+  - Users may use the --rerun-file argument to provide a “rerun.results” file which details the results of all testcases from a previous run in YAML format.
+  - "--rerun-condition" accepts a list of Result Objects to determine which testcases to rerun. The result of each testcase in the “rerun.results” file must match one of the results in the --rerun-condition list to be executed. Passed is not accepted as a rerun condition, and the default list is all result types except Passed.
+  - Rerun Selection File: Users may also wish to specify testcases to rerun regardless of their previous results. To do this, a YAML file with a similar format as “rerun.results” can be created. 
+  - Basically re-runs failed jobs, will skip test case or test task if condition to re run didnt match. 
+  - Ex: "pyats run job basic_example_job.py --rerun-file path/to/rerun.results --rerun-condition Failed" 
+
+
+Testbed & Topology Information
+==============================
+PyATS Topology:
+  - The topology module is designed to provide an intuitive and standardized method for users to define, handle and query testbed/device/interface/link description, metadata, and their interconnections.
+  - 2 major functionalities to topology module:
+    - defining and describing testbed metadata using YAML, standardizing the format of the YAML file, and loading it into corresponding testbed objects.
+    - query testbed topology, metadata and interconnect information via testbed object attributes and properties.
+
+Everything is an Object:
+  - As opposed to creating a module where the topology information is stored internally, and asking users to query that information via API calls, pyATS topology module approached the design from a completely different angle:
+    - using objects to represent real-world testbed devices
+    - using object attributes & properties to store testbed information and meta-data
+    - using object relationships (references/pointers to other objects) to represent topology interconnects
+    - using object references & python garbage collection to clean up testbed left-overs when objects are no longer referenced.
+  - Testbed object is the top container object, containing all testbed devices and all subsequent information that is generic to the testbed. 
+  - Note: Within a testbed, links & device names must be unique
+
+Device Objects:
+  - Device objects represent any piece of physical and/or virtual hardware that constitutes an important part of a testbed topology.
+  - each device may belong to a testbed (added to a Testbed object)
+  - each device may host arbitrary number of interfaces (Interface objects)
+  - interface names must be unique within a device
+
+Interface Objects:
+  - Interface objects represent any piece of physical/virtual interface/port that connects to a link of some sort. Eg: Ethernet, ATM, Loopback.
+  - each interface connects to a single link (Link object)
+  - each interface should belong to a parent device (Device object)
+  - within a parent device, each interface name needs to be unique
+  
+Link Objects:
+  - Link objects represent the connection between two or more interfaces within a testbed topology. Note that in the case of a link connected to more than two interfaces, the link can also be interpreted as a layer-2 switch.
+  - link names within a testbed must be unique
+  - links may contain one or more interfaces (Interface object)
+  
+Creating Topology:
+  - There are two ways to create a topology within your testscript:
+    - create each testbed object from topology module classes and craft their interconnects together manually (eg, by assigning interfaces to each device).
+    - create a YAML testbed description file, and load it using the topology loader function.
+  - Another advantage of using testbed files is to leverage the built-in markup feature. Whereas standard YAML format does not allow variable substitution and references, topology.loader effectively added this using specific syntax (markups) similar to the Django template language.
+  - Ex: use %{ } to denote the begin and end of a markup block
+  - Ex: The %ENV{ } form causes the environment variable name to be replaced with the actual environment value from the os.
+====================
+#   %{<path>.<path>.<...>}
+#   %INTF{logical_interface_name}
+#   %ENV{environment_variable_name}
+#   %CALLABLE{path_to_callable}
+#   %CALLABLE{path_to_callable(param1,param2,param3)}
+#   %INCLUDE{yaml_file_path}
+#   %ASK{optional prompt text}
+#   %ENC{encoded text}
+#   %ENC{encoded text, prefix=x}
+#   %CLI(cli_argument_name}
+====================
+  - Make sure to enclose your markup in quotes if it occurs directly after a colon. For example: line: "%{testbed.passwords.enable}"
+  - Testbed file can be broken down in multiple yaml files with the extend key. Let’s say this file is named tb1.yaml and tb2.yaml, use "extends: tb1.yaml" in tb2.yaml which at run time, will merge tb1.yaml and tb2.yaml together to create a merged testbed.
+
+Using Topology Objects:
+  - Device Connection Manager: "Device" class natively only contains the meta-data and the interconnect information related to testbed device. 
+  - Each "Device" object is instantiated with a "connectionmgr" attribute that contains an instance of "ConnectionManager", and contains all of the current active connections to the managed device.
+  - Simplfied :
+    - device connections are handled by a ConnectionManager instance, under device.connectionmgr attribute
+    - device attributes are compounded with attributes of this connection manager. Eg. calling device.connect() is the same as calling device.connectionmgr.connect()
+  - Connect To All Devices: "Testbed" object also provides a convenience function, "Testbed.connect()", allowing you to establish asynchronous connection to multiple testbed devices at the same time.
+  - Querying Topology:
+    - Testbed contains one or more Device
+    - Device contains zero or more Interface
+    - Interface may be connected to a Link
+    - Link connects one or more Interface together
+  - Device & Interface Aliases: As long as the testscript does not hard-code device and interface names, and instead refers to them using aliases, the script would remain agnostic, and run on any similarly configured testbeds with the same topology.
+  - Add, Modify & Delete: estbed objects are mutable and non-singletons. This means that at anytime, you can modify their attributes & connection properties as needed. Keep in mind that the following rules still apply:
+    - Testbed device names must be unique (within the testbed)
+    - Testbed link names must be unique (within the testbed)
+    - Device interface names must be unique (within the device)
+
+Topology Schema:
+  - The schema controls what information can go into the testbed file, and how that information should be structured. All testbed files loaded through topology.loader are checked against the production schema.
+  - Production YAML Schema : https://pubhub.devnetcloud.com/media/pyats/docs/topology/schema.html
+  - Ex TestBed File: https://pubhub.devnetcloud.com/media/pyats/docs/topology/example.html
+
+Testbed & Device Cleaning 
+=========================
+  - Kleenex: A framework designed to standardize the process and implementation of the provisioning and cleaning of testbed topologies and devices.
+  - Kleenex offers the base infrastructure required by all clean implementations:
+    - integration with Easypy - Runtime Environment and Testbed Objects
+    - structured input format & information grouping through a Clean File
+    - automatic asynchronous device cleaning
+    - runtime, exception & logging handling
+  - Kleenex Clean standardizes how users implement platform-specific clean methods, providing the necessary entry points and subprocess management.
+
+Usage & Arguments:
+  - There are two primary methods of invoking the functionalities provided by kleenex module: Decoupled & Easypy Integration
+  - Decoupled Execution: Kleenex is run under decoupled mode when launched using the kleenex command-line executable. Under this mode, the user is given absolute control over the execution environment, and Kleenex will simply ready-up the testbed. 
+  - Decoupled Execution generally used for 1. cleaning/recovering testbed devices to an initial state independent of any script run and 2.preparing a testbed for script development purposes, eg, developing, debugging etc 
+  - Easypy Integration: All environment handling and control is set by the Easypy launcher, and Kleenex is simply run as as a plugin, before and after the job & its tasks runs:
+    - provision & clean the testbed before job and/or task run
+    - teardown the testbed when everything finishes, or when errors are encountered
+    - store all logs inside the Easypy runinfo archive
+  - Clean is only invoked when the --invoke-clean parameter is specified.
+
+Input Files:
+  - Kleenex introduces a new input file, responsible for feeding different information to the runtime engine: the clean_file. This file comes with its own schema, and is defined using YAML format.
+  - Clean File: A clean file is considered to mostly contain the corresponding volatile information, eg:
+    - which clean implementation to use, what is the cleaning sequence
+    - arguments for instantiating and running each cleaner
+    - where device images (and pies/SMUs, if applicable) are located
+    - specific information related to device cleaning and image loading
+    - base configuration required to operate each device
+    - etc 
+  - When Kleenex loads a testbed’s clean file, its content is parsed and stored (updated) into the Device.clean attribute of each Device object. 
+  -  Testbed File Markups are allowed in clean YAML files: %ENV, %CALLABLE, %INCLUDE
+
+Cleaning Model:
+  - The Kleenex clean model is fairly straight forward: a common, built-in internal clean engine takes care of the common mundane infrastructure work, and the individual clean classes selected by the clean file carry out the actual work.
+  - A clean class is a device and/or platform family specific clean implementation, carrying out whatever work is necessary to recover/initialize a device with new images and set its configuration back to default (bare minimum).
+  - Clean Engine
+    - An integral, non-changeable internal component to Kleenex
+    - Sets up runtime directory & logfiles
+    - loading and parsing Clean File and testbed file (if necessary)
+    - applying clean file content towards testbed device objects
+    - error handling, email notification, etc.
+  - Clean Classes: clean classes are only responsible of handling/cleaning one device at a time, performing what is necessary to do the act of “clean”
+  - During runtime, the kleenex engine actually performs all cleaning in an asynchronous manner: it forks one subprocess per device and cleans all required devices in parallel.
+  - Clean Reporting: The results of cleaning for each device is found inside of the results.json file generated at the end of a pyats job or clean. The way a cleaner implementation indicates failure is by raising an exception inside its clean API.
+  - Clean Steps: Users may choose to slice a device clean into a series of steps that are individually logged and included in the CleanResultsDetails.yaml report.
+
+Connection Meta
+===============
+  - The connections module is a middleware, providing the basis to how each connection type should be implemented, and interfacing between devices these connection implementations. It features three primary classes:
+    - ConnectionManager: The behind-the-scene director that binds connections to topology.Device objects. Each topology.Device instance is assigned its own ConnectionManager, which controls all connections to the testbed device this object represents.
+    - BaseConnection: Template class, providing the basis for various user imitations & implementations of an actual device connection (eg, telnet to console cli).
+    - ConnectionPool: Connection-like implementation that allows users to create a “pool” of similar-type connections and share them in a multi-processing environment.
+  - Installation and Upgrade: "pip install pyats.connections"  and "pip install pyats.connections --upgrade"
+  
+Integration: 
+  - When given a Device object, users should be able to directly interface (eg, connect, send/receive commands) with the actual device, without having to consciously involve anything else.
+  - Single Instance: The most simplistic usage scenarios of connections is to just open a single connection instance to a testbed device. To do so, simply invoke the Device.connect() method directly. 
+  - Multiple Instance: When opening multiple connection instances, each connection must be provided with its own unique alias for identification purpose.
+  - Multiple connection instances start to make sense when you want to perform many show commands at the same time through asychronous means (eg, multiprocessing, threading, etc).
+  
+Connection Manager:
+  - As the behind-the-scene director, ConnectionManager is pivotal in binding each connections to topology.Device.
+  - Advanced topic, read after few scripts. https://pubhub.devnetcloud.com/media/pyats/docs/connections/manager.html
+
+Connection Class: 
+  - Connection classes are the workhorse of the connection model: their implementation represents the actual connection pipeline, carrying information back and forth from the scripter’s realm to their testbed devices.
+  - Do not confuse ConnectionManager.connect() and connection class’ YourConnection.connect(): the former is a factory class creating new connection instances; the latter is the action that opens/establishes the actual connection.
+
+Connection Hook:
+  - Whereas a connection class provides the fundamentals of communicating to target devices using object methods (services), the goal of a connection hook is to tap onto particular services and inject code to run before and after the actual service call, without modifying the original behavior.
+
+Connection Sharing:
+  - Connections are typically synchronous resources, eg, each may be only used by one process/thread/object at a time. Simultaneous accesses to the same connection (by different process/thread) typically ends up in a race condition, with both ends failing to get what they needed and the output garbled.
+  - Use the @BaseConnection.locked decorator on methods that are prone to race conditions when called simultaneously.
+  - Connection Pools: Connection pool is a feature-add to ConnectionManager, allowing multiple of the same type of connections (a.k.a. workers) to be pooled under the same alias, distributing action requests to any free workers within the pool in a multiprogramming environment.
+    - Connection pool operates under a first come first serve model, where a free worker is allocated to the first requestor to do its desired work. 
+    - By default, if all workers are currently busy, new requests will wait indefinitely until a worker is freed to do its deeds. This behavior can be changed by setting a timeout value: connect(..., pool_timeout=x), where x is an integer in seconds. If a worker cannot be allocated in the given time frame, a TimeoutError exception is raised.
+
+Asynchronous Library:
+=====================
+  - Asynchronous (async) execution defines the ability to run programs and functions in parallel and (possibly) independent of the main program flow. The proper use of async execution can greatly improve of performance of a program, and is only bounded by the physical number of CPUs and I/O limits.
+
+Asynchronous Methods:
+  - "asyncio" is a newly added module since Python 3.4. The main goal of this module is to provide native Python support for coroutines, event loops, tasks and asynchronous I/O.
+    - asyncio, coroutines and event-loops are not true parallelism. They are concurrent in the sense that their states are kept independent of each other, but are not run in parallel: at any given time, only one of the coroutines is running (whilst the others are suspended), irregardless of the number of CPU/cores. Coroutines are not threads: whereas threads are run in parallel at the same time, coroutines collaborate and only run one at a time.
+    - asyncio is so new that it is still receiving updates, and is therefore provided on a provisional basis (eg, no backwards compatibility guarantee).
+  - Threading: Python Threading module provides a very user-friendly interface to create, handle and manage threads within the current process. Threads are very lightweight and also natively shares memory and objects within the same process.
+    - A hanging thread, hangs forever in python: threads cannot be killed. The use of threads in Python requires careful designs & coding, revolving around the use of object locks & such in order to make your code thread-safe.
+  - Multiprocessing: Python Multiprocessing module allows users to spawn/fork child processes using an API interface similar to that of Threading 
+  - benefits of using multiprocessing:
+    - separate memory space: no race conditions (except with external systems)
+    - no Global Interpreter Lock, takes full advantage of multiple CPU/cores
+    - child processes are easily interruptable/killable
+  - For all intents and purposes, users of pyATS should be mostly focused with using Multiprocessing module and functionalities.
+  - Module Integration: 
+  - Python "multiprocessing" library is used throughout pyATS as the de-facto standard in parallel processing & asynchronous execution, with fork being always used as the context for creating child processes.
+  - Pickle: Pickling describes the method of serializing and de-serializing Python objects. Due to the nature of inter-process communication, all objects passed/shared through Pipes/Queues needs to be pickleable by the Python pickle module.
+  - Essentially, objects are converted into byte streams during pickling, and reconstructed in the unpickling inverse operation. All Python objects are pickled before they are sent through Pipes/Queues in Multiprocessing, and automatically reconstructed (unpickled) in the other end.
+  - Easypy uses multiprocessing to fork child processes per each jobfile tasks. This allows each task (and its corresponding testscript) to run within its own memory space, independent of each other.
+  - Logging: Python logging is not process-aware (it is thread safe, though). It is typically up to the user to reconfigure logging to emit to different log files per process. Easypy automatically attaches TaskLogHandler to logging so that one TaskLog is created per Task. In addition, Easypy also configures it so that when forks of a Task process is created, a new log file is also automatically created.
+  - Reporter: Easypy uses Reporter to aggregate Task result reports. This is a Unix socket-based server-client model, with each Task having its own ReportClient connection client object that talks to the parent Reporter server. 
+
+Parallel Call:
+  - Parallel call pcall is an API provided by async module that supports calling procedures and functions in parallel using multiprocessing fork, without having to write boilerplate code to handle the overhead of process creation, waiting and terminations.
+  - Consider pcall as a shortcut library to multiprocessing, intended to satisfying most users’ need for parallel processing. However, for more custom & advanced use cases, stick with direct usages of multiprocessing.
+  - Usages: pcall API allows users to call any function/method (a.k.a. target) in parallel. It comes with the following built-in features:
+    - builds arguments for each child process/instance
+    - creates, handles and gracefully terminates all processes
+    - returns target results in their called order
+    - re-raises child process errors in the parent process
+  - In essense, arguments to pcall are zipped together to create multiple calls to the given target(s), and run concurrently through forked child processes. The number of child processes forked is automatically optimized based on the number of target calls, arguments and so on.
+  - Single Target: When only a single target function is passed through pcall, the number of parallel instances is controlled by the number of instance arguments. If both positional and keyword instance arguments are used together, their numbers of iterations must match, otherwise any extra iterations are tossed away.
+  - Multiple Targets: When a list of target functions is provided to pcall, each target is run within its own child process, and elements of iargs and ikwargs directly corresponds to each target in the same order as they appear.
+  - Errors and Timeouts: When exceptions occur in child processes invoked by pcall, they are caught, and re-raised within the calling process as ChildProcessException.
+  - When child processes exceed the provided timeout value, SIGTERM is sent to each child process, and TimeoutError is raised in the calling process.
+  - Logging: By default, each Pcall process will log to its own forked tasklog file while it runs. This ensures that concurrent log messages are not interleaved within the same file. Once the Pcall finishes (eg, Pcall.join() is called), the log files will automatically be joined into the main tasklog, with each process having its own section.
+
+Using Multiprocessing:
+  - Because of the high-degree of automated process handling & configurations done by Easypy - Runtime Environment, in pyATS, users are encouraged to use multiprocessing module directly to achieve parallelism in their code/scripts without needing to worry about things like logging and reporting.
+  - Ex: https://pubhub.devnetcloud.com/media/pyats/docs/async/multiprocessing.html
+  - When using multiprocessing module directly, beware of the following:
+    - users are responsible of gracefully handling and terminating their own processes. At the end of Easypy, all outstanding child processes are terminated without mercy.
+    - resources such as testbeds, devices, device telnet/ssh connections & etc are shared system resources. Therefore, if you only have a single console connection to a device, sharing that connection between multiple processes will result in race conditions & deadlocks.
+
+Semaphores:
+  - Semaphores are abstract data types used for controlling access, by multiple processes, to a common resource. 
+  - Lockable: async.synchronize.Lockable is a class featured in the Async module that users can inherit directly from. It contains a built-in Reentrant Mutex multiprocessing.RLock(), allowing its subclass instances to be multiprocessing-safe, eg, its method calls protected from multiprocessing race condition, where only one process and/or thread can make a call at any given moment (eg, code-based locking). To take advantage of it, simply inherit, and decorate all your “shared” methods using @Lockable.locked decorator.
+  - @Lockable.locked automatically adds method locking & unlocking to the decorated method: locks the instance when it is called, and unlocks after it returns. 
+  - In addition to the decorator, this class also comes with two public methods:
+    - Lockable.acquire(blocking=True, timeout=None)
+    - Lockable.release()
+  - Note that if acquire() was called multiple times due to recursion, release() need to be called in the exact reverse order.
+  
+Datastructures:
+===============
+
+Attribute Dictionaries:
+  - AttrDict, Attribute Dictionary, is the exact same as a python native dict, except that in most cases, you can use the dictionary key as if it was an object attribute instead. 
+  - Create an AttrDict the same way as creating your typical dict objects.
+========================
+Ex:
+# Example
+# -------
+#
+#   attribute dictionary access
+
+from pyats.datastructures import AttrDict
+attrdict = AttrDict(key = 'value', a = 1)
+
+# access it as if it was a dictionary
+attrdict['key']
+# 'value'
+attrdict['a']
+# 1
+
+# access it as attributes
+attrdict.key
+# 'value'
+attrdict.a
+# 1
+
+# set attributes is the same as adding new keys
+#   same as attrdict['b'] = 2
+attrdict.b = 2
+attrdict
+# AttrDict({'b': 2, 'a': 1, 'key': 'value'})
+========================
+  - all other native dict behaviors and APIs are unchanged.
+  - Limitations of attrdict:
+    - in order to access a value as an attribute, its key must of type str (in standard python dict, keys can be any hashable objects)
+    - keys with characters such as -, ., \ etc, cannot be accessed as attributes. This is due to the limitation of python identifiers.
+
+  - NestedAttrDict: Nested attribute dictionary is a special subclass of AttrDict that recognizes when its key values are other dictionaries, and auto-convert them automatically into further NestedAttrDict. 
+========================
+Ex:
+# Example
+# -------
+#
+#   NestedAttrDict use case
+
+from pyats.datastructures import NestedAttrDict
+
+# if we had a big nested dict structure
+my_dict = {
+    'a': 1,
+    'b': 2,
+    'c': {
+        'x': 10,
+        'y': 20,
+        'z': {
+            'value': 100,
+        },
+    },
+}
+
+# create a nested attribute dictionary
+obj = NestedAttrDict(my_dict)
+
+# now you can access it via chaining
+obj.c.z.value
+# 100
+========================
+  - Limitations of NestedAttrDict:
+    - NestedAttrDict inherits the same limitations as AttrDict where the key names, if accessed as attributes, can only be strings without special characters
+    - When nested dictionaries are detected on set or update, they are auto converted into a new instance of NestedAttrDict.
+    - Key methods supports using . separator to perform automated nested access.
+
+Weak List References:
+  - A WeakList instance is the exact same as a python list, except that it only stores weak references (using weakref.ref()) of the objects. All access (add/delete/comparison/slicing) is still the same as native list, done with the actual objects. This gives it a specific behavior where if an object it references is no longer alive (eg, cleaned up by gc), it is cleaned up and removed from the WeakList.
+  - This can be extremely useful when you need to build a list of something without incrementing its reference counters.
+  - Created: "from pyats.datastructures import WeakList"  and wl = WeakList(l) where l is list of objects. 
+  - Access: All list usage patterns & APIs work also on WeakList. From a usability perspective, all access appears as if you are dealing with a standard list object, except that the internally stored references are weak references.
+  - Essentially, the sole difference between a list and WeakList is how reference to objects are stored internally. There are no external apparent differences.
+
+Dictionary Represented Using Lists:
+  - Accessing nested dictionaries often calls for recursive functions in order to properly parse and/or walk through them. This isn’t always easy to code around. ListDict provides an alternative view on nested dictionaries, breaking down the value nested within keys to a simple concept of path and value. This flattens the nesting into a linear list, greatly simplifying the coding around nested dictionaries.
+  - The whole point of ListDict and breaking information down to path/value is so that users can easily loop through the whole original datastructure and do …stuff… not having to write recursive functions.
+  - Ex:
+=====================
+suggest = {
+    'a': {
+        'b': {
+            'c': object(),
+            'e': object(),
+        },
+    },
+}
+from pyats.datastructures import ListDict
+ld = ListDict(suggest)
+ld[0]
+# DictItem(path=('a', 'b', 'e'), value=<object object at 0xf7683f40>)
+ld[0].path
+# ('a', 'b', 'e')
+ld[0].value
+# <object object at 0xf7683f40>
+=====================
+
+Orderable Dictionary:
+  - Python’s built-in collections.OrderedDict only remembers the order of which keys were inserted into it, and does not allow users to re-order the keys and/or insert new keys into arbitrary position in the current key order.
+  - OrderableDict, Orderable Dictionary, is almost exactly the same as python collections.OrderedDict with the added ability to order & re-order the keys that are inserted into it.
+  - 2x new APIs 
+    - move(key, position): moves an existing key in the datastructure to just before position.
+    - insert(key, value, position): insert a new key/value pair into the datastructure just before position.
+
+Logic Testing:
+  - And(*expressions):  expression_1(inputs) and expression_2(inputs)  and ...
+  - Or(*expressions) :  expression_1(inputs) or expression_2(inputs) or ...
+  - Not(*expressions):  not expression_1(inputs) and not expression_2(inputs) and not ...
+ 
+Logic String Inputs:
+  - logic_str conversion only supports str (regex) style inputs and lambda functions.
+  - Ex: 
+from pyats.datastructures.logic import logic_str
+# creating an And regex logic from string
+obj = logic_str("And('a', 'b')")
+type(obj)
+# <class 'pyats.datastructures.logic.And'>
+obj('ab')
+True
+obj('cd')
+False
+
+Logging:
+=======
+Introduction:
+  - A log is a log regardless of what kind of prefixes each log message contains and what format it ended up as, as long as it is human readable and provides useful information to the user.
+  - Python logging module’s native ability to handle and process log messages is more than sufficient for any logging needs, and has always been suggested as the de-facto logging module to use.
+  - Ex: Using config-file method 
+=========================
+#   import the logging module at the top of your script
+#   setup the logger
+
+import logging
+
+# always use your module name as the logger name.
+# this enables logger hierarchy
+logger = logging.getLogger(__name__)
+
+# use logger:
+logger.info('an info message')
+logger.error('an error message')
+logger.debug('a debug message')
+=========================
+  - using fileConfig 
+=========================
+import logging
+import logging.config
+
+logging.config.fileConfig('logging.conf')
+
+# create logger
+logger = logging.getLogger('simpleExample')
+
+# 'application' code
+logger.debug('debug message')
+logger.info('info message')
+logger.warn('warn message')
+logger.error('error message')
+logger.critical('critical message')
+----------
+logging.conf
+----------
+[loggers]
+keys=root,simpleExample
+
+[handlers]
+keys=consoleHandler
+
+[formatters]
+keys=simpleFormatter
+
+[logger_root]
+level=DEBUG
+handlers=consoleHandler
+
+[logger_simpleExample]
+level=DEBUG
+handlers=consoleHandler
+qualname=simpleExample
+propagate=0
+
+[handler_consoleHandler]
+class=StreamHandler
+level=DEBUG
+formatter=simpleFormatter
+args=(sys.stdout,)
+
+[formatter_simpleFormatter]
+format=%(asctime)s - %(name)s - %(levelname)s - %(message)s
+datefmt=
+==========================
+  - Using recommended method of dictconfig. you can use a configuration file in JSON format, or, if you have access to YAML processing functionality, a file in YAML format, to populate the configuration dictionary. Or, of course, you can construct the dictionary in Python code, receive it in pickled form over a socket, or use whatever approach makes sense for your application.
+  - Ex: YAML format dictconfig:
+==========================
+version: 1
+formatters:
+  simple:
+    format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: DEBUG
+    formatter: simple
+    stream: ext://sys.stdout
+loggers:
+  simpleExample:
+    level: DEBUG
+    handlers: [console]
+    propagate: no
+root:
+  level: DEBUG
+  handlers: [console]
+==========================
+
+Logging Concept in PyATS:
+  - Logging is always done through using Python logging module
+  - Logger should always be named the same as the current module name (using magic variable __name__), following the logger hierarchy.
+  - log module features Formatter and Handler class that implements CiscoLog compatible log message format & storage behavior, and should be used to configure Python logging.
+  - Unless otherwise configured, there is only one active TaskLog per process where, by default, all log messages propagate to. If any additional handlers are processing log messages, the initiator is responsible for tracking/handling/closing them.
+  - TaskLog: The log file storing script-run log messages in pyATS is called the TaskLog. This file is only generated when executing pyATS testscripts through easypy, or when logging is manually configured to use TaskLogHandler.
+  - Logging Levels, Python logging natively offers 5 logging levels as shown in functions below. 
+  - Logging provides a set of convenience functions for simple logging usage. These are critical(), error(), warning(), info(), debug() and exception().
+
+Cisco Log Format:
+  - {seqnum}: {hostname}: {time}: %{appname}-{severity}-{msgname}: {tags}: {message}%
+  - Cisco message severity and Python numeric levels are conceptually reversed. In Cisco message severity, if a level is lower, it’s more important, whereas in Python, if a level is higher, it’s more important.
+  
+PyATS Log Implementation:
+  - As previously established, log itself does not configure logging. It only offers the formatters & handlers necessary to adhere to CiscoLog standard.
+  - Handlers: In pyATS log, there are two common destinations for most users: the shell screen, and a runtime log (TaskLog). Handled by two different handler classes.
+  - Formatters: Formatters are responsible for converting a LogRecord to a properly formatted string that can be interpreted by human or an external system, which, in pyATS, is either screen, or to log file. log module features two formatters.
+  - ScreenHandler: Enables print-to-screen functionality for log messages. Outputs to STDOUT by default, and when attached to a logger, prints log messages to screen. This handler automatically sets ScreenFormatter as its formatter.
+  - TaskLogHandler: Enables saving log messages in standard CiscoLog format to log files. Also has an API enabling easy changing of current active log file to a different file. Automatically uses TaskLogFormatter as its formatter.
+  - ScreenFormatter: %(asctime)s: %%%(appname)s-%(msgname)s: %(message)s
+  - TaskLogFormatter: Formats log messages to standard CiscoLog format, {seqnum}: {hostname}: {time}: %{appname}-{severity}-{msgname}: {tags}: {message}%
+
+Integration with Easypy:
+  - Because of the specific log concept implementation, it is pretty much automatically integrated with the execution environment (Easypy), where users should not need to concern themselves with the logging facility, and only focus on standard usage.
+
+Logging Utilities:
+  - Banners: The utils.banner api formats a string into a banner message, which can be then passed to logger APIs. It itself does not perform logging, and instead only performs style formatting of its input messages.
+  - "from pyats.log.utils import banner" 
+  - Ex:
+==========================
+# Example
+# -------
+#
+#   print a banner message
+from pyats.log.utils import banner
+# printing directly
+msg = banner('a banner message')
+print(msg)
+print(banner('aReallyLongMessageThatIsLongerThanMaxWidthIsChoppedUp',
+             width = 40))
+# Output
+# ------
+#
+# +------------------------------------------------------------------------------+
+# |                               a banner message                               |
+# +------------------------------------------------------------------------------+
+# +--------------------------------------+
+# |    aReallyLongMessageThatIsLonger    |
+# |       ThanMaxWidthIsChoppedUp        |
+# +--------------------------------------+
+==========================
+  - Titles: The utils.title api formats a string into a title message, which can be then passed to logger APIs. It itself does not perform logging, and instead only performs style formatting of its input messages.
+  - Ex:
+==========================
+from pyats.log.utils import title
+
+# printing directly
+msg = title('a title message')
+print(msg)
+# Output
+# ------
+#
+# ================================a title message=================================
+# Changing margin
+msg = title('a message', margin='!')
+print(msg)
+
+# Output
+# ------
+#
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!a message!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+==========================
+
+Logging Examples:
+  - In typical test script and libraries, use logging directly and create your loggers using your __name__ module name as the logger name. Log messages would naturally just propagate to the pyATS configured root logger.
+  - When running in an EasyPy environment where root handlers are configured, no need to configure Handlers and Formatters.
+  - https://pubhub.devnetcloud.com/media/pyats/docs/log/examples.html
+  
+Result Objects:
+==============
+Introduction:
+  - pyATS supports more complicated result types such as “test blocked”, “test skipped”, “test code errored” etc, and uses objects and object relationships to describe them. These objects simplify the whole result tracking & aggregation infrastructure, and grant the ability to easily roll-up results together.
+Result Objects:
+  - Passed: indicating that a test was successful, passing, result accepted… etc.
+  - Failed: indicating that a test was unsuccessful, fell short, result unacceptable… etc.
+  - Aborted: indicating something was started but was not finished, was incomplete and/or stopped at an early or premature stage. E.g. a script was killed by hitting CTRL-C.
+  - Blocked: used when a dependency was not met and the following event could not start.  It could also mean cases where the next event to be carried out is no longer relevant.
+  - Skipped: used when a scheduled item was not executed and was omitted. The difference between skipped and blocked is that skipping is voluntary, whereas blocked is a collateral.
+  - Errored: a mistake or inaccuracy. E.g. an unexpected Exception. 
+  - Paasx: short for “passed with exception”. Use with caution: you are effectively re-marking a failure to passed, even thought there was an exception.
+Import & Usage:
+  - from pyats.results import (Passed, Failed, Aborted, Errored, Skipped, Blocked, Passx)
+  - from pyats.results import *
+Object Attributes:
+  - TestResult objects have the following attributes:
+  - code:  Integer equivalent of this result type
+  - Value: The string equivalent of this result type
+  - reason: The reason for this result
+  - data: Any relevant data for this result
+  
+
+Results Rollups:
+  - Result roll-up is the act of combining one or more results together and yielding a new, summary result. Rolling up results with results module objects is as simple as adding them together using the Python + operator.
+  - Result Roll-up Table: https://pubhub.devnetcloud.com/media/pyats/docs/results/rollup.html
+
+Reporter:
+=========
+Overview:
+  - Reporter is a package for collecting and generating test reports in YAML format. This results file contains all the details about execution (section hierarchy, time, results, etc.)
+  - In addition to the results.yaml file, the reporter also produces TRADe-compatible xml files ResultsDetails.xml and ResultsSummary.xml from the aggregated results.
+  - sample results.yaml: https://pubhub.devnetcloud.com/media/pyats/docs/reporter/overview.html
+Subscribe:
+  - The Reporter Client supports subscribing to the Reporter Server for live updates about each section starting and stopping. pyats.reporter.ReportClient has an async function subscribe(callback) for this purpose. Users must be familiar with asyncio in order to leverage this API.
+  - API: subscribe(callback) takes only one argument which is an async function to call with event data each time it is received.
+  - Event Data: Event data is a dict of information about an event that just occurred. 
+
+Utilities:
+==========
+Find:
+  - Users can search any kind of object in an iterable and filter the results as they want by providing search requirements. Ex:
+======================
+from pyats.utils.objects import find
+
+find(from_ = testbed.devices.values(), type_ = Device)
+[<Device iol-one at 0xf6a7008c>, <Device iol-three at 0xf6a05b4c>, <Device iol-two at 0xf6a708cc>]
+======================
+
+  - Find Parameters:
+    - from_: Users need to provide an iterable so that the API goes through and picks up the objects that match the conditions.
+    - *requirements: Sets of requirements that are grouped with R object
+    - type_: It is optional that users can provide an object type that they are specifically looking for, in order to distinguish the required objects from the others. Otherwise all kind of objects that match the condition will be returned.
+    - **kwargs: This parameter is used to provide requirements.
+    - filter_: It is optional that users can filter on matching result. 
+    - index: It is optional that users can filter on which of the dictionary value to return. Can only be used with filter_=False. By default it’s set to last element.
+    - all_keys: It is optional that users can filter on matching result. If True: Will return all the particular matching objects with path to objects that matches to particular requirement. If False: Will return the particular matching objects with path to objects which is matching. Can only be used with filter_=False. By default it’s set to False.
+  - Avoid using objects which have “_” at the beginning or end of their names, around the special “__” syntax of find API.
+
+Secret Strings:
+  - Secret strings (such as passwords) may be specified in an encoded form suitable for sharing with a wide audience, while ensuring that only authorized users are able to decode these strings into their plaintext form.
+  - By default, pyATS secret strings are not cryptographically secure.
+  - How to secure your secret strings
+    - Update pyats config file with following:
+===================
+[secrets]
+string.representer = pyats.utils.secret_strings.FernetSecretStringRepresenter
+===================
+    - pip install cryptography
+	- chmod 600 ~/.pyats/pyats.conf
+	- Generate a cryptographic key using "pyats secret keygen"
+	- update pyats config while with key 
+===================
+[secrets]
+string.representer = pyats.utils.secret_strings.FernetSecretStringRepresenter
+string.key = EXAMPLEdSvoKX23jKQADn20INt3W3B5ogUQmh6Pq00czddHtgU=
+===================
+    - encode password using "pyats secret encode --string MySecretPassword" 
+	- decode password using "pyats secret decode gAAAAABdsgvwElU9_3RTZsRnd4b1l3Es"
+	- Use it in testbed file for ex:
+===================
+# Snippet of your testbed.yaml
+testbed:
+    name: sampleTestbed
+    credentials:
+        default:
+            username: admin
+            password: "%ENC{gAAAAABdsgvwElU9OrZyyOuCgZ7bxE5X3Dk_NY=}"
+===================
+  - Can use Prefix to allow encoding multiple strings and providing prefix for reference. You will need to create representer for it using "pyats secret keygen --prefix my_custom" and updating pyats config file.For ex:
+===================
+[secrets]
+my_custom.representer = package.module.MyRepresenterClass
+my_custom.key = <generated key for my_custom>
+===================
+    - pyats secret encode --prefix my_snmp_string --string notpublic 
+	- using it in testbed using ""%ENC{<my_custom encoded string>, prefix=my_snmp_string}"
+
+Multiprotocol File Transfer Utilities:
+  - Using FileUtils module to perform file transfer using ftp, tftp, scp etc 
+  - Ex: https://pubhub.devnetcloud.com/media/pyats/docs/utilities/file_transfer_utilities.html
+  - "pip install scp paramiko" for using scp and sftp with FileUtils
+  - Ex:
+===================
+Copy File:
+from pyats.utils.fileutils import FileUtils
+with FileUtils(testbed=tb) as futils:
+    futils.copyfile(
+        source = 'scp://1.1.1.1/path/to/file',
+        destination = '/local/path/to/file')
+		
+Delete File:
+from pyats.utils.fileutils import FileUtils
+with FileUtils(testbed=tb) as futils:
+    futils.deletefile("sftp://server.domain.com/path/to/file")
+===================
+  - Other operations like chmod, get permissions etc can be performed using FileUtils
+
+
+RobotFramework Support:
+======================
+  - RobotFramework is generic Python/Java test automation framework that focuses on acceptance test automation by through English-like keyword-driven test approach.
+  - pyATS can easily integrate with RobotFramework and vice versa.
+  - Installation: "pip install --upgrade pyats.robot" 
+  - EasyPy "run_robot()" api can run RobotFramework script. 
+  - In addition to being able to run RobotFramework scripts directly within your job file, the "pyats run robot" command line also enables you to quickly run a Robot script in an Easypy environment (eg, with generated archive and report), without having to explicitly create a job file.
+  - 
+
+pyats api documentation: https://pubhub.devnetcloud.com/media/pyats/docs/apidoc/index.html
+
+Issues Post Lab:
+1. pyats create testbed based on ansible doesnt work. 
+2. was not able to get "logs" view work, might need job/run for it. 
+3. YAML Lint Messages during "pyats validate testbed testbed.yaml" regarding connections should be ignored. 
+
+===========================
+===========================
+
+Lab Notes: 
+  - up next ...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
