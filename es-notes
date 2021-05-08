@@ -1,0 +1,478 @@
+ElasticSearch
+=============
+  - Installation:
+    - Update /etc/elasticsearch/elasticsearch.yml after installation
+    - Update node.name, network.host and discovery section. 
+    - start ES using systemctl 
+    - test using "curl -XGET 127.0.0.1:9200", we should a successful reply
+  - Distributed search and analytics engine. Elasticsearch is where the indexing, search, and analysis magic happens.
+  - Logstash and Beats facilitate collecting, aggregating, and enriching your data and storing it in Elasticsearch.
+  - Kibana enables you to interactively explore, visualize, and share insights into your data and manage and monitor the stack.
+  - Elasticsearch is a distributed document store. Instead of storing information as rows of columnar data, Elasticsearch stores complex data structures that have been serialized as JSON documents.
+  - Elasticsearch uses inverted index data structure, inverted index lists every unique word that appears in any document and identifies all of the documents each word occurs in.
+  - An index can be thought of as an optimized collection of documents and each document is a collection of fields, which are the key-value pairs that contain your data. 
+  - Text fields are stored in inverted indices, and numeric and geo fields are stored in BKD trees.
+  - default behavior of ES is to dynamically index your data but you can define your own mapping which provides you with:
+    - Distinguish between full-text string fields and exact value string fields
+    - Perform language-specific text analysis
+    - Optimize fields for partial matching
+    - Use custom date formats
+    - Use data types such as geo_point and geo_shape that cannot be automatically detected
+  - Elasticsearch provides a simple, coherent REST API for managing your cluster and indexing and searching your data. 
+  - The Elasticsearch REST APIs support structured queries, full text queries, and complex queries that combine the two. 
+    - Structured queries are similar to the types of queries you can construct in SQL.
+    - Full-text queries find all documents that match the query string and return them sorted by relevance—how good a match they are for your search terms.
+  - You can use machine learning features to create accurate baselines of normal behavior in your data and identify anomalous patterns.
+
+Scalability and resilience: clusters, nodes, and shardsedit:
+  - Under the covers, an Elasticsearch index is really just a logical grouping of one or more physical shards, where each shard is actually a self-contained index. 
+  - By distributing the documents in an index across multiple shards, and distributing those shards across multiple nodes, Elasticsearch can ensure redundancy, which both protects against hardware failures and increases query capacity as nodes are added to a cluster. 
+  - There are two types of shards: primaries and replicas. 
+    - Each document in an index belongs to one primary shard.
+    - A replica shard is a copy of a primary shard. Replicas provide redundant copies of your data to protect against hardware failure and increase capacity to serve read requests like searching or retrieving a document.
+  - starting points:
+    - Aim to keep the average shard size between a few GB and a few tens of GB. For use cases with time-based data, it is common to see shards in the 20GB to 40GB range.
+    - Avoid the gazillion shards problem. The number of shards a node can hold is proportional to the available heap space. As a general rule, the number of shards per GB of heap space should be less than 20.
+  - Cross-cluster replication (CCR): CCR provides a way to automatically synchronize indices from your primary cluster to a secondary remote cluster that can serve as a hot backup. If the primary cluster fails, the secondary cluster can take over. You can also use CCR to create secondary clusters to serve read requests in geo-proximity to your users.
+  - ES cluster Security: Security, monitoring, and administrative features that are integrated into Elasticsearch enable you to use Kibana as a control center for managing a cluster. Features like data rollups and index lifecycle management help you intelligently manage your data over time.
+
+Installing a single node ES Cluster using Docker:
+  - docker pull docker.elastic.co/elasticsearch/elasticsearch:7.12.0
+  - Single node cluster for testing/dev
+    - docker run -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:7.12.0
+  - Production and multinode cluster require different tunnings with sysctl etc. Reference: https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html
+  -  Run curl -X GET "localhost:9200/_cat/health?v=true&pretty"  to see status of your cluster. 
+
+Elasticsearch cURL commands:
+  - curl -X<VERB> '<PROTOCOL>://<HOST>:<PORT>/<PATH>?<QUERY_STRING>' -d '<BODY>'
+  - If the Elasticsearch security features are enabled, you must also provide a valid user name (and password) that has authority to run the API. For example, use the -u or --u cURL command parameter. For details about which security privileges are required to run each API, see REST APIs.
+
+Indexing some Documents in ElasticSearch:
+  - Ex: curl -X PUT "localhost:9200/customer/_doc/1?pretty" -H 'Content-Type: application/json' -d'
+{
+  "name": "John Doe"
+}
+'
+  - Above will reply with data showing creation of new document. 
+  - Retrive data using: curl -X GET "localhost:9200/customer/_doc/1?pretty"
+{
+  "_index" : "customer",
+  "_type" : "_doc",
+  "_id" : "1",
+  "_version" : 1,
+  "_seq_no" : 0,
+  "_primary_term" : 1,
+  "found" : true,
+  "_source" : {
+    "name" : "John Doe"
+  }
+}
+  -  Using Bulk API : Using bulk to batch document operations is significantly faster than submitting requests individually as it minimizes network roundtrips.
+  - Ex: curl -H "Content-Type: application/json" -XPOST "localhost:9200/bank/_bulk?pretty&refresh" --data-binary "@accounts.json"  where accounts.json file contains data like:
+==========================
+{"index":{"_id":"1"}}
+{"account_number":1,"balance":39225,"firstname":"Amber","lastname":"Duke","age":32,"gender":"M","address":"880 Holmes Lane","employer":"Pyrami","email":"amberduke@pyrami.com","city":"Brogan","state":"IL"}
+{"index":{"_id":"6"}}
+{"account_number":6,"balance":5686,"firstname":"Hattie","lastname":"Bond","age":36,"gender":"M","address":"671 Bristol Street","employer":"Netagy","email":"hattiebond@netagy.com","city":"Dante","state":"TN"}
+{"index":{"_id":"13"}}
+{"account_number":13,"balance":32838,"firstname":"Nanette","lastname":"Bates","age":28,"gender":"F","address":"789 Madison Street","employer":"Quility","email":"nanettebates@quility.com","city":"Nogal","state":"VA"}
+  - check status using: curl "localhost:9200/_cat/indices?v=true"
+[root@network-services01 ~]# curl "localhost:9200/_cat/indices?v=true"
+health status index    uuid                   pri rep docs.count docs.deleted store.size pri.store.size
+yellow open   bank     0xqZ_b1_SsCx4rAFjCCHmw   1   1       1000            0    379.2kb        379.2kb
+yellow open   customer WBLHpFe7Qru3-tJt08kl6Q   1   1          1            0      3.8kb          3.8kb
+[root@network-services01 ~]#
+==========================
+  - health is yellow because we are testing using single instance instead of cluster where you can create replicated shards. 
+  - Updating Data in ES:
+    - ES documents are immutable but workaround to updating them is via _version field. Update an existing document with an incremented _version and mask the old document for deletion. 
+	- Use POST with _update to do partial update. Use XPUT if you are updating all fields in doc item. Ex:
+==========================
+1>
+[root@network-services01 ~]# curl -H 'Content-Type: application/json' -XPOST "localhost:9200/customer/_doc/1/_update" -d'
+{
+"doc": {
+"name" : "John Coe"
+}
+}'
+
+2>
+[root@network-services01 ~]# curl -X PUT "localhost:9200/customer/_doc/1?pretty" -H 'Content-Type: application/json' -d'
+{
+"name": "John Doe"
+}'
+==========================
+  - Deleting Data in ES: Use the XDELETE verb with doc id 
+  - Ex:
+==========================
+[root@network-services01 ~]# curl -H 'Content-Type: application/json' -XDELETE "localhost:9200/customer/_doc/1?pretty"
+{
+  "_index" : "customer",
+  "_type" : "_doc",
+  "_id" : "1",
+  "_version" : 6,
+  "result" : "deleted",
+  "_shards" : {
+    "total" : 2,
+    "successful" : 1,
+    "failed" : 0
+  },
+  "_seq_no" : 6,
+  "_primary_term" : 1
+}
+==========================
+
+ElasticSearch Dealing with Concurrency:
+  - Optimistic concurrency control: sequence no (_seq_no)  and _primary_term is given with the document, this allows for Increment (or update ) to be linked to a particular _seq_no. Any update to old _seq_no doc is then errored out and retry is requested to new _seq_no. 
+  - Curl command will include seq_no and primary_term in it. Ex: curl -H 'Content-Type: application/json' -XPUT "localhost:9200/customer/_doc/1?if_seq_no=2&if_primary_term=1" -d 'CHANGE' 
+  - For partial update, use _update?retry_on_conflict=5  which means to retry 5 times if there are any concurrency errors. 
+
+ElasticSearch Analyzers and Tokenizers:
+  - Searching can be exact match or partital matches. 
+  - Fields in mapping if marked as "keyword" means they are unanalysed and query will show result only when full match occurs. Mapping type changes can only be done before Data is imported. Text type data can have partial matches in them.
+  - keyword == exact match and Text == partial match 
+  - Ex: Query Example 
+=========================
+[root@network-services01 ~]# curl -H 'Content-Type: application/json' -XGET "localhost:9200/customer/_search?pretty" -d '
+{
+"query": {
+"match_phrase": {
+"name": "john"
+}
+}
+}'
+=========================
+
+ElasticSearch Data Modeling:
+  - Normalized Data: Multiple queries might be needed to pull data, better with storage side. Data is stored in different index and then information is retrived like Joins. 
+  - Denormalized data: Data is stored in single index, might result in duplicate and makes it harder to edit data stored in multiple duplicate positions. 
+  - Parent/Child relationship in mapping can be created as "type": "join" and create relations between different properties. You can then include parent id to tie child back to its parent. 
+  - Query search can then reference "has_child" or "has_parent" to match data accordingly. 
+  - Flattened Datatypes: type : "flattened" can help reduce the mapping and avoid mapping explosion. Fields are not analyzed in flattened type so partial match will not work. 
+
+ElasticSearch Mapping Exceptions:
+  - Mapping Process: defining how JSON doc will be stored. Can be done with Explicit Mapping or Dynamic Mapping. 
+  - Mapping Results: The actual metadata resulting from the defination process. 
+  - Explicit mapping can result in exception if there is a mismatch, dynamic mapping can lead to mapping explosion.
+  - Explicit mapping exception can sometimes be avoided by setting "ignore_malformed" to True. 
+  - ignore_malformed cannot handle JSON data in fields.
+
+ElasticSearch Searching using API:
+  - Once you have ingested some data into an Elasticsearch index, you can search it by sending requests to the _search endpoint. 
+  - Ex: curl -X GET "localhost:9200/bank/_search?pretty" -H 'Content-Type: application/json' -d'
+{
+  "query": { "match_all": {} },
+  "sort": [
+    { "account_number": "asc" }
+  ]
+}
+'
+  - By default, the hits section of the response includes the first 10 documents that match the search criteria.
+  - The response also provides the following information about the search request:
+    - took: time in millisec to run the query
+    - timed_out - if search was timed out
+    - _shards - how many shards were searched and a breakdown of how many shards succeeded, failed, or were skipped.
+    - max_score – the score of the most relevant document found
+    - hits.total.value - how many matching documents were found
+    - hits.sort - the document’s sort position (when not sorting by relevance score)
+    - hits._score - the document’s relevance score (not applicable when using match_all)
+=============================
+{
+  "took" : 32,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 1,
+    "successful" : 1,
+    "skipped" : 0,
+    "failed" : 0
+  },
+  "hits" : {
+    "total" : {
+      "value" : 1000,
+      "relation" : "eq"
+    },
+    "max_score" : null,
+    "hits" : [
+      {
+        "_index" : "bank",
+        "_type" : "_doc",
+        "_id" : "0",
+        "_score" : null,
+        "_source" : {
+          "account_number" : 0,
+          "balance" : 16623,
+          "firstname" : "Bradshaw",
+          "lastname" : "Mckenzie",
+          "age" : 29,
+          "gender" : "F",
+          "address" : "244 Columbus Place",
+          "employer" : "Euron",
+          "email" : "bradshawmckenzie@euron.com",
+          "city" : "Hobucken",
+          "state" : "CO"
+        },
+        "sort" : [
+          0
+        ]
+      },
+==============================
+  - can use "from" and "size" parameters refine the search. Ex: Starts from sort position 10 and lists 20 entries. 
+curl -X GET "localhost:9200/bank/_search?pretty" -H 'Content-Type: application/json' -d'
+{
+  "query": { "match_all": {} },
+  "sort": [
+    { "account_number": "asc" }
+  ],
+  "from": 10,
+  "size": 20
+}
+'
+  - Queries can be improved from "match_all" to be specific. For Ex: "match" : Its like "re.search" in python and "match_phrase" is like "re.match". 
+  - "match_phrase": { "address": "mill lane"  will look for full match and "match": { "address": "mill lane" will match anything that has lane in it. 
+  - boolean expresions can be added to match statements. Each must, should, and must_not element in a Boolean query is referred to as a query clause.
+  - The criteria in a must_not clause is treated as a filter. It affects whether or not the document is included in the results, but does not contribute to how documents are scored.
+
+Analyze result with aggregations:
+  - Elasticsearch aggregations enable you to get meta-information about your search results and answer questions like, "How many account holders are in Texas?" or "What’s the average balance of accounts in Tennessee?" You can search documents, filter hits, and use aggregations to analyze the results all in one request. Ex:
+===============================
+curl -X GET "localhost:9200/bank/_search?pretty" -H 'Content-Type: application/json' -d'
+{
+  "size": 0,
+  "aggs": {
+    "group_by_state": {
+      "terms": {
+        "field": "state.keyword"
+      }
+    }
+  }
+}
+'
+More Complex query with different aggregations combined:
+curl -X GET "localhost:9200/bank/_search?pretty" -H 'Content-Type: application/json' -d'
+{
+  "size": 0,
+  "aggs": {
+    "group_by_state": {
+      "terms": {
+        "field": "state.keyword"
+      },
+      "aggs": {
+        "average_balance": {
+          "avg": {
+            "field": "balance"
+          }
+        }
+      }
+    }
+  }
+}
+'
+===============================
+
+More ElasticSearch Search: 
+Query Lite interface:
+  - You can merge query details into the URL itself for quick search, at times used for debuging etc. 
+  - Ex: /customer/_search?q=name:John
+===============================
+[root@network-services01 ~]# curl -H 'Content-Type: application/json' -XGET "localhost:9200/customer/_search?q=name:John%20Coe"
+{"took":1,"timed_out":false,"_shards":{"total":1,"successful":1,"skipped":0,"failed":0},"hits":{"total":{"value":3,"relation":"eq"},"max_score":1.1143606,"hits":[{"_index":"customer","_type":"_doc","_id":"1","_score":1.1143606,"_source":
+{
+  "name": "John Coe"
+}
+},{"_index":"customer","_type":"_doc","_id":"2","_score":0.13353139,"_source":
+{
+  "name": "John Doe"
+}
+},{"_index":"customer","_type":"_doc","_id":"3","_score":0.13353139,"_source":
+{
+  "name": "John Moe"
+}
+}]}}
+===============================
+  - Spaces, special characters etc will need URL encoding as shown in above example
+  - Not recommended for production access as it can be load heavy with unoptimized query. 
+  - Formally known as URI Search 
+
+JSON Search Examples: 
+  - Request body search: Query DSL is in the request body as JSON. 
+  - No encoding is required for this. 
+  - Use Filters to make query faster and cacheable. Ex: You can a Boolean query using "bool" with "must" (equivalent of AND) which can be used with a filter. 
+  - Ex:
+===============================
+[root@network-services01 ~]# curl -X GET "localhost:9200/bank/_search?pretty" -H 'Content-Type: application/json' -d'
+{
+"query":{
+"bool": {
+"must": {"term": {"employer": "Pyrami"}},
+"filter": {"range": {"age": {"gte": 32}}}
+}
+}
+}'
+
+===============================
+  - Filter Types: 
+    - Term: Filter by exacts values
+    - Terms: Filter by exacts values in list
+    - Range: Find numbers or dates in a given range (gt, gte, lt, lte) 
+    - Exists: Find documents where a field exists. 
+    - Missing: Find documents where a field exists
+    - Bool: Combine filters with a Boolean logic (must, must_not, should) 
+  - Types of queries
+    - Match_all: returns all documents, enabled by default. {"match_all": {}}
+    - Match: Searches analyzed results, such as full text. {"match": {"title": "xyz"}}
+    - Multi_Match: Run the same query on multiple fields.
+    - Bool: Works like a bool filter, but results are scored by relevance. 
+  - Phrase Search: Use "match_phrase" in query. You can SLOP which allows you to ignore items inbetween. Ex: "good boi dog" would match "good dog" with a slop of 1. 
+  - Pagination: Use "from" and "size" in the query to limit the results from that query. "from" start counting from 0. Deep pagination can reduce performance, every result must be retrieved, collected and sorted. Try enforce an upper bound on how many results can be returned to the user. 
+  - Ex: 
+===============================
+[root@network-services01 ~]# curl -X GET "localhost:9200/bank/_search?pretty" -H 'Content-Type: application/json' -d'
+{
+  "query": { "match_all": {} },
+  "sort": [
+    { "account_number": "asc" }
+  ],
+  "from": 10,
+  "size": 1
+}
+'
+===============================
+  - Sorting: Doesn't work on analysed text fields unless you create a raw keywords mapping field in addition to regular text field. You can sort by numerial or by alphabetical order. 
+  - Fuzzy Queries: Levenshtein edit distance can account for substitution, insertion and deletion of characters in the query match field. Can be done with using "fuzzy" inside the query. You can use fuzziness Auto which has limit on how many characters can be allowed to be misplaced. 
+  - Ex for Fuzzy 
+===============================
+[root@network-services01 ~]# curl -X GET "localhost:9200/bank/_search?pretty" -H 'Content-Type: application/json' -d'
+{
+"query":{"fuzzy": {"firstname": "Ammber"}}
+}
+'
+===============================
+  - prefix and wildcard query: You can use partital or regex match against the text field. 
+  - N-grams: You can create a custom auto-complete analyser with type "edge_ngram" with min_gram and max_gram values. This will allow for creating edge-ngrams in the index. 
+  - "search_as_you_type" data type can be used to create autocomplete index. 
+  
+Importing Data into your Index - Big or Small: 
+Importing Data with a Script:
+  - Read data from some distributed filesystem, transform it into JSON bulk inserts and submit via HTTP/REST to your ES cluster. 
+  - Many programming languages have client libraries for ElasticSearch. For Ex: Python has elasticsearch lib. 
+
+LogStash:
+  - Logstash can ingest data from files, s3, beats, kafka etc and ship it to ES, AWS, Hadoop, Mongodb etc 
+  - LogStash can parse, transform and filter data as it passes through. It can derive structure from unstructured data. 
+  - Logstash anonymize or remove personal data. Provide geo-location lookups. 
+  - Scales across many nodes and guarantees at-least-once delivery. 
+  - Installation for logstash: install Java and then logstash using apt or yum. 
+  - Update /etc/logstash/conf.d/logstash.conf with input, filter (grok, date etc) and output block with destination and codec. 
+  - to run -> cd /usr/share/logstash then "sudo bin/logstash -f /etc/logstash/conf.d/logstash.conf" 
+  - Parsing with Grok 
+    - Grok uses regex to match values in unstructured text. 
+    - elasticsearch has a lot of predefined grok patterns
+    - grok debug tool : grokdebug.herokuapp.com/ 
+    - tag called _grokparsefailure is attached if unknown pattern is detected. 
+    - multiple groks matches can be applied to each line to test against different data items. 
+    - Ex for grok: https://github.com/coralogix-resources/logstash
+    - Logstash heartbeat can be used to see delay in data injection into ElasticSearch cluster. 
+  - Logstash with Syslog:
+  - Ex: https://github.com/coralogix-resources/logstash-syslog
+  - You can instruct syslog server to forward all logs to logstash server using a TCP port. LogStash server input section needs to be listening on same tcp port with type syslog with corresponding filter.  
+  
+ElasticSearch / Apache Hadoop:
+  - Hadoop: Clusterable, easy to adjust computing power as needed, easly to expand storage (hdfs), relicas chunks of data and distributes them on separate hardware. 
+  - Mapreduce: Three functions -> Map, Shuffle and Reduce. In Map Stage, data in ingested from input then split then converted to key/value pairs. In Shuffle stage, key/value pairs are collected togather and then finally in Reduce stage, value is reduced with number of occrance of key. 
+  - you can store large amount of Data in Hadoop and send metadata to Elasticsearch for searching. 
+
+ElasticSearch / Kafka: 
+  - Kafka: open source stream, processing platform, high thoughput, low latency, pub/sub, process & store streams. A lot in common with logstash.
+  - kafka requires zookeeper to maintain a list of kafka topics and messages. Zookeeper is also used to track the status of nodes in the Kafka Cluster. 
+  - Messages are published to kafka, logstash then subscribes to kafka and processes messages from the kafka queue. 
+ 
+
+
+Install Kibana:
+==============
+  - If you install the Kibana on different server, you’ll need to change the URL (IP:PORT) of the Elasticsearch server in the Kibana configuration file, kibana.yml, before starting Kibana.
+  - Kibana can be quickly started and connected to a local Elasticsearch container for development or testing use with the following command:
+    - docker run --link YOUR_ELASTICSEARCH_CONTAINER_NAME_OR_ID:elasticsearch -p 5601:5601 docker.elastic.co/kibana/kibana:7.12.0
+  - If deploying for production then use kibana.yml configuration file and mount that as volume to Kibana container. ex: volumes: - ./kibana.yml:/usr/share/kibana/config/kibana.yml
+  
+Using Kibana:
+=============
+Creating an index pattern:
+  - Kibana requires an index pattern to access the Elasticsearch data that you want to explore. An index pattern selects the data to use and allows you to define properties of the fields.
+  - An index pattern can point to a specific index, for example, your log data from yesterday, or all indices that contain your data. It can also point to a data stream or index alias.
+  - steps to create an index pattern:
+    - Stack Management > Index Patterns
+	- Create index pattern
+	- Start typing in the Index pattern field, and Kibana looks for the names of Elasticsearch indices that match your input. Ex: suppose your system creates indices for Apache data using the naming scheme filebeat-apache-a, filebeat-apache-b, and so on. An index pattern named filebeat-a matches a single source, and filebeat-* matches multiple data sources. Using a wildcard is the most popular approach. Select multiple indices by entering multiple strings, separated with a comma. Make sure there is no space after the comma. Use a minus sign (-) to exclude an index, for example, test*,-test3.
+	- If Kibana detects an index with a timestamp, expand the Time field menu, and then specify the default field for filtering your data by time.
+	- Kibana is now configured to use your Elasticsearch data. Select this index pattern when you search and visualize your data.
+  -  cross-cluster search: Ex: cluster_one:logstash-*,cluster_two:logstash-* or cluster_*:logstash-*  or *:logstash-*
+
+Explore and configure the data fields: 
+  - To explore and configure the data fields in your index pattern, open the main menu, then click Stack Management > Index Patterns. 
+  - Format the display of common field types 
+    - Whenever possible, Kibana uses the same field type for display as Elasticsearch. However, some field types that Elasticsearch supports are not available in Kibana. Using field formatters, you can manually change the field type in Kibana to display your data the way you prefer to see it, regardless of how it is stored in Elasticsearch.
+	- To customize the displayed field name provided by Elasticsearch, you can use Custom Label .
+	- To edit the field display, click the edit icon (edit icon) in the index pattern detail view.
+  - Set the default index pattern
+
+Install Beats:
+==============
+  - The Beats are open source data shippers that you install as agents on your servers to send operational data to Elasticsearch. Beats can send data directly to Elasticsearch or via Logstash, where you can further process and enhance the data.
+  - 
+
+===========================
+ES Production Arhitectural 
+===========================
+Choosing num of shards:
+  - Each shard may be on a different node in a cluster. 
+  - Every shard is a self-contained Lucene index of its own. Adds overhead per shard.
+  - Index can have primary and replicas shards, replicas are good for redundancy and read times. Write requests are routed to Primary and then replicated to replicas. 
+  - New shards can be added but requires re-indexing, You want to overallocate shards but not too much, consider scaling out in phases. 
+  - No of shards depends on your data and application. Create a test setup, fill it up with real data and hit with real queries to determine the limits on one shard, from there calculate the capacity. 
+  - Read heavy apps can add more replicas shards without re-indexing. 
+
+Adding an Index:
+  - Ex :
+PUT /new_index
+{
+    "settings": {
+	    "numder_of_shards": 10,
+		"numder_of_replicas": 1
+	}
+}
+  - You can use index templates to automatically apply mappings, aliases etc 
+  - To check for num of shards/replicas on existing index use "GET /INDEX_NAME/_settings"
+
+Multiple Indices for Scaling:
+  - Make new index to hold new data, search both indices using aliases
+  - You can use one index per time frame using time-based data. Ex log data can have index aliases for ex: logs_current, last_3_months to point to specific indices as they rotate.
+  - Alias rotation is how you can move indexes around. 
+
+Index Lifecycle:
+  - Available in version 7 and up 
+  - You can use datastream_policies to assign Hot, Warm, Cold and delete actions based on age/size of index. This policy is then assigned as template to the indexes. 
+
+Hardware recommendation:
+  - RAM is likely your bottleneck, 32GB RAM is recommendation for ES, any larger will reduce the performance, you can assign the 32 GB for OS/Disk cache for Lucene. 
+  - SSDs with noop i/o schedulers. DAS disks. 
+  - User RAID0 if shards are replicated
+  - Need fast Network and avoid NAS/SAN. 
+  
+Heap Sizing:
+  - default heap size is only 1GB 
+  - Use, "export ES_HEAP_SIZE=32g" or "ES_JAVA_OPTS="-Xms32g -Xmx32g" ./bin/elasticsearch 
+  
+Monitoring of ES Cluster:
+  - X-Pack
+    - Aavaiable by default in ES 7 and up. 
+    - helps with security, monitoring, alerting, reporting, graph and Machine Learning
+    - paid license for all options like ML etc 
+  - Simple Monitoring of ES cluster is avaiable for free Stack Monitoring. Requires enabling data collection for Kibana and ES. 
+
+Common Troubleshooting Issue for ES:
+  - Logs Location is mentioned in /etc/elasticsearch/elasticsearch.yml   and normally is /var/log/elasticsearch/ 
+  - Recommended settings:
+    - remove swap file or uncomment "bootstrap.memory_lock = true" + edit systemctl elasticsearch.service and add "[Service] /n LimitMemLock=infinity"
+    - Heapsize settings in /etc/elasticsearch/jvm.options and update -Xms (initial heapsize) and -Xmx (maximum heapsize). These values should be same, max recommendation is 32 gb ram
+  - Ubuntu service based setting for ElasticSearch are in /usr/lib/systemd/system/elasticsearch.service 
