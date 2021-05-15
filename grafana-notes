@@ -1,0 +1,60 @@
+Grafana:
+========
+  - You can use Nginx as reverse proxy for SSL and port masking. 
+  - Docker can be used for port masking and SSL can be pushed to grafana container as well. 
+  - Panel Row: multiple dashborads can be combined in Rows. These rows can be minimized, can be added or deleted on the fly.
+  - Panel representation options: Panels has keyboard shortcuts, you can in/out of it using shortcuts/Esc. You can inspect the panel for data coming in, update JSON etc
+  - Dashboard setting has versions of dashboard and can be 
+  - Graph Panel: 
+    - stacking of series means displayed graph will add values and show combined data. 
+    - null value: can be displayed as null or connected or as zero. 
+    - Series overide can change properties of single series in the panel. 
+    - visual thresholds: It can be used for changing properties of series if thresholds are being hit. These are not alerts thresholds. 
+    - you can play around on https://play.grafana.org 
+    - Additional resources: https://sbcode.net/grafana/graph-panel/
+  - Stat Panel: It shows a single value for the series. 
+  - Bar Gauge Panel: Similar to stat/Gauge but displayed as bars. Orintation can be vertical/horizontal. 
+  - Table Panel: If the Data is not rows/columns then you will need to convert time series to table format. 
+  - MySql DataSource 
+    - More Info: https://sbcode.net/grafana/create-mysql-data-source/
+    - You can use pre-made mysql dashboard with mysql my2 collector. my2 collector is a script that runs on the mysql server, collects mysql server status and saves it in my2 tables in a time series format. Grafana will need access to my2 table to pull data. 
+    - You can create custom mysql time series as well by adding your command to collector and then updating the query in Grafana. 
+  - You can graph non time series data from MySql by using "Now() as time," inside your MySql query. Grafana will need access to this table. 
+  - Logs Panel:
+    - Uses Loki, which is like Prometheus but for logs. Promtail service acts as collector agent for Loki. 
+    - More Information: https://sbcode.net/grafana/install-loki-service/
+    - Promtail pushed data to Loki server
+    - user permission for Promtail and Loki are something to check if you get 500 http errors when adding Loki as source. 
+    - Logs can only be in Logs or Table type visualization. 
+  - LogQL : https://sbcode.net/grafana/logql/
+  - 2 types of LogQL:
+    - Log queries returning the contents of log lines as streams.
+    - Metric queries that convert logs into value matrixes.
+  - LogQL consists of log stream selector and filter expression. 
+  - Log stream selector operators are equal, no equal, regex match and regex not match 
+  - If you have multiple promtail servers, you can use job name to distinguish between logs from different servers. Promtail provides job, host and __path__ options for distinguish between different logs.
+  - Promtail Pipelines is used to transform a single log line, its labels, and its timestamp. You can basically apply regex on loglines and use it to update your search. https://grafana.com/docs/loki/latest/clients/promtail/pipelines/
+  - Use annotation to highlight critical logs. Ex: https://sbcode.net/grafana/graph-annotations-log-panel/
+  - InfluxDB and Telegraf (TIG stack) 
+    - InfluxDB is used as TSDB 
+    - Telegraf can be used to pull SNMP metrics or receive grpc streaming data from network devices. 
+    - Installation https://sbcode.net/grafana/install-influxdb-datasource/ 
+    - Create DB in fluxdb, create user, grant read/write access from user to DB as needed. 
+    - InfluxQL is similar to SQL 
+    - telegraf installation and config : https://sbcode.net/grafana/install-telegraf-agent/
+    - BrightPattern dashboard for monitoring Telegraf metric for Grafana 
+    - Input.net and Input.netstat in Telegraf agent conf are used for pulling network related stats 
+  - Telegraf SNMP 
+    - update /etc/telegraf/telegraf.conf and add "inputs.snmp". To support multiple snmp dest, add more inputs.snmp with different snmp agent address. 
+  - Grafana and Zabbix 
+    - It is recommened to enable direct mysql datasource from grafana then use grafana-zabbix datasource to use the mysqldb datasource. 
+    - You will need to install grafana-zabbix plugin using grafana-cli. Update grafana.ini to allow unsigned plugins.
+    - Create readonly grafana user in zabbix to access API and use it for enabling zabbix-datasource. 
+  - Grafana and ElasticSearch 
+    - ElasticSearch source can be used much like other datasources. You can access the index on ElasticSearch which can be receiving data from filebeats or metricbeats etc. 
+    - Metricbeat is good at collecting metric for cpu, mem, network etc where as filebeat is good for reading files. 
+  - Dashboard Variables: Dashboard setting --> Variables 
+    - variable types can interval, datasources, custom, query etc 
+    - variable query can reference other variables created in same dashboard. 
+  - Grafana Zabbix Network device https://sbcode.net/grafana/cisco-switch-zabbix/
+  - Grafana Telegraf/InfluxDB Device https://sbcode.net/grafana/cisco-switch-influxdb/
