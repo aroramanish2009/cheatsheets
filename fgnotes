@@ -1,0 +1,224 @@
+Fortigate Firewall:
+===================
+Models:
+  - Entry Level = 50E, 60E/F, 80E, Mid Range = 100E, 200E, 600E, 900D, High End = 1200D, 2500, 3700 and 3980E
+  - Through put information: https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/Fortinet_Product_Matrix.pdf
+  - Features, capabilities and throughput varies by model size and/or licensing options
+  - Fortigate SSL ceritificate inspection only checks for url from cn field in ssl handshake. For complete visibility into SSL traffic, you need to enable SSL Deep inspection where Fortigate becomes MIM and offloads the SSL traffic. 
+  
+Password Recovery:
+  - recover over console
+  - reboot with console connected, copy serial number
+  - emergency password syntax: bcpb + fortigate serial number 
+  - Login to device over console using maintainer/"bcpb + fortigate serial number " 
+
+Device recovery if firmware is busted:
+  - reboot and break boot process
+  - "f" to format boot device 
+  - "g" to TFTP from WAN1 using 192.168.1.x network
+  - copy file over tftp
+  - Select default and fortigate will use this OS as default boot OS
+
+LDAP SSO on Fortigate:
+  - set up DNS to ensure reachability to LDAP servers
+  - Define LDAP servers in "User&Device" -> "LDAP Servers" 
+  - You can use fabric connector and create "Poll Active directory user" which will allow Fortigate to track and map users name with IP. 
+  - Firewall SSO, create ldap server and create usergroup with Group type and ldapserver. In system administrators, create new Administrator, select Match all users in remote server group and select usergroup connected to ldap. 
+  - Firewall Admin SSO, ldap CNI needs to match otherwise auth fails. 
+
+
+L3 Interfaces, Firewall Policies & Sequencing:
+  - Role under interface config does not impact policies, it is normally used for dashboard usage metrics
+  - Interface can be given static IP addressing or DHCP mode
+  - You can enable dhcp server from that interface on the FW, assign dhcp range, gateway, DNS etc. Advance options all for dhcp options, exclusion, static entry etc 
+  - Interface also support DHCP relay
+  - Firewall Policy by default denies everything, enable log on deny policy to capture traffic being denied. 
+  - In "Log & Report" -> Forward Traffic -> Filter using policy id or src/dst etc. Double click on log to view 
+  - Firewall policies are applied in sequence like other ACLs, order placement matters. 
+  - address, address groups, threat IPs groups can be created within the policy config. 
+  - Router on a stick configuration 
+    - Create Vlans in Interfaces using "vlan" type
+    - Assign vlan to a port
+    - Basically creates an 802.1q sub-interfaces on the FW
+    - fortilink interface is dedicated to fortiswitch setup 
+  - Configuring static routes
+    - Check routing table on GUI by going to Routing Monitor under Status. 
+    - CLI: config router static --> edit $num --> set "dst ip/mask", "gateway x.x.x.x" and "device portX" 
+    - confirm via "show router static"  or "get router info routing-table static" 
+  - Policy Based Routing: Requires "Advanced Routing" feature to enable "policy routes" under Network 
+  - Policy route will require firewall policy to allow traffic which is in addition to the PBR
+
+Fortigate Security Fabric:
+  - Helps enable a single pane for your enterprice fabric
+  - It also pushes analyser and manager setup to all FWs in the fabric
+  - Same version number among devices is recommended for joining FW to root fortigate
+  - You will need to enable fortigate telemetry on the interfaces where it will discover the other FWs
+  - Devices needs to be approved for fabric, analyser and manager using Serial Numbers 
+  - Once devices are added to root FW, you can then view logs, av logs etc in the root fw pointing to forti analyser
+  
+
+Device Hardening:
+  - Disable http access on firewall interfaces
+  - Trusted host IP under "config system admin" or other users. 2 factor avilable via fortitoken or forti cloud
+  - "admin-sport" can be used to listen on non-default port for https, "admin-ssh-port" to update SSH port. 
+  - Incorrect password entry threadhold can be adjusted using "config system global" --> "admin-lockout-threshold". default is 3 incorrect logins
+  - default lockout is 60 sec and can be updated using ""config system global" --> "admin-lockout-duration"
+  - Use "set pre-login-banner enable" and "set post-login-banner enable" banners under "config system global"
+  - Banners can be updated in systems --> replacement messages
+
+Upgrade FortiOS:
+  - Go to support.fortinet.com, select your software and confirm it is approved for your hardware
+  - check resolved and known issues associated with new release
+  - Use "https://docs.fortinet.com/upgrade-tool" to review your upgrade path with version and build info
+  - .out format is for upgrade, generally software is per hardware or software model
+  - Download file from support site, in GUI use "system -> firmware" perform upgrade
+  - Fortigate downloads backup config before performing upgrade, good practice to download backup config before upgrades
+  - Fortiguard updates can be found in "system" -> "fortiguard". Licensed information for NGFW are located there as well
+  - Fortiguard updates policy can be created to pull updates weekly or bi-weekly
+  - "diagnose autoupdate status" # See when last update was recieved & Update policy
+  - "diagnose autoupdate versions" # Versions of updates  
+
+Backup/Restore Fortigate:
+  - Under login username, configuration -> backup -> localpc or usb
+  - Partial config backup can be performed using test file that has CLI configuration starting from "config" and ending with "end". Under username, go to configuration then scripts, from here upload config file and run
+  - You can also perform full restore from the backup file 
+  - It is recommended to maintain the same OS version when when restoring
+
+Fortigate IPsec VPN: 
+  - You can either use VPN wizard or custom configuration option to create VPN tunnels
+  - Using Hub/Spoke wizard creates connectivity using iBGP between the Hub/Spoke
+  - BGP requires anchor routes if you are trying to advertise aggregations
+  - VPN topologies 
+  - standard site-to-site: Offers fortigate-to-fortigate or fortigate-to-third-party. 
+  - Basic site-to-site between Fortigate firewalls
+    - using PSK 
+    - using certificate 
+    - Gre over IPsec , between fortigates ipsec mode is tunnel only. 
+    - Policy Based IPsec tunnel 
+  - Basic site-to-site between Fortigate and AWS/Cisco/Azure/ASA 
+    - Gre over IPsec = Transport mode works with Cisco 
+  - Hub and spoke/ADVPN: One central FortiGate (hub) has multiple VPNs to other remote FortiGates (spokes). In ADVPN, shortcuts can be created between spokes for direct communication
+
+FortiGate NAT Types:
+  - Nat using outgoing interface: Interface overload PAT
+  - NAT using IP Pool:  SNAT overload or one-to-one using IP range
+  - Virtual IPs: Destination IP NAT, Used for Port forwarding or ip overlap
+  - For static nat, create policy and use Virtual IP as dst in that policy. Note: You cannot mix address groups and virtual IPs when creating policy for nat. 
+  - Port forwarding can be enabled in virtual ip section using "port forwarding" option. 
+  - Dynamic NAT or interface PAT : NAT can applied using the access policy
+  
+Logging Options: 
+  - Log -> Forward Traffic : Logs for any data plane traffic traversing the FW. Double click log message to see details on policy deny or permit
+  - You can use Filter to limit the number of logs displayed. You can use left pane gear to add/remove more labels
+  - Tabs can be moved to customize the log view
+  - Log Settings: By default all data plane traffic is logged but control plane logs are disabled. This setting can be updated in "Log Settings"
+  - CLI allows upto 4x syslogs or fortianalyser where as GUI is limited to one servers
+  - Events keep tracks system level events to events related with device services like VPN, routing etc 
+  
+Fortigate FortiAnalyzer: 
+  - Centralized logs from all fortigates in the enviorment
+  - Analyzer -> Device Manager : allow fortigate firewall to send logs to this analyser
+  - Log view is for live logs review, you can create custom views with log filters as needed
+  - SOC view can provide visulization for AV, UTM, active threats
+  - Fortiview you can see security events, traffic view, top sources etc 
+  - Reports can be used to provide metric overtime, these reports can be exported in html, pdf etc format 
+  - If using Splinl: "Fortinet fortigate app for splunk" app can be used with logs from firewalls
+
+Fortigate LB feature: 
+  - Enable LB/WAF feature in the system -> feature set 
+  - review the policy for waf 
+  - add Virtual server under network where you can create health checks, enable x-forwarded-for labeled as preserve ip. 
+  - Create FW policy to allow traffic, select "proxy mode" for virtual servers to show up in destination options. 
+
+Fortigate Captive Portal:
+  - This is done under Network Interface -> Security Mode
+  - Can be applied to based Users groups in IdP
+  - You have option to exempt sources/destinations 
+  
+FortiGate QoS:
+  - Policy & Opbjects -> Traffic Shapers 
+  - Create new policy in Traffic Shapers and apply it using traffic shapping policy section 
+  - Apply shaper profile to the policy in forward/reverse direction
+  
+
+Fortigate HA:
+  - You will need mgmt interface with different IPs between a/p devices 
+  - steps for deploying HA a/p, commands for primary 
+    - config system ha -> set mode a-p
+    - config system ha -> set group-id 20
+    - config system ha -> set group-name test-ha
+    - config system ha -> set password test1
+    - config system ha -> set session-pickup enable 
+    - config system ha -> set hbdev port2 100   # 0-512, higher is better, default is 0 
+    - config system ha -> set priority 200  # default 128, max 255, higher is better 
+    - config system ha -> set ha-mgmt-status enable
+    - config system ha -> config ha-mgmt-interfaces -> edit 1 -> set interface "MGMT"
+  - commands for secondary 
+    - Same config as primary just lower priority 
+  - Use "get system ha status" to view the status in sync
+  - "set override enable" -> will allow device to preempt the active status
+
+Fortigate SSL VPN:
+  - SSL VPN requires fw policy to allow traffic. The policy requires both IPs and user groups in source. 
+  - DST in policy cannot include "All" if split-tunnel is enabled. 
+
+Fortigate vdoms:
+  - virtual domains allows assigning interfaces to a namespace, this allows for sepration of routing and firewall policy context within a single physical device. 
+  - config system global -> set vdom-mode multi-vdom. This will allow multiple views where we will have Global and Root views. 
+  - By default "root" is the vdom avaiable for use. 
+  - You can assign physical resources like interfaces from Global vdom to any newly created vdoms
+
+
+  
+
+CLI Commands:
+Firewall Process: 
+  - get system performance top = process_ID, CPU and Memory usage
+  - diagnose sys kill $Proccess_ID = Kill and restart process
+Interface: 
+ - show system interface portX = Configuration associated to portX
+ - config system interface - edit portX - get = full config associated with portX including hidden/default parameters 
+  
+DHCP:
+ - show system dhcp server X = Configuration associated with DHCP servers config associated with interface physcial or virtual
+ - execute dhcp lease-list port = Show DHCP bindings for the port associated with dhcp scope
+
+NAT:
+  - get system session list =~ show ip nat translations 
+  - 
+L2L VPN:
+  - diagnose vpn tunnel list = status of the VPN tunnel, no SA means tunnel is down. 
+  - diagnose vpn ike status = Phase 1 
+  - diagnose vpn ike gateway list = Phase 1 interface status 
+  - diagnose vpn tunnel list = Phase 2
+  - diagnose vpn ipsec status = encryption/decryption counter 
+  
+Routing: 
+  static: 
+    - show router static
+    - get router info routing-table static
+  OSPF:
+    - You need to setup ospf rid, create area in dot format, add networks to participate in ospf along with interfaces that will participate in OSPF. 
+    - get router info routing table ospf 
+
+Firewall Sniffer:
+  - diagnose sniffer packet portX '$FILTER' $verbose_num $Num+of_packets l ## L is for timestamp
+=====================
+fortigate-1 # diagnose sniffer packet port2 '' 4
+Using Original Sniffing Mode
+interfaces=[port2]
+filters=[]
+1.364700 port2 -- 10.155.20.2 -> 8.8.8.8: icmp: echo request
+2.380194 port2 -- 10.155.20.2.38414 -> 192.168.89.15.53: syn 2177008208
+2.388644 port2 -- 10.155.20.2 -> 8.8.8.8: icmp: echo request
+=====================
+  - Verbose Level 
+fortigate-1 # diagnose sniffer packet port2 ''
+<verbose>
+1: print header of packets
+2: print header and data from ip of packets
+3: print header and data from ethernet of packets (if available)
+4: print header of packets with interface name
+5: print header and data from ip of packets with interface name
+6: print header and data from ethernet of packets (if available) with intf name
+  - diagnose sys session [list] [filter] [clear] etc
