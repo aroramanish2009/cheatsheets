@@ -5,6 +5,11 @@
 --> Anchors
 ^ = Beginning of the line
 $ = End of the Line
+?= = Positive look forward 
+?! = Negative look forward
+Ex of positive look forward
+^a(?=b).*$ : This will only match "a" if it is followed by a "b" 
+^a(?!b).*$ : This will only match "a" if it is NOT followed by a "b"
 
 --> Character sets
 [0-9] = Matches any single digit from 0..9
