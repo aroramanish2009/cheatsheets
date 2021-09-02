@@ -50,3 +50,41 @@ Examples:
 $ grep "^[0-9]" grep.txt
 1234 this is a test post please ignore.
 
+===================================
+ADV
+===================================
+1. Lookarounds:
+  - Lookahead: Representation (?= ... )
+    - Ex: \d+(?= fahrenheit) = This will match digit "60" in "60 fahrenheit" but not in "60 celcius" 
+    - Another less efficient way of doing \d+(?= fahrenheit)  is also (?=\d+ fahrenheit)\d+  . Second one generally using in password matching case where you want to match condition using lookhead before matching it. 
+    - Negative Lookahead Syntax: (?! ... )
+  - Lookbehind:
+    - Matches pattern if it precedes with certain string or condition. 
+    - Ex: (?<=Mr)\s\w+\s\w+  will match "Jay Smith" from "Mr Jay Smith and Mrs Jane Smith" 
+    - Negative Lookbehind Syntax: (?<! ... )
+
+2. Non-Capturing Groups: (?: … )
+  - This is used to match a pattern but not capture it, you can still use capture groups within non-capturing groups. 
+  - Ex: (?:Bob says: (\w+)) -> Bob says: No = This will use "Bab says:" as literal to capture "No" for the parser. 
+  - Another Example: if you have "http://xyz.com" and "https://notxyz.com" then (?:http|https)://([^/\r\n]+) would capture xyz.com and notxyz.com 
+
+3. Groups: They help you to extract exact information from a bigger match (which can also be named), they let you rematch a previous matched group, and can be used for substitutions. 
+  - Ex: \b(?<first>\w+.*?)(\w+.*)\b   = first group in named "first" and second will be used as $2.
+  - Ex above can be used to match "manish arora" which means group first in that match will be "manish" and 2 positional will be "arora"
+  - These groups can be used in substitution, for ex: $2_${first} will swap the name in last name & first name order "arora_manish"
+  
+4. Named Captures: 
+  - Syntax: (?<some_var> ... ) or (?P<some_var> ... ) or (?P=some_var). Option 1 and 2 are commonly seen in the wild. 
+  - similar example to named groups above. 
+
+5. Inline Modifiers: In Python, (?-i) will turn off case-insensitivy. 
+  - In general regex: (?i)MANISH will match manish as well as MANISH
+  
+6. Subroutines, Named Subroutines and Pre-Defined Subroutines (Python Regex pip install):
+  - (?1) = This is how you call group 1 for processing. Ex: (\w+ \w+) (?1) == (\w+ \w+) \w+ \w+
+  - Syntax for named Subroutines: (?<some_word>\w+) (?&some_word). Ex: (?<name_age>\w+ \d+) (?&name_age)
+  - Syntax for Pre-Defined : (?(DEFINE)(<foo> … )(<bar> … )) and call using (?&foo)
+  
+7. Conditionals:
+  - (?(A)B) = Basically means if A is true then match B. Ex: "(?<name>Manish) (?(name)\d+)" would match "Manish 25" but not "Jane 21"
+  - (?(A)|B) = Means if A is NOT true then match B.
