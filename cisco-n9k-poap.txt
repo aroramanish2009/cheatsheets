@@ -1,0 +1,84 @@
+Cisco N9K POAP Process: 
+=======================
+N9K POAP process flows as below:
+1. Switch boots up, if missing start-up config it goes into POAP loop until broken manually or processed using combination of dhcp+tftp+scp server. 
+2. DHCP server provides IP information and poap file name that can be download from tftp server without any auth. Ex of DHCP config file is provided below. 
+3. Initial POAP python script can be downloaded from cisco datacenter git repo and adjusted for your enviornment. It comes with its own bugs and optimizations provided below in POAP Script section. 
+4. POAP script check Image, BIOS, config file etc to complete the kickstart process. 
+===================================================================
+DHCP Server Information
+===================================================================
+1. Spin up DHCP Service: 
+  - Use networkboot's dhcp docker container. 
+  - Enable dhcp on the interface that will be seeing broadcast DORA traffic. 
+docker run -d --rm --init --net host -v "$(pwd)/data":/data networkboot/dhcpd ens4
+  - dhcp.conf example for POAP 
+***********************
+#dhcpd.conf file
+default-lease-time 600;
+max-lease-time 7200;
+authoritative;
+option tftp-server-address code 150 = { ip-address };
+
+subnet 192.168.50.0 netmask 255.255.255.0 {
+ range 192.168.50.170 192.168.50.200;
+ option routers 192.168.50.1;
+ option domain-name-servers 192.168.50.1;
+}
+
+host SPINE-1 {
+    option dhcp-client-identifier "\0009XXXXXXXXXXX";
+    fixed-address 192.168.50.201;
+    option routers 192.168.50.1;
+    option host-name "SPINE-1";
+    option bootfile-name "poap.py";
+    option tftp-server-address 192.168.50.1;
+}
+
+host HOSTLEAF-1 {
+    option dhcp-client-identifier "\0009XXXXXXXXXX1";
+    fixed-address 192.168.50.202;
+    option routers 192.168.50.1;
+    option host-name "HOSTLEAF-1";
+    option bootfile-name "poap.py";
+    option tftp-server-address 192.168.50.1;
+}
+*********************
+
+2. Spin up TFTP service:
+  - Use pghalliday/tftp docker image or create new one using Dockerfile.
+  - Place the poap.py and poay.py.md5 in var/tftpboot/ and mount it to tftp container during runtime. 
+  - Docker command 
+docker run -d -p 0.0.0.0:69:69/udp -v "$(pwd)/var/tftpboot":/var/tftpboot -i -t pghalliday/tftp
+
+3. poap.py and switch config files. 
+  - File are placed in "/var/lib/tftpboot" pulled using SCP info options. TFTP fails it tries to use auth with tftp. 
+  - Use the poap.py file from Cisco or fork in local repo (https://github.com/aroramanish2009/nexus9000) 
+  - Everytime a change is made to poap.py, run the following command to update md5sum that N9K POAP process uses to validate poap.py script.
+f=poap.py ; cat $f | sed '/^#md5sum/d' > $f.md5 ; sed -i "s/^#md5sum=.*/#md5sum=\"$(md5sum $f.md5 | sed 's/ .*//')\"/" $f
+  - Option field example:
+*********************
+options = {
+   "username": "ubuntu",
+   "password": "XXXXXXXXXXXX",
+   "hostname": "192.168.50.1",
+   "transfer_protocol": "scp",
+   "mode": "serial_number",
+   "disable_md5": True, #This disables md5 check for conf and image, if needed place text file with md5sum=XXXXXXXX in the same folder. 
+   "use_nxos_boot": True, #used boot xxx command instead of ISSU. 
+   "target_system_image": "nxos.7.0.3.I7.9.bin",
+}
+*********************
+  - Had to fix regex in Line 2019 to accomodate for missing "." in front of "I"
+final_version = interim_result.replace('(', '.').replace('I', '.I').replace(')', '')
+  - For virtual env, I had to disable BIOS upgrade in def "is_bios_upgrade_needed" by just returning "False" 
+  - Example of switch config file. Files are created by conf.SERIALNUM format and you will need conf.SERIALNUM.md5 if you are using md5checks. Place md5 in format md5sum=xxxxxxxxxxxxxxxxxxxxxx in the conf.SERIALNUM.md5 unlike the one shown in poap.py md5sum check. 
+*********************
+hostname SPINE-1
+username admin password 5 xxxxxxxxxxxxxxxxxxxxxxxxxx  role network-admin
+vrf context management
+interface mgmt0
+vrf member management
+ip address 192.168.250.11/24
+cli alias name wr copy run start
+*********************
