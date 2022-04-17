@@ -1,0 +1,154 @@
+Telegraf: Plugin-driven server agent for collecting & reporting metrics
+========
+  - It can pull metrics from servers its running on, from third party APIs, listen for metrics via statsd and kafka. 
+  - Uses output plugins to send metrics to different datasources. 
+  - inputs.http can be used to pull json data and send to tsdb. tele
+  - Uses host local time in UTC for timestamps, sync host clock with NTP. 
+  - Telegraf Metrics contains four main components:
+    - Measurement name: description & namespace for the metric. 
+    - Tags: Key/Value string pairs and usually used to identify the metric.
+    - Field: key/value pairs that are typed and usually contain the metric data. 
+    - Timestamp: Date and time associated with the field. 
+  - Telegraf's output data formats (aka serializers) converts metric types to representations that can be transported or viewed. 
+  - Default Telegraf serializer converts to InfluxDB Line Protocol. 
+  - Processor plugins process metrics as they pass through and immediately emit results based on the values they process. Ex: Adding Tags to all metrics that pass through. 
+  - Aggregator plugins are typically for emitting new aggregate metrics, such as a running mean, minimum, maximum, quantiles, or standard deviation. For this reason, all aggregator plugins are configured with a period. 
+  - The period is the size of the window of metrics that each aggregate represents.
+  - NOTE: If using processor and aggregator togather, data is processed then passed to aggregator which then send it back to processor. Processor scripts needs to be idempotent or use namepass/namedrop to avoid issues when aggregated data is processed a second time. 
+  - Telegraf Terms:
+    - Agent: Gathers metrics from input plugins and sends metrics to output plugins. 
+    - Aggregator Plugin: Recieves raw metrics and create aggregate metrics. 
+    - Batch Size: Telegraf agent sends metrics in batches instead of indiviually. Batch size controls writes to output plugins.
+    - collection interval: There is a global default for collecting data from each input plugins, this interval can be per input plugin as well. 
+    - Collection Jitter: Random time jitter to avoid overlap for input plugins.
+    - external plugins: Programs that runs through the "execd" plugin. 
+    - Flush interval: The global interval for flushing data from each output plugin to its destination. This value should not be set lower than the collection interval.
+	- Flush Jitter: Random time sleep to avoid overlap. 
+    - Input Plugin: Gathers metrics and delivers them to the core agent, where aggregator, processor, and output plugins can operate on the metrics
+    - Metrics Buffer: Individual metrics are cached when writes are failing for an output plugin, buffers are flushed successful write and head dropped if buffer fills. 
+    - Output Plugin: Delivers metrics to their configured destination. Emits timestamps in nanoseconds, output plugin does not alter timestamps. 
+    - Precision: Determines how much timestamp precision is retained in the points received from input plugins. If ms precision is set, incoming nanoseconds timestamp will be truncated to ms then padded with Zeros to keep length of nanoseconds timestamp. 
+    - Processor plugins transform, decorate, and/or filter metrics collected by input plugins, passing the transformed metrics to the output plugins.
+    - Service input plugins are input plugins that run in a passive collection mode while the Telegraf agent is running. 
+	
+  - Telegraf Plugins
+  - Useful Input Plgins
+    - Arista LANZ Consumer, useful input plugin for ingesting LANZ which can be used for detection of microburst. https://www.arista.com/en/um-eos/eos-latency-analyzer-lanz
+    - Bond: plugin collects network bond interface status, bond’s slaves interfaces status and failures count of bond’s slaves interfaces. 
+    - inputs.gnmi: This GRPC-based protocol can utilize TLS for authentication and encryption. This plugin has been developed to support GNMI telemetry as produced by Cisco IOS XR (64-bit) version 6.5.1 and later.
+    - inputs.cisco_telemetry_mdt:  plugin that consumes telemetry data from Cisco IOS XR, IOS XE and NX-OS platforms. It supports TCP & GRPC dialout transports. GRPC-based transport can utilize TLS for authentication and encryption. Telemetry data is expected to be GPB-KV (self-describing-gpb) encoded.
+    - inputs.ethtool: The Ethtool plugin gathers ethernet device statistics.
+    - inputs.ping: The Ping input plugin measures the round-trip for ping commands, response time, and other packet statistics.
+    - inputs.sflow: The SFlow input plugin provides support for acting as an SFlow V5 collector in accordance with the sflow.org specification.
+    - inputs.snmp: The SNMP input plugin gathers metrics from SNMP agents. 
+    - inputs.snmp_trap: The SNMP Trap plugin receives SNMP notifications (traps and inform requests). Notifications are received over UDP on a configurable port. Resolve OIDs to strings using system MIB files (just like with the SNMP input plugin).
+  - Output Plugins: 
+    - outputs.loki: The Grafana Loki output sends logs to Loki.
+    - outputs.influxdb or outputs.influxdb_v2: Writes to InfluxDB using http or udp. 
+    - outputs.prometheus_client: The Prometheus Client output plugin starts a Prometheus Client, it exposes all metrics on /metrics (default) to be polled by a Prometheus server.
+  - Aggregator Plugins:
+    - aggregators.basicstats: Plugin gives count, max, min, mean, s2(variance), and stdev for a set of values, emitting the aggregate every period seconds.
+    - aggregators.derivative: Estimates the derivative for all fields of the aggregated metrics.
+    - aggregators.final: Emits the last metric of a contiguous series. 
+    - aggregators.histogram: Plugin creates histograms containing the counts of field values within a range.
+    - Other examples are Merge, MinMax, Quantile and valuecounter.
+  - Processor Plugins: They transform, decorate and filter metrics. 
+    - Date: Adds the metric timestamp as a human readable tag.
+    - Default: Ensures certain fields will always exist with a specified default value on your metrics. 
+    - Enum: Allows the configuration of value mappings for metric fields. The main use case for this is to rewrite status codes such as red, amber, and green by numeric values such as 0, 1, 2. 
+    - Execd: Plugin aruns an external program as a separate process. It pipes metrics into the process’s STDIN and reads processed metrics from its STDOUT.
+    - GeoIP: The GeoIP processor plugin looks up IP addresses in the MaxMind GeoLite2 database and adds the respective ISO country code, city name, latitude and longitude.
+    - Network Interface Name: Looks up network interface names using SNMP.
+    - Parser: Parses defined fields containing the specified data format and creates new metrics based on the contents of the field.
+    - Port Name Lookup: Plugin converts a tag containing a well-known port number to the registered service name.
+    - Regex: Transforms tag and field values using a regular expression (regex) pattern. If result_key parameter is present, it can produce new tags and fields from existing ones.
+    - TopK: Plugin is a filter designed to get the top series over a period of time. It can be tweaked to do its top K computation over a period of time, so spikes can be smoothed out.
+    - External plugins: Built outside of Telegraf that can run through an execd plugin. Will be used for MTR, iPerf etc 
+
+#Data Formats 
+Telegraf input data formats
+  - Various different input formats are supported. For Ex: CSV input data format parses documents containing comma-separated values into Telegraf metrics. 
+  
+Hands On: 
+=========
+telegraf.config
+***************************
+ubuntu@telegraf:~$ grep -v -e '.*#.*' -e '^$' /etc/telegraf/telegraf.conf
+[global_tags]
+[agent]
+  interval = "10s"
+  round_interval = true
+  metric_batch_size = 1000
+  metric_buffer_limit = 10000
+  collection_jitter = "0s"
+  flush_interval = "10s"
+  flush_jitter = "0s"
+  precision = ""
+  hostname = ""
+  omit_hostname = false
+[[outputs.prometheus_client]]
+    listen = ":9273"
+[[inputs.cpu]]
+  percpu = true
+  totalcpu = true
+  collect_cpu_time = false
+  report_active = false
+[[inputs.disk]]
+  ignore_fs = ["tmpfs", "devtmpfs", "devfs", "iso9660", "overlay", "aufs", "squashfs"]
+[[inputs.diskio]]
+[[inputs.kernel]]
+[[inputs.mem]]
+[[inputs.processes]]
+[[inputs.swap]]
+[[inputs.system]]
+[[inputs.docker]]
+  endpoint = "unix:///var/run/docker.sock"
+  container_names = []
+  timeout = "5s"
+  perdevice = false
+  total = false
+[[inputs.exec]]
+  commands=["mtr -C -o SDRLA 1.1.1.1"]
+  timeout = "30s"
+  data_format = "csv"
+  csv_skip_rows = 1
+  csv_column_names=[ "", "", "status","dest","hop","ip","snt","Drop","Rcv","Loss","Avg"]
+  name_override = "mtr"
+  csv_tag_columns = ["dest", "hop", "ip"]
+  interval = "30s"
+[[inputs.exec]]
+  commands=["iperf3 -i 3 -t 60 -c 192.168.89.132 --json "]
+  interval = "5m"
+  timeout = "600s"
+  data_format = "json"
+  json_query = "end"
+  name_override = "iperf3-Site1"
+[[inputs.ping]]
+  urls = ["tgsmc.com","google.com","1.1.1.1"]
+  count = 2
+  ping_interval = 1.0
+  timeout = 1.0
+***************************
+Prometheus.yml
+***************************
+root@prometheus:~# cat data/prometheus.yml
+# my global config
+global:
+  scrape_interval: 30s
+  evaluation_interval: 60s
+
+  external_labels:
+    monitor: Home-Lab1
+
+rule_files:
+  - "first.rules"
+  - "my/*.rules"
+
+scrape_configs:
+  - job_name: 'telegraf'
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+         - 192.168.89.130:9273
+root@prometheus:~#
+***************************
