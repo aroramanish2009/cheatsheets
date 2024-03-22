@@ -71,3 +71,10 @@ CUMU - net show bgp neighbor #BGP Neighbor Display
 CUMU - net show bgp 1.1.1.1/32 #BGP info specific to that route
 CUMU - net show bgp neighbor swp1 #If using BGP unnumbered
 #PAN BGP show
+> show routing route #"show ip route"
+> show routing fib virtual-router <name> | match <x.x.x.x/Y> #"show ip route x.x.x.x/y"
+> show advanced-routing fib # FIB table
+> show advanced-routing fib ecmp # ecmp enabled or not
+> show advanced-routing route destination <ip/netmask> # RIB table entry
+> show advanced-routing route type bgp # RIB Table for bgp
+

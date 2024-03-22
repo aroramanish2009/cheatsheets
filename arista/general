@@ -1,0 +1,105 @@
+ARISTA EOS
+==========
+1. schedule command 
+
+Ex: switch# schedule backup-test interval 60 max-log-files 24 command show running-config  
+Runs every 60 mins, creates up to 24 log files with "show running-config" in it. 
+
+Verify: show schedule summary
+
+2. Event Handlers : Run a bash shell command in response to a specific system event, similar to Cisco EEM.
+switch(config)#event-handler onStartup
+switch(config-event-onStartup)#action bash /mnt/flash/startupScript1
+switch(config-event-onStartup)#trigger onboot
+switch(config-event-onStartup)#delay 60
+switch(config-event-onStartup)#exit
+switch(config)#
+
+Verify: show event-handler
+
+3. Allows for running KVM on the control-cpu of the switch. 
+  - download vm image on /mnt/flash 
+  - switch(config)#virtual-machine foo 
+  - switch(config-vm-foo)#disk-image [file:[path] image-format [format]
+  - Allocate mem: switch(config-vm-foo)#memory-size [size in bytes] 
+  - Bind virtual NIC to mgmt interface or SVI: switch(config-vm-foo)#virtual-nic 1 management [1-4] 
+  - Enable VNC: switch(config-vm-foo)#vnc-port [vnc-port number]
+  - Enable VM: switch(config-vm-foo)#enable
+ 
+4. Switch Platforms: Features and CLI commands vary by switch platform.
+  - use "show version" for model number, serial number, system MAC address, and manufacturing information
+  - show modules : displays the fabric modules in the switch
+  - E-series fabric modules can operate in fe600 mode, but are limited to first-generation fabric performance. First-generation modules cannot operate in fe1600 mode. Switches containing both types of modules must be set to fe600 mode. Best practice is to avoid switch configurations with mixed fabric modules.
+  - Use mode "arad" for E series cards. "platform sand forwarding mode arad", Without a platform sand forwarding mode (7500 and 7500E Series) command, forwarding compatibility mode is determined by the first linecard that is operational after reloading the switch. 
+  - Verify using : "show platform sand compatibility" , "platform ?" to view options. 
+  - To see modules, use "show module". 
+  - Chip to port mapping:
+    - show platform petraA port-info routing
+    - show platform petra module 4 port-info routing (for modular) 
+    - show platform arad mapping
+    - show platform trident system port
+
+5. General Command Modes:
+  - Same as Cisco exec, privileged, global modes. 
+  - Access Control List (ACL) and Multiple Spanning Tree (MST) configuration modes are examples of group-change modes. Basically changes are applied at "end" or "exit", use abort to cancel changes in these modes. 
+  - Using "comment" in side config section. 
+  - "write" or "copy running-config startup-config" to save config. 
+  - Accessing underlying Linux 
+    - To Enter: switch#bash
+    - To Exit: logout or Ctrl + D
+  - EOS operates from a flash drive root mounted as the /mnt/flash 
+  - Checkpoint for configuration 
+    - Command to save config to checkpoint file: switch#configure checkpoint save ca_test
+    - command to restore: switch#configure checkpoint restore ca_test
+    - To save file in checkpoint directory with date-time: switch#configure checkpoint save 
+
+6. Update members in port-channel (requires reboot)
+  - platform arad lag mode [ 1024x16 256x64 512x32 ]
+
+7. "platform sand lag hardware-only" : command configures all LAGs to use hardware resources, including one member LAGs. 
+
+===========================
+https://www.arista.com/assets/data/pdf/user-manual/um-books/EOS-4.26.2F-Manual.pdf
+============================
+Overview:
+  - Creating an Alias, you can create argument in alias command. For Ex: alias sre show run interface %1 == sre eth1/1 
+  - Switch accepts network mask or cidr notation. 
+  - Use "ip ssh client source-interface XXX" or "ip ssh source-interface XXX" to specifies the source IP address for secure. By default, switch selects source IP Add based on exit interface. 
+  - For tftp or ftp, "ip tftp client source-interface XXX" or "ip tftp source-interface XXX"
+
+Booting the Switch:
+  - Boot Loader Aboot: Similar Cisco Rommon, Aboot shell is like booting switch into rommon mode. It loads EOS, initiates switch processes, performes self tests, restores interface settings, etc. 
+  - Configuration Files: running-config, startup-config & boot-config. "boot-config" is an ASCII file that aboot uses to perform many pre-EOS tasks. 
+  - Use "more boot-config" or "show boot-config" to view the config setting for aboot to use. It has setting configured in NAME=VALUE format. You can use commands like "boot system flash:EOS1.swi" or "boot secret xr19v" or "boot console speed 4800".  
+  - Supervisor Redundancy: Use "show redundancy status" to view status and "show redundancy file-replication" for state of config file sync. There are 3 redundancy protocols Route Processor redundancy (RPR), stateful switchover and Simplex. 
+    - Route Processor redundancy (RPR) - default, standby processor is in warm state. unning state, including spanning tree, is lost, and all links are temporarily brought down.
+    - stateful switchover (SSO): Hot standby, L2 state is maintained, L3 state is not synced and can result in packet loss. Enabling non-stop forwarding in OSPF/BGP can eliminate most packet loss. 
+    - Simplex: Cold spare, can only be used if protocol changed to RPR or SSO. 
+    - To configure, config -> redundancy -> protocol [sso|rpr] 
+  - System Reset: A reset operation clears the switch, including memory states and other hardware logic.
+  - Switch Recovery: Insert USB drive with an empty file called "fullrecover" + files that needs to be uploaded to flash drive. Timestamp on boot-config file must not match for recovery procedure to start. 
+  - "show reload cause" - List issue that caused switch reload. 
+  - Zero Touch Provisioning (ZTP):
+    - Switch enters ZTP mode when start-config file is not present. If no start-up file is present, switch continues to reloads into ZTP state. 
+    - In ZTP mode, switch sends DHCP query from all ethernet & management interfaces. 
+    - Switch used system Mac Address & Arista as the vendor class indentifier (option 60)
+    - Switch is looking for option 66 (TFTP server) and/or Option 67 (bootfile name or network url) for downloading either bootfile (must start with #! shebang) or can be startup-config file. Any file without shebang is treated as startup-config
+    - If http url sent in option 67, get request contains switch hardware version, mac and serial. 
+  - Aboot Shell: Similar to the Linux Bourne Again Shell (Bash).
+    - can be used to restore factory defaults for flash contents. 
+    - can be used to recover aboot shell password.
+    - Restore console settings or replace contents of internal flash drive from config or image files stored on a USB flash drive. 
+    - Page 108 - Aboot File Structure
+  
+MLAG:
+  - The global STP configuration is derived from the primary peer device while the secondary device parameters are ignored. When STP is disabled on the primary device, the secondary device will not contain any STP configuration information from the primary device. As a result, the secondary device will not be able to decide on the port roles or states, and will remain in the default state which is the discarding state. This is an expected behavior.
+  - MLAG requires (highly recommend) identical model and EOS version. 
+  - A port channel which is a member of an MLAG must not be used as the destination port for a port mirroring (port monitoring) session.
+  - If an MLAG peer reboots, all ports except those in the peer-link port-channel remain in errdisabled state for a specified time, called the reload-delay period. Its 5 mins for fixed switchs and 15 mins for modular. 
+  - 1161
+
+MLAG Config:   
+MLAG Verify: 
+  - show mlag 
+  - show mlag detail
+  - show mlag interfaces 

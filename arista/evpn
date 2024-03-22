@@ -1,0 +1,193 @@
+Arista MLAG Show Commands:
+====================
+1. show mlag (cisco show vpc bri)
+2. show mlag interfaces [states - active-full, inactive, configured etc] 
+3. show mlag interfaces
+4. show mlag detail
+5. show port-channel dense (cisco - show port-channel summary) 
+
+Arista MLAG Config:
+==================
+Note: Disable spanning-tree on MLAG Peering Vlan to avoid STP learning wait times. 
+!
+vlan 4094
+ trunk group MLAGPEER
+!
+no spanning-tree vlan-id 4094
+!
+
+Note: The trunk group applied to the MLAG peering VLAN is applied to the peer- link to ensure the MLAG VLAN is only forwarded on this link.
+!
+interface Port-Channel1
+   description MLAG Peer-link - s1-leaf3
+   switchport mode trunk
+   switchport trunk group MLAGPEER
+!
+interface Ethernet1,6
+   description MLAG Peer-link - s1-leaf3
+   channel-group 1 mode active
+!
+
+Note: MLAG L3 Peering over vlan interface 4094
+interface Vlan4094
+   description MLAG Peer Network
+   ip address 10.255.255.2/30
+!
+
+MLAG Domain Config: (check for timers information if needs to be adjusted)
+mlag configuration
+   domain-id MLAG
+   local-interface Vlan4094
+   peer-address 10.255.255.1
+   peer-link Port-Channel1
+ 
+Note: The MLAG peers automatically negotiate this between themselves. The MLAG primary device is responsible for all STP processing for both peers. The Reload delay value is also very important in upgrade and maintenance scenarios.
+
+======================
+
+Arista L3 Show Commands: 
+1. show ip int bri 
+2. show ip virtual-router
+3. Same BGP commands as Cisco 
+4. show ip route 
+5. 
+
+Arista Layer 3 Vlan Interface:
+==============================
+1. ip virtual-router mac-address 00:1c:73:xx:xx:xx ; The switch maps all virtual router IP addresses to this MAC address. The address is receive-only; the switch never sends packets with this address as the source.
+2. BGP Config is standard as Cisco. 
+
+==============================
+
+VXLAN:
+1. show run int vxlan 1
+2. show interface vxlan 1
+3. show vxlan vtep
+4. show vxlan address-table
+
+eVPN:
+  - BGP uses standard and extended communities for route signaling and standard communities. 
+  - Arista recommends to do underlay peering using physical and overlay peering using the loopback interfaces. 
+  - Use ebgp multihop for overlay peering
+  - 
+1. show run section service; multi-agent needs to be enabled. 
+2. show ip route summary; Verify "multi-agent" in first 2 lines of output as configured/operating
+3. show bgp evpn summary; Verify evpn control-plane is established 
+4. 
+
+Config steps for l2evpn:
+1. Bring up underlay BGP using physical address
+2. Bring up overlay ebgp using loopback0. use multihop, standard/extended communities and verify using "show bgp evpn summary"
+3. Bring up loopback1 for vxlan source 
+4. Create "interface vxlan 1" with vxlan source as loopback1
+5. Create new local L2 vlan 
+6. Add that vlan and vni under vxlan 1
+7. Add mac-vrf evpn config for new vlan. Ex: 
+router bgp 65111
+!
+ vlan 102
+ rd auto 
+ route-target both 102:102
+ redistribute learned 
+8. Verify: 
+  - show vxlan config-sanity detail
+  - show interfaces vxlan1
+  - show vxlan vni ; look for headend replication 
+  - show bgp evpn route-type imet ; other vteps interested in our replication or type 3 route or vtep membership for L2 service 
+  - show bgp evpn route-type mac-ip; mac ip infor 
+  - show vxlan address-table evpn; Macs learned from vteps
+  - show l2rib output mac 001c.73c0.xxxx; detail about which vtep advertised the mac 
+
+Config steps for l3evpn:  
+1. Bring up underlay BGP using physical address
+2. Bring up overlay ebgp using loopback0. use multihop, standard/extended communities and verify using "show bgp evpn summary"
+3. Bring up loopback1 for vxlan source 
+4. Create "interface vxlan 1" with vxlan source as loopback1. We are using vxlan routing so add command "vxlan virtual-router encapsulation mac-address mlag-system-id", this will ensure if either MLAG devices receives traffic it will process it rather than shuntting over MLAG Peer-link. 
+5. Create new local L2 vlan
+6. Create VRF and enabled routing within the new VRF 
+vrf instance PROD
+!
+ip routing vrf PROD
+7. Create virtual mac add and anycast gateway with vrf. 
+8. For Symmetric IRB deployment, map VRF to unique VNI ID and add it to BGP config. THIS IS NOT REQUIRED FOR ASYMMETRIC IRB Ex: 
+interface Vxlan1
+   vxlan vrf PROD vni 5001
+!
+router bgp 65102
+   rd auto
+   !
+   vrf PROD
+      route-target import evpn 5001:5001
+      route-target export evpn 5001:5001
+      redistribute connected
+9. Verify:
+  - show vxlan config-sanity detail
+  - show interfaces vxlan1
+  - show vxlan vni ; look for headend replication
+  - show bgp evpn route-type ip-prefix ipv4; Type 5 routes 
+  - show ip route vrf PROD
+  - show bgp evpn instance
+  - show vxlan flood vtep vlan XX 
+  - show l2rib input bgp floodset vlan 27 ## Command to see if flood list installed in l2rib from bgp 
+  - show run section vlan-aware-bundle 
+  - show bgp evpn sanity 
+  - show bgp evpn route-type imet rd 10.111.254.4:112 detail
+  - show bgp evpn route-type mac-ip 10.111.112.202 vni 112 detail
+  - show bgp evpn route-type mac-ip 001c.73c0.c617 vni 112 detail
+==================================================
+https://arista.my.site.com/AristaCommunity/s/article/Arista-TAC-Webinar-Series#Comm_Kna_ka02I000000QqfjQAC_91
+Arista Webninar: 
+===============
+eVPN VXLAN Part1:
+*****************
+  - MP-BGP Address family identifier (AFI) for L2-VPN is 25
+  - MP-BGP Sub Address family identifier (AFI) for eVPN is 70
+  - For each tenant, a MAC VRF is defined to store MACs for that Tenant. Within the MAC VRF, RD & RT(import/export) are defined to uniquely define the tenant address space. 
+  - RD is part of NLRI and RTs are sent as extended communities
+  - RTs are used my dest vtep to import the mac address into correct Mac VRF 
+  - eVPN Service Models
+    - vlan based: 1-1 mapping between the vlan-id and the mac-vrf of the eVPN instance. Vlan tag is NOT advertised in BGP instead VNI label identifies the brige domain of mac-vrf. 
+	- vlan-aware bundle: N-1 mapping between the vlan-id and mac-vrf, vlan tag is carried in the bgp update. 
+  - eVPN Route Types:
+    - Type 2 Mac-IP Route: advertise the reachability of mac add (optionally map-ip) 
+	- type 3 IMET Route: Dynamic discovery of remote VTEPs and populate the vtep flood list based on VNI. 
+  - Same vlan on VTEP, cannot be part of 2 different tenants. Doing so will generate syslog and you can see "Fail" in sanity check. 
+  - Commands:   
+    - show vxlan config-sanity detail
+    - show interfaces vxlan1
+	- show vxlan address-table
+    - show vxlan vni ; look for headend replication
+	- show vxlan vtep 
+	- show vxlan counters vni # Num of traffic encap/decap 
+	  - needs "hardware counter feature vni decap/encap" 
+    - show bgp evpn route-type ip-prefix ipv4; Type 5 routes 
+    - show ip route vrf PROD
+    - show bgp evpn instance
+    - show vxlan flood vtep vlan XX 
+    - show l2rib input bgp floodset vlan 27 ## Command to see if flood list installed in l2rib from bgp 
+	- show l2rib input bgp mac xxx.xxx.xxx 
+	- show l2rib output floodset 
+    - show run section vlan-aware-bundle 
+    - show bgp evpn sanity detail 
+    - show bgp evpn route-type imet rd 10.111.254.4:112 detail
+    - show bgp evpn route-type mac-ip 10.111.112.202 vni 112 detail
+    - show bgp evpn route-type mac-ip 001c.73c0.c617 vni 112 detail
+	- show interface eth49/1 counters bins # shows traffic per byte size 
+	- show bgp evpn host-flap # If mac flaps, BGP is going to not install this mac into table 
+	- watch 1 diff show ip route vrf PROD # will run command every 1 second and highlight diff in output 
+	- show event-monitor mac match-mac xxxx.xxxx.xxxx match-time last-hour 
+  - Setting up local mirror session on Arista
+    - set up span and send to cpu
+	- then run "bash tcpdump -nei mirror0"
+  - NOTE: In the event of 1 of Leaf Vtep from pair of MLAG Vteps lossing BGP sessions to all Spines, it will result in traffic loss for all traffic coming to that Vtep even though the peerlink is still active. 
+
+eVPN VXLAN Part2:
+*****************
+  - Asymmetric IRB: Local receiving vtep routes between vlans, dest vtep simply bridges to dest host. No need for a special layer 3 vni but all vteps should have distributed gateway for each vlan. 
+  - Symmetric IRB: Local receiving vtep will route the packet to IP VRF which will then route the packet to destination Vtep where it will route to dest vlan and then bridged to dest host. Look for "vxlan vrf XXX vni YYY" under vxlan1 interface and RTs for this VRF import/export to eVPN. Note: When src vtep advertises the map-ip, it includes L3VNI information in it along with RTs for the L3VNI plus its own router mac. Another key difference is that we will see /32 route for the host pointing to L3VNI for the VRF where as in Asymm you only see route to Vlan
+  - To make Vtep respond to traceroute with uniq IPs, create a loopbackX and add "ip icmp source-interface loopbackX vrf blue"
+  - Commands:
+    - show interfaces vxlan 1 --> see dynamic vlan mapped to L3VNI, MLAG pairs will share this dynamic vlan .. this will allow either VTEP to receive packets for other vtep and then bridge to peer over peerlink. L3VNI dynamic vlan must be allowed on peerlink. 
+    - To avoid routing traffic over Peerlink, use the eVPN MLAG Shared Router MAC using command "vxlan virtual-router encapsulation mac-address mlag-system-id"
+  - LANZ Sampling : Basically packets experiencing congestion will be mirrored to cpu using span session that is cpu policied. 
+  - In a centralized routing vxlan on Arista, you need a secondary ip add under int vxlan1 which is same on both interfaces. 
