@@ -11,4 +11,6 @@
 10. netstat -anp | grep :80 | grep ESTABLISHED  = Displays ESTABLISHED on port 80
 11. netstat -ant | awk '{print $6}' | sort | uniq -c | sort -n = List Number of different connection types
 12. netstat -ltnp | grep ':22'  = Displays associated process with LISTEN Port
-13. netstat -ant | awk '{print $5}' | sed 's/:.*//' | sort | uniq -c | sort -n = List number of connection per IP 
+13. netstat -ant | awk '{print $5}' | sed 's/:.*//' | sort | uniq -c | sort -n = List number of connection per IP
+14. netstat -atp = All TCP connections with process name
+15. netstat -ano = Open ports

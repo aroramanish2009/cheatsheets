@@ -1,1 +1,19 @@
----
+/etc/services : Network Services tp Port Mapping
+network manager:
+  - using nmcli
+    - install: apt-get install network-manager
+    - just running "nmcli" : Shows brief info about network interface configuration, route and dns.
+    - "nmcli dev" : very brief info
+    - nmcli device show : Detailed Information about known devices
+    - nmcli connection show : Overview of active connection profiles
+    - nmcli con: very brief connection info
+    - nmcli con up/down "$DEV NAME" : Bring dev up or down
+  -  "ip" command
+    - man ip
+    - ip addr : IP information for interface
+    - "ip addr add x.x.x.x/x dev eno1" : Add ip add to dev eno1
+    - "ip addr del x.x.x.x/x dev eno1" : Delete ip add to dev eno1
+    - "ip link set eno1 down|up" : bring link up or down
+    - "ip addr" command is not persistent
+net-tools:
+  - "apt-get install net-tools" : Gives access to legacy commands like "route", "ifconfig" etc
