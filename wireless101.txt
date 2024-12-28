@@ -1,6 +1,6 @@
 Wireless Basics:
 ===============
-1. Wireless uses Radio Freequency singals to communicate bits and bytes. It used extermly low end of the frequecy that normal human can view (human can view 400TeraHz (Red) to 800 TeraHz (Violet))
+1. Wireless uses Radio frequency signals to communicate bits and bytes. It uses extremely low end of the frequency that normal human can view (human can view 400TeraHz (Red) to 800 TeraHz (Violet))
 
 2. It used the wave nature of Light if you consider the wave-particle duality of Light.
 
@@ -17,16 +17,16 @@ Wireless Basics:
   j. Wavelength: Physical distance for a wave to complete a cycle, much like Period but length instead of time measurement for 1 full cycle of wave. Formula: Wavelength = c/f (speed of light divided by frequency) meters 
   k. Frequency is inversly proportional to wavelength, More Frequency less wavelength. 
   
-4. Electromagnetic Septrum: 
-  a. Human eye can see Frequncies of light from Red color in ROYGBIV colors to Violet Color.
+4. Electromagnetic Spectrum:
+  a. Human eye can see Frequencies of light from Red color in ROYGBIV colors to Violet Color.
   b. Anything below Red Frequency is called Infra Red and above Violet is called Ultra Violet. After Ultra violet is X-Rays, after x-rays is Gamma Rays. 
   c. Below Infra Red is Microwave, this is where WIFI lives. After Microwaves, its RadioWaves which are normally used for TV, Radio signals. 
   
 5. Wireless Measurements: 
   a. Units used are decibel (dBm) scale. This unit is converted into milliWatts at times as wireless equipment sends this microwaves at milliWatt levels. 
   b. As you move away from wireless transmission points, you will see that the signal strength degrades exponentially for power Watts unit. Decibles units created for wirless signals to measure single strength using a more linear method. 
-  c. Decibel: They are a logarithm function which is basically a number that increases linearly where as the log function value is increasing exponentially. Ex: Log2 of 8 == 3 (2*2*2) and log2 of 16 == 4 (2*2*2*2) .. log 2 of 32 == 5. In this example, the results increased linearly (3,4,5) where as value increased exponentially from 8 to 16 to 32. 
-  d. Decibel Maths: Decivbel is relative to milliWatt thats why units is dBm where m signifies relation to milliWatt. 0dBm == 1mW is starting reference. 
+  c. Decibel: They are a logarithm function which is basically a number that increases linearly whereas the log function value is increasing exponentially. Ex: Log2 of 8 == 3 (2*2*2) and log2 of 16 == 4 (2*2*2*2) .. log 2 of 32 == 5. In this example, the results increased linearly (3,4,5) where as value increased exponentially from 8 to 16 to 32.
+  d. Decibel Maths: Decibel is relative to milliWatt thats why units is dBm where m signifies relation to milliWatt. 0dBm == 1mW is starting reference.
     - Simple trick = +- 10dBm change does a 10x change on milliWatt. Ex: 20dBm == 1* 10*10 ==100mW 
     - +- 3dBm change does a 2x change on milliwatt. Ex: 6dBm = 1 * 2 * 2 == 4mW
     -  Ex: 200mW to dBm --> 10 + 10 + 3 (10 * 10 * 2 = 200mW) = ~23dBm
@@ -34,51 +34,51 @@ Wireless Basics:
   e. What is good signal in dBm, anything better than -72dBm is good for web browsing etc, anything better than -67dBm is good for voice. If you need a ton of transfer rate, you will need -50's dBm. -90dBm or below is not good enough for data transfer. 
 
 6. RF Propagation: 
-  - Similar to light bulb, singals are sent out isotropic manner (360 Degree) for non directional AP. 
-  - Free Space Path Loss (FSPL): Singals get weekend fairly quickly as they move away from Transmitters, this is called beam divergance. 
-  - Received Signal Strendth Indicator (RSSI): How much dBm is being received by the receiver at certain distance from the transmitters. Higher RSSI helps with better data rates and quality of WIFI signals. 
+  - Similar to light bulb, signals are sent out isotropic manner (360 Degree) for non directional AP.
+  - Free Space Path Loss (FSPL): Signals get weekend fairly quickly as they move away from Transmitters, this is called beam divergence.
+  - Received Signal Strength Indicator (RSSI): How much dBm is being received by the receiver at certain distance from the transmitters. Higher RSSI helps with better data rates and quality of WIFI signals.
 
 7. RF Interference & Noise Floor/SNR: 
   - Non-WIFI (Bluetooth,microwave oven etc) devices result in Interference into WIFI Signals and makes them unuseful
   - The non-wifi devices will only matter when they are using same frequency and channels within same frequency. 
   - Noise Floor: The background RF in a space like natural sources, non-wifi devices. The noise is normally around -90 to -100dBM strength.  
-  - Signal to Noise Ratio (SNR): Signal (RSSI) divided by Noise dBm. It is calculated as RSSI substract Noise Signal. Ex: My RSSI is -67dBm and we have a noise signal at -92 dBm than our SNR == -67 -(-92) == 25dBm. This 25dbm or higher value is a recommended SNR to operate video/voice on a wireless network. 
+  - Signal to Noise Ratio (SNR): Signal (RSSI) divided by Noise dBm. It is calculated as RSSI subtract Noise Signal. Ex: My RSSI is -67dBm and we have a noise signal at -92 dBm than our SNR == -67 -(-92) == 25dBm. This 25dbm or higher value is a recommended SNR to operate video/voice on a wireless network.
 
 8. Radio Frequency Properties: 
   - We divide our RF into different channels and bands to avoid interference. Interference causes Collisions, Collision Avoidance etc. 
   - A Band (ex 2.4Ghz) represent a large range of frequencies (2401MHz TO 2473MHz in case of 2.4GHz band in USA).  
   - Band and available frequencies:
     - 2.4 GHz - 2401MHz to 2473MHz giving us 72MHz width to use. 
-    - 5GHz - 5150MHz to 5895MHz gives us 745MHz but some of the frenquencies are not allowed for WIFI
+    - 5GHz - 5150MHz to 5895MHz gives us 745MHz but some of the frequencies are not allowed for WIFI
     - 6GHz - 5945MHz to 7125MHz gives us 1180MHz width and all are allowed for WIFI 
   - Band/Spectrum (2.4GHz/5Ghz/6Ghz) is divided into multiple non overlapping channels. In USA, 2.4GHz you have 3 non-overlapping channels, 5GHz has 25 non-overlapping channel and 6GHz has 59 non-overlapping channels. The more channels we have, the better the bandwidth.
-  - 2.4GHz band has non-overlapping channels at 22MHz where as 5/6GHz has non-overlapping channels at 20MHz. All three bands have channel sepration at 5MHz 
-  - Antenna Gain on RF: We use dBi (deci-Bell Isotropic) Unit for measuring the singal gain.  Ex: A 3dBi Antenna will improve 3 dBm to a radio singal, so if the radio is transmitting at 30dBm and we had a 3dBi Antenna then the total signal strength is 33dBm by DIRECTING the wave pattern into a narrower path instead of propagating in spherical format. NOTE: Antenna's are passive devices and they only change the wave pattern by narrowing the wave path and does not in any way inject more power into Signal. 
+  - 2.4GHz band has non-overlapping channels at 22MHz where as 5/6GHz has non-overlapping channels at 20MHz. All three bands have channel separation at 5MHz
+  - Antenna Gain on RF: We use dBi (deci-Bell Isotropic) Unit for measuring the signal gain.  Ex: A 3dBi Antenna will improve 3 dBm to a radio signal, so if the radio is transmitting at 30dBm and we had a 3dBi Antenna then the total signal strength is 33dBm by DIRECTING the wave pattern into a narrower path instead of propagating in spherical format. NOTE: Antenna's are passive devices and they only change the wave pattern by narrowing the wave path and does not in any way inject more power into Signal.
   - Sometimes Antenna's are called dipole antenna and represented with a dBd unit. A 1dBd dipole antenna is normally 2.2dBi signal gain. Simple Math: X dbd = X + 2.2 dbi
   - Intentional Radiator (IR): It is the actual power being transmitted by the radio before being sent to Antenna. IR = power generated by radio + loss that occurs sending that power to Antenna. 
   - Equivalent Isotropically Radiated Power (EIRP): IR (power + loss) + Antenna (Gain). This is total possible power after IR + Antenna gain. 
-  - Regional Power Limits: There are regulation by govt on IR and EIRPs that can be emmited by WAPs. The vendor normally takes care of these limits in their equipments. 
+  - Regional Power Limits: There are regulation by govt on IR and EIRPs that can be emitted by WAPs. The vendor normally takes care of these limits in their equipments.
   - Link Budget: End to End Tx to Rx for a signal from sending radio to receiving radio. Everything from transmitting radio to receiving radio adds in to either losses or gain. 
   
-9: Describe RF Eletrical Properties:
+9: Describe RF Electrical Properties:
   - Electricity Concepts: 
     - Voltage: energy per charge
     - Current: flow of electrons inside the conductor. 
     - Resistance (impedance): friction that electrons present when they are forced to move from when charge is induced. 
   - Ohm's Law: voltage == Current (I) * Resistance 
-  - Eletricity flows from positive to Negative whereas electrons flow from Negative to Positive. 
-  - Alternate Current (AC) vs Direct Current (DC): In DC, electrons are continusly flowing in a single direction which means that there is a contant voltage in the circuit. In case of AC, electrons move back and forth such that volgate in the circuit moves in sin wave format where voltage moves between positive/negative. AC power can be sent on longer distances and can make use of tranformer in the path. 
+  - Electricity flows from positive to Negative whereas electrons flow from Negative to Positive.
+  - Alternate Current (AC) vs Direct Current (DC): In DC, electrons are continuously flowing in a single direction which means that there is a constant voltage in the circuit. In case of AC, electrons move back and forth such that voltage in the circuit moves in sin wave format where voltage moves between positive/negative. AC power can be sent on longer distances and can make use of tranformer in the path.
   - AC power is applied to open-circuit antenna element (dipole) to create wireless radiation. Basically the +- movement on the open circuit within antenna generates wireless radiation. 
-  - Voltage Standing Waves: When the AC wave hits impedance aka resistance, it generate refelective Voltage which can end up creating a increasing/decreasing pulsating wave pattern which higher/lower of the input voltage.  
+  - Voltage Standing Waves: When the AC wave hits impedance aka resistance, it generates reflective Voltage which can end up creating a increasing/decreasing pulsating wave pattern which higher/lower of the input voltage.
   - Voltage Standing Wave Ratio (VSWR): Voltage(max) divided by Voltage(min) on the line. EX: if our max standing voltage is 6v and min is 4v then VSWR is 6/4 v == 1.5:1
   - Best case VSWR is 1.1:1 but 2:1 is considered good ratio. 
   - Return Power (dBm): Power-In subtracted by Power-Reflected. Higher Return Power number is better as it is basically least power returned. 
-  - For wireless Engineers: Match the impedances and properly install equipment. 2:1 or better VSWR and higher return power dBm should be our aim. 
+  - For wireless Engineers: Match the impedance and properly install equipment. 2:1 or better VSWR and higher return power dBm should be our aim.
  10: RF Attenuation (RF Loss due to reflection, refraction, absorption etc as it travels from Sender to Receiver):
-   - Reflection: Signals are reflected from different matrials with some absorption of the signal during reflection. This is sometimes helpful with boosting the signal with MIMO at Rx.
-   - Refraction: Signal is passed from one medium to another example air to transparent glass, the light will be absorped and bend. 
+   - Reflection: Signals are reflected from different materials with some absorption of the signal during reflection. This is sometimes helpful with boosting the signal with MIMO at Rx.
+   - Refraction: Signal is passed from one medium to another example air to transparent glass, the light will be absorbed and bend.
    - Scattering: Signal is scattered when hitting microscopic/small particles in free air space. Ex: Wave hitting dust in a factory floor or fog in open stadium. 
-   - Defraction: Smaller frequency signals are able to pass the signal around larger objects compared to higher frequency signals. This is called defraction and it is helpful in some senarios to better signal reachability of smaller frequency signals. This allows for smaller frequency to greater distance ex: 2.4Ghz can reach further then 5Ghz signals. 
+   - Diffraction: Smaller frequency signals are able to pass the signal around larger objects compared to higher frequency signals. This is called diffraction and it is helpful in some scenarios to better signal reachability of smaller frequency signals. This allows for smaller frequency to greater distance ex: 2.4Ghz can reach further then 5Ghz signals.
    - Absorption: Signals are aborbed by different mediums and converted into something else mostly heat, the most common thing in offices spaces that absorb signals is water .. water can be present in books, plants, humans etc that can change the strength of wave signal. 
    - Common Attenuation Values:
      - DRYWALL - 3 dBm loss for 2.4Ghz, higher for 5/6 Ghz
@@ -88,11 +88,108 @@ Wireless Basics:
      - brick wall - 8 dBm 
      - concrete wall - 12 dBm 
      - Elevator shaft - 30 dBm 
-   - Receiver sensitivity: Minimum signal strength a receiver can get and able to diffrentiate it from noise in that frequency. 
-   - Fade Margin: It sets a buffer above the receiver sensitivity to handle fluctutions in the future. Ex: we have receiver with Rx Sensitivity of -80 dBm and then we are receiveing a signal at -77dBm strength. Fade buffer is accounting during planning for -5dBm of expected change in signal strength. 
+   - Receiver sensitivity: Minimum signal strength a receiver can get and able to differentiate it from noise in that frequency.
+   - Fade Margin: It sets a buffer above the receiver sensitivity to handle fluctuations in the future. Ex: we have receiver with Rx Sensitivity of -80 dBm and then we are receiving a signal at -77dBm strength. Fade buffer is accounting during planning for -5dBm of expected change in signal strength.
  11: RF Signal Characteristics
-   -
-  
+   - Multipathing: When signal is reflected and it finds its way back to receiver. Bigger concern in outdoor spaces due to distance. Indoor MIMO is used make good use of multipathing.
+   - Signal Beamwidth:  Signals are propagated in a cone or lobe fashion in the space, the wider the spread of the signal, the wider the beamwidth. Rule of thumb, the angle for the beamwidth is 3dBm loss from the strongest point of singal streangth.
+   - Polarization and Orientation: RF signals consists of 2D-Like waveforms in 3D space, so the polarization (vertical or horizontal) is a critical part of how the signal propagates.
+   - Fresnel Zones:
+     - The 3D signal area created between sender and receivers.
+     - 60% of Fresnel zone should be clear of obstruction for better SNR
+     - Mostly impacts outdoor wireless communications
+     - Calculating Fresnel zone radius, normally max in the center of the sender/receiver.
+       - R =  72.2 times SQROOT of ( distance (D) between sender/receiver divided by 4 times Frequency )
+     -  Earth curvature plays into this at 7 mile distance as after that the bulge of the earth starts to become obstruction.
+ 12: Antenna Functionality:
+   - Antenna - Passive metallic device that helps in sending and receiving signals
+   - Antenna shapes the isotropic signal (perfect ) into more of a cone shape
+   - By compressing the signal by using an antenna, if you see increase of 4dBm of signal power then the Antenna's rating will be 4dBi
+   - DART (Digital Analog Radio Transmitter) connects antennas to radio and inform about dBi
+   - Antenna can be single band or dual band, single band perform better.
+   - Types of Antenna
+     - OMNI Directional
+       - DIPOLE ~ Sphere
+       - OMNI ~ Donut shape with dead space underneath the Antenna. Increase the gain will result in larger dead space under the origin.
+     -  PLANER - Semi directional in nature. Typically used in Hallways and outdoors with a Ballon shape gain larger in one direction and smaller in other.
+       - Patch
+       - Panel
+     - YAGI - Semi directional a bit more than PLANER, similar to TV antenna
+     - SECTOR - Semi directional, wide angles (~120 degree). Typically deployed in array in 3x 120 = 360 coverage. Similar to what you see on cell towers.
+     - DISH - Directional, not intended to service clients. Typically used for P2P with highly narrow parabola signal.
+     - GRID - Like DISH, uses parabola concept but material is wire mesh to allow wind to pass through it.
+   - Antenna Patterns and Charts
+     - Signal Propagation is 3D
+     - Azimuth crosssection = Looking propagation from above (Horizontal).
+     - Elevation = Looking propagation from side (Vertical).
+ 13: Diversity and Multiplexing Techniques
+   - MIMO - Multiple In and Multiple Out allows us to send and receive multiple signals. It allows us to improve throughput by combining signal togather or sending multiple streams etc.
+   - Spatial Diversity (AKA Antenna Diversity)
+     - Sampling a signal from 2 locations and picking the best signal between them.
+     - WIFI4 (802.11n) introduced MIMO with 2x4 or 4x4 (tx/rx)
+     - SISO
+       - Switched Diversity: Radio has 2 antennas, it receives 2 signals due to reflection or spatial diversity. Radio gets pick the signal it wants to use (normally one with better dBm) and thats called switched diversity.
+       - Transmit Diversity: This is better for receiver side, for transmission side, the radio remembers which antenna received better signal and uses it to transmit the signal and hopes it works out.
+   - MIMO - MIMO format Tx:Rx:Streams, ex 4x4x4 = 4 Tx, 4 Rx and 4 streams
+     - WIFI6 allows for 8x8 RxRx MIMO
+     - WAP advertises Num of Tx and Num of Rx
+     - MRC (maximal Ratio Combining): Compared to Switch Diversity, MRC allows to combines multiple signals to improve the SNR.
+     - Transmit Beamforming (TxBF)
+       - Improves reliability, multipathing and interference
+       - By changing/adjusting RF's phase and amplitude, you can focus Tx Beam towards to the client.
+       - This can be done per client.
+     - Multiple Spatial Streams (spatial multiplexing)
+       - Unique signals sent from multiple radios to client, in this case throughput improves with minor hit to SNR.
+       - Streams != antennas
+       - If we extra radio vs streams format, then extra radio is used for TxBF that improves SNR for a given stream.
+       - Streams are sometimes dynamic if the WAP detects bad SNR for a connection. In case of bad SNR (reliability), throughput (streams) are reduced.
+     - MU-MIMO (multi user MIMO)
+       - Introduced with WIFI-5
+       - Radio-Chain: Physcial Components that allows TxRx from an antenna
+       - Radio chain can perform 1 function at a time, either stream or TxBF/MRC
+       - Allows free up Radio-Chains to sent streams to multiple clients when they already have good SNR
+       - 4x4:4:3:2 = tx = 4, rx =4, single user MIMO = 4, MU-MIMO = 3, Num of clients to MU-MIMO = 2
+14: WLAN Industry Orgs
+  - Standards vs Regulations
+  - Standards
+    - Creating interoperability Ecosystems
+    - ALlow for multiple different manufacturers work togather. Ex WIFI card connecting to different APs.
+  - Regulations
+    - Rules that needs to followed to be good neighbor (aka allow other equipment to work)
+    - Compliance
+    - power levels
+    - Spectrum use
+  - IEEE
+    - IEEE is standards society on technical standards
+    - Prof/Students from 160+ countries with over 400k members
+    - Creates working groups, they created 802.11 working groups that deals with Wireless Ethernet.
+    - Task Groups are created under working groups to make enhancements. Ex: 802.11 (working group) created 802.11a Task Group to improve wireless speed from 1,2Mbps to 54Mbps
+  - WI-FI Alliance
+    - Global organization focus on interoperability on the IEEE Standards
+    - Devices using WI-FI logo needs to go though interoperability testing to be complaint and use that logo
+    - They created WIFI Generations that matches IEEE task groups.
+    - 802.11n = wifi4, 802.11ac = wifi5, 802.11ax = wifi6 and 802.11be = wifi 7
+    - WIFI Alliance manages WPA to WPA3 for wireless security
+  - IETF
+    - Focused on methodologies of protocols or frames format
+    - Uses RFCs format to publish their methodologies
+    - RFCs are split into 3 categories
+      - Info : Experimental
+      - Standards : Split further into 3 categories
+        - Proposed : Proposal
+        - Draft: Proposal moved to draft
+        - Internet: Draft is adopted and RFC number is assigned
+      - Historical
+    - Mostly focused on Internet standards, wifi has indirect relation with IETF RFCs. Ex: Using EAP, CHAP etc protocols
+  - Regulatory Domains and Agencies
+    - US : FCC started in 1934, it controls spectrum licensed and unlicensed RF ranges as well as power limits for IR and EIRP
+    - ITU-R (UN): Global agency that works with regional and country local agencies
+    -
+
+
+
+
+
   
   
   
