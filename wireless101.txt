@@ -74,81 +74,81 @@ Wireless Basics:
   - Best case VSWR is 1.1:1 but 2:1 is considered good ratio. 
   - Return Power (dBm): Power-In subtracted by Power-Reflected. Higher Return Power number is better as it is basically least power returned. 
   - For wireless Engineers: Match the impedance and properly install equipment. 2:1 or better VSWR and higher return power dBm should be our aim.
- 10: RF Attenuation (RF Loss due to reflection, refraction, absorption etc as it travels from Sender to Receiver):
-   - Reflection: Signals are reflected from different materials with some absorption of the signal during reflection. This is sometimes helpful with boosting the signal with MIMO at Rx.
-   - Refraction: Signal is passed from one medium to another example air to transparent glass, the light will be absorbed and bend.
-   - Scattering: Signal is scattered when hitting microscopic/small particles in free air space. Ex: Wave hitting dust in a factory floor or fog in open stadium. 
-   - Diffraction: Smaller frequency signals are able to pass the signal around larger objects compared to higher frequency signals. This is called diffraction and it is helpful in some scenarios to better signal reachability of smaller frequency signals. This allows for smaller frequency to greater distance ex: 2.4Ghz can reach further then 5Ghz signals.
-   - Absorption: Signals are aborbed by different mediums and converted into something else mostly heat, the most common thing in offices spaces that absorb signals is water .. water can be present in books, plants, humans etc that can change the strength of wave signal. 
-   - Common Attenuation Values:
-     - DRYWALL - 3 dBm loss for 2.4Ghz, higher for 5/6 Ghz
-     - Glass (Transparent) - 1dBm attenuation 
-     - Cinder Block (hollow) - 4 dBm
-     - Metal door - 6 dBm
-     - brick wall - 8 dBm 
-     - concrete wall - 12 dBm 
-     - Elevator shaft - 30 dBm 
-   - Receiver sensitivity: Minimum signal strength a receiver can get and able to differentiate it from noise in that frequency.
-   - Fade Margin: It sets a buffer above the receiver sensitivity to handle fluctuations in the future. Ex: we have receiver with Rx Sensitivity of -80 dBm and then we are receiving a signal at -77dBm strength. Fade buffer is accounting during planning for -5dBm of expected change in signal strength.
- 11: RF Signal Characteristics
-   - Multipathing: When signal is reflected and it finds its way back to receiver. Bigger concern in outdoor spaces due to distance. Indoor MIMO is used make good use of multipathing.
-   - Signal Beamwidth:  Signals are propagated in a cone or lobe fashion in the space, the wider the spread of the signal, the wider the beamwidth. Rule of thumb, the angle for the beamwidth is 3dBm loss from the strongest point of singal streangth.
-   - Polarization and Orientation: RF signals consists of 2D-Like waveforms in 3D space, so the polarization (vertical or horizontal) is a critical part of how the signal propagates.
-   - Fresnel Zones:
-     - The 3D signal area created between sender and receivers.
-     - 60% of Fresnel zone should be clear of obstruction for better SNR
-     - Mostly impacts outdoor wireless communications
-     - Calculating Fresnel zone radius, normally max in the center of the sender/receiver.
-       - R =  72.2 times SQROOT of ( distance (D) between sender/receiver divided by 4 times Frequency )
-     -  Earth curvature plays into this at 7 mile distance as after that the bulge of the earth starts to become obstruction.
- 12: Antenna Functionality:
-   - Antenna - Passive metallic device that helps in sending and receiving signals
-   - Antenna shapes the isotropic signal (perfect ) into more of a cone shape
-   - By compressing the signal by using an antenna, if you see increase of 4dBm of signal power then the Antenna's rating will be 4dBi
-   - DART (Digital Analog Radio Transmitter) connects antennas to radio and inform about dBi
-   - Antenna can be single band or dual band, single band perform better.
-   - Types of Antenna
-     - OMNI Directional
-       - DIPOLE ~ Sphere
-       - OMNI ~ Donut shape with dead space underneath the Antenna. Increase the gain will result in larger dead space under the origin.
-     -  PLANER - Semi directional in nature. Typically used in Hallways and outdoors with a Ballon shape gain larger in one direction and smaller in other.
-       - Patch
-       - Panel
-     - YAGI - Semi directional a bit more than PLANER, similar to TV antenna
-     - SECTOR - Semi directional, wide angles (~120 degree). Typically deployed in array in 3x 120 = 360 coverage. Similar to what you see on cell towers.
-     - DISH - Directional, not intended to service clients. Typically used for P2P with highly narrow parabola signal.
-     - GRID - Like DISH, uses parabola concept but material is wire mesh to allow wind to pass through it.
-   - Antenna Patterns and Charts
-     - Signal Propagation is 3D
-     - Azimuth crosssection = Looking propagation from above (Horizontal).
-     - Elevation = Looking propagation from side (Vertical).
- 13: Diversity and Multiplexing Techniques
-   - MIMO - Multiple In and Multiple Out allows us to send and receive multiple signals. It allows us to improve throughput by combining signal togather or sending multiple streams etc.
-   - Spatial Diversity (AKA Antenna Diversity)
-     - Sampling a signal from 2 locations and picking the best signal between them.
-     - WIFI4 (802.11n) introduced MIMO with 2x4 or 4x4 (tx/rx)
-     - SISO
-       - Switched Diversity: Radio has 2 antennas, it receives 2 signals due to reflection or spatial diversity. Radio gets pick the signal it wants to use (normally one with better dBm) and thats called switched diversity.
-       - Transmit Diversity: This is better for receiver side, for transmission side, the radio remembers which antenna received better signal and uses it to transmit the signal and hopes it works out.
-   - MIMO - MIMO format Tx:Rx:Streams, ex 4x4x4 = 4 Tx, 4 Rx and 4 streams
-     - WIFI6 allows for 8x8 RxRx MIMO
-     - WAP advertises Num of Tx and Num of Rx
-     - MRC (maximal Ratio Combining): Compared to Switch Diversity, MRC allows to combines multiple signals to improve the SNR.
-     - Transmit Beamforming (TxBF)
-       - Improves reliability, multipathing and interference
-       - By changing/adjusting RF's phase and amplitude, you can focus Tx Beam towards to the client.
-       - This can be done per client.
-     - Multiple Spatial Streams (spatial multiplexing)
-       - Unique signals sent from multiple radios to client, in this case throughput improves with minor hit to SNR.
-       - Streams != antennas
-       - If we extra radio vs streams format, then extra radio is used for TxBF that improves SNR for a given stream.
-       - Streams are sometimes dynamic if the WAP detects bad SNR for a connection. In case of bad SNR (reliability), throughput (streams) are reduced.
-     - MU-MIMO (multi user MIMO)
-       - Introduced with WIFI-5
-       - Radio-Chain: Physcial Components that allows TxRx from an antenna
-       - Radio chain can perform 1 function at a time, either stream or TxBF/MRC
-       - Allows free up Radio-Chains to sent streams to multiple clients when they already have good SNR
-       - 4x4:4:3:2 = tx = 4, rx =4, single user MIMO = 4, MU-MIMO = 3, Num of clients to MU-MIMO = 2
+10: RF Attenuation (RF Loss due to reflection, refraction, absorption etc as it travels from Sender to Receiver):
+  - Reflection: Signals are reflected from different materials with some absorption of the signal during reflection. This is sometimes helpful with boosting the signal with MIMO at Rx.
+  - Refraction: Signal is passed from one medium to another example air to transparent glass, the light will be absorbed and bend.
+  - Scattering: Signal is scattered when hitting microscopic/small particles in free air space. Ex: Wave hitting dust in a factory floor or fog in open stadium.
+  - Diffraction: Smaller frequency signals are able to pass the signal around larger objects compared to higher frequency signals. This is called diffraction and it is helpful in some scenarios to better signal reachability of smaller frequency signals. This allows for smaller frequency to greater distance ex: 2.4Ghz can reach further then 5Ghz signals.
+  - Absorption: Signals are aborbed by different mediums and converted into something else mostly heat, the most common thing in offices spaces that absorb signals is water .. water can be present in books, plants, humans etc that can change the strength of wave signal.
+  - Common Attenuation Values:
+    - DRYWALL - 3 dBm loss for 2.4Ghz, higher for 5/6 Ghz
+    - Glass (Transparent) - 1dBm attenuation
+    - Cinder Block (hollow) - 4 dBm
+    - Metal door - 6 dBm
+    - brick wall - 8 dBm
+    - concrete wall - 12 dBm
+    - Elevator shaft - 30 dBm
+  - Receiver sensitivity: Minimum signal strength a receiver can get and able to differentiate it from noise in that frequency.
+  - Fade Margin: It sets a buffer above the receiver sensitivity to handle fluctuations in the future. Ex: we have receiver with Rx Sensitivity of -80 dBm and then we are receiving a signal at -77dBm strength. Fade buffer is accounting during planning for -5dBm of expected change in signal strength.
+11: RF Signal Characteristics
+  - Multipathing: When signal is reflected and it finds its way back to receiver. Bigger concern in outdoor spaces due to distance. Indoor MIMO is used make good use of multipathing.
+  - Signal Beamwidth:  Signals are propagated in a cone or lobe fashion in the space, the wider the spread of the signal, the wider the beamwidth. Rule of thumb, the angle for the beamwidth is 3dBm loss from the strongest point of singal streangth.
+  - Polarization and Orientation: RF signals consists of 2D-Like waveforms in 3D space, so the polarization (vertical or horizontal) is a critical part of how the signal propagates.
+  - Fresnel Zones:
+    - The 3D signal area created between sender and receivers.
+    - 60% of Fresnel zone should be clear of obstruction for better SNR
+    - Mostly impacts outdoor wireless communications
+    - Calculating Fresnel zone radius, normally max in the center of the sender/receiver.
+      - R =  72.2 times SQROOT of ( distance (D) between sender/receiver divided by 4 times Frequency )
+    -  Earth curvature plays into this at 7 mile distance as after that the bulge of the earth starts to become obstruction.
+12: Antenna Functionality:
+  - Antenna - Passive metallic device that helps in sending and receiving signals
+  - Antenna shapes the isotropic signal (perfect ) into more of a cone shape
+  - By compressing the signal by using an antenna, if you see increase of 4dBm of signal power then the Antenna's rating will be 4dBi
+  - DART (Digital Analog Radio Transmitter) connects antennas to radio and inform about dBi
+  - Antenna can be single band or dual band, single band perform better.
+  - Types of Antenna
+    - OMNI Directional
+      - DIPOLE ~ Sphere
+      - OMNI ~ Donut shape with dead space underneath the Antenna. Increase the gain will result in larger dead space under the origin.
+    -  PLANER - Semi directional in nature. Typically used in Hallways and outdoors with a Ballon shape gain larger in one direction and smaller in other.
+      - Patch
+      - Panel
+    - YAGI - Semi directional a bit more than PLANER, similar to TV antenna
+    - SECTOR - Semi directional, wide angles (~120 degree). Typically deployed in array in 3x 120 = 360 coverage. Similar to what you see on cell towers.
+    - DISH - Directional, not intended to service clients. Typically used for P2P with highly narrow parabola signal.
+    - GRID - Like DISH, uses parabola concept but material is wire mesh to allow wind to pass through it.
+  - Antenna Patterns and Charts
+    - Signal Propagation is 3D
+    - Azimuth crosssection = Looking propagation from above (Horizontal).
+    - Elevation = Looking propagation from side (Vertical).
+13: Diversity and Multiplexing Techniques
+  - MIMO - Multiple In and Multiple Out allows us to send and receive multiple signals. It allows us to improve throughput by combining signal togather or sending multiple streams etc.
+  - Spatial Diversity (AKA Antenna Diversity)
+    - Sampling a signal from 2 locations and picking the best signal between them.
+    - WIFI4 (802.11n) introduced MIMO with 2x4 or 4x4 (tx/rx)
+    - SISO
+      - Switched Diversity: Radio has 2 antennas, it receives 2 signals due to reflection or spatial diversity. Radio gets pick the signal it wants to use (normally one with better dBm) and thats called switched diversity.
+      - Transmit Diversity: This is better for receiver side, for transmission side, the radio remembers which antenna received better signal and uses it to transmit the signal and hopes it works out.
+  - MIMO - MIMO format Tx:Rx:Streams, ex 4x4x4 = 4 Tx, 4 Rx and 4 streams
+    - WIFI6 allows for 8x8 RxRx MIMO
+    - WAP advertises Num of Tx and Num of Rx
+    - MRC (maximal Ratio Combining): Compared to Switch Diversity, MRC allows to combines multiple signals to improve the SNR.
+    - Transmit Beamforming (TxBF)
+      - Improves reliability, multipathing and interference
+      - By changing/adjusting RF's phase and amplitude, you can focus Tx Beam towards to the client.
+      - This can be done per client.
+    - Multiple Spatial Streams (spatial multiplexing)
+      - Unique signals sent from multiple radios to client, in this case throughput improves with minor hit to SNR.
+      - Streams != antennas
+      - If we extra radio vs streams format, then extra radio is used for TxBF that improves SNR for a given stream.
+      - Streams are sometimes dynamic if the WAP detects bad SNR for a connection. In case of bad SNR (reliability), throughput (streams) are reduced.
+    - MU-MIMO (multi user MIMO)
+      - Introduced with WIFI-5
+      - Radio-Chain: Physcial Components that allows TxRx from an antenna
+      - Radio chain can perform 1 function at a time, either stream or TxBF/MRC
+      - Allows free up Radio-Chains to sent streams to multiple clients when they already have good SNR
+      - 4x4:4:3:2 = tx = 4, rx =4, single user MIMO = 4, MU-MIMO = 3, Num of clients to MU-MIMO = 2
 14: WLAN Industry Orgs
   - Standards vs Regulations
   - Standards
@@ -184,11 +184,142 @@ Wireless Basics:
   - Regulatory Domains and Agencies
     - US : FCC started in 1934, it controls spectrum licensed and unlicensed RF ranges as well as power limits for IR and EIRP
     - ITU-R (UN): Global agency that works with regional and country local agencies
-    -
-
-
-
-
+15: WI-FI Standards
+  - 802.11 (Legacy)
+    - 1997 release with 1/2 mbps option
+    - 2.4 GHz only
+  - 802.11a/b/g (Legacy)
+    - 1999 is when 802.11a released
+    - 5Ghz with upto 54Mbps but was expensive at the time of release due to OFDM
+    - 802.11b gave 1,2,5,11 Mbps speed at 2.4GHz and was backward compatible to 802.11 spec
+    - 802.11g released in 2003, supports 2.4GHz at 54Mbps
+  - 802.11n (WIFI 4)
+    - Introduced MIMO, Spatial Streams and channel bonding
+    - Released in 2009, supports upto 600Mbps. Supports both 2.4 and 5 GHz bands.
+    - The 600 Mbps is achieved by using multiple enhancements such as channel bonding, lower guard interval (default is 800 nano seconds before data is retransmitted), spatial streams etc
+    - Maximum channel bonding supported by 802.11n is 40MHz
+  - 802.11ac (WIFI 5)
+    - Does not support 2.4GHz, supports upto 7Gbps in perfect conditions with 8x8:8 on 160MHz channel bond with 256 QAM
+    - Supports upto 80/160 MHz channel bonding
+    - Supports upto 8 Spatial streams
+    - Supports 256-QAM with MU-MIMO
+  - 802.11ax (WI-FI6 and 6E)
+    - Uses 6GHz spectrum with OFDMA
+    - Used MU-MIMO in Tx and Rx, previous versions only supported MU-MIMO in Rx from WAPs
+    - Uses 1024-QAM with 800ns Guard Interval
+    - you can get upto 7x 160MHz channels in US
+    - OFDMA: Allows for sub-channels to be created within an avaiable channel allowing for consistent performance for multiple users in a high density setting.
+    - 6e allows for 2.4GHz for backward compatibility
+16: FHSS/DSSS and OFDM Technologies
+  - FHSS/DSSS
+    - Frequency hopping spread spectrum and Direct sequence spread spectrum
+    - used during 802.11 and 802.11b respectively
+    - Spreading out over multiple frequency within a channel
+    - In FHSS, client and WAP hop over frequencies for a time period, this time period is known as Dwell Time.
+    - Bluetooth still uses FHSS and causes issues with 2.4GHz channels
+    - Hop Time: Time wasted between hopping between Frequencies
+    - In DSSS: Data is sent over multiple frequencies at the same time with a channel. Some information is lost to interference on the frequency but data encoding still allows client to understand data received.
+  - DSSS Data Encoding
+    - Done using method called "Processing Gain"
+    - In Processing Gain, data is multiplied to increase reliability. It does reduce the data rate.
+    - In 802.11, Barker Coding was used which multiplied data with 11 that lead great reduction in data rate (1/2Mbps).
+    - CCK was used in 802.11b which was slightly better hence the 5.5/11Mbps data rates.
+  - OFDM (Orthogonal Frequency Division Multiplexing)
+    - Used in WIFI4/5/6
+    - Goal is same, avoid interference by using range of frequencies
+    - Uses subcarriers with a channel to split into non overlapping frequencies
+    - Current 802.11a/g/ac/ax has total of 64 subcarriers where certain num of them are used for data and others for pilot (used between wap/client understand encoding). Some implementations keep unused frequencies to create buffer zones.
+  - OFDMA and resource units
+    - Orthogonal Frequency Division Multiple Access
+    - Used in 802.11ax
+    - Allows for supporting high density setups by dividing the channel into multiple Resource Units which can be further divided into subcarriers.
+    - OFDMA allows for 4x 64 subcarriers (total 256). Subcarriers are also known as tones.
+17: Wireless Modulation and Data Encoding
+  - Data encoding is representing information (bits) with a signal RF Waveform
+  - Modulation: Waveform variations such as Phase or Amplitude can be used to transfer more data over a single frequency
+  - Phase,Amplitude and frequency keying
+    - Used in modulation
+    - Carrier Signal: Unmodified waveform
+    - Phase: Shifting phase relative to time, Used to send different symbols by changing phase of the waveform
+    - Amplitude: More or less done by changing the waveform power. Variation in power is used for sending different symbols
+    - Frequency: WIFI doesnt use frequency change modulation but physics allows it. Mostly used in Radio communication
+  - Data Encoding with Symbols
+    - Num of symbols needed to transfer bits == 2 to the power of num of bits
+    - Ex: To represent 4 bits, you will need 2 to the power 4 symbols or 16 symbols
+    - A waveform can be modulated to represent varying num of bits
+    - Higher SNR is needed to use higher num of modulation
+    - Higher modulation == Higher datarate
+    - Currently we can represent 10 bits of data which means 2 to power of 10 or 1024 symbols
+  - Interpreting Modulation
+    - Higher Data rate is equal to higher error rate
+    - Noise or Interference will cause enough change in signal that cannot be corrected by OFDM technology and causes a CRC that would need retransmission
+    - High Modulation (aka higher data rate) requires higher SNR
+18: Wireless Modulation Techniques
+  - BPSK: Binary phase shift keying
+    - Amplitude is not changed and set to max
+    - Only binary 0 and 1 is used as symbols with modulation in phase only
+    - Phase used in BPSK is either carrier phase (0 degree) and 180 degree variant of the carrier phase
+  - QPSK: Quadrature Phase Shift Key
+    - 4 symbols are used
+    - Only phase is used and amplitude is not modified
+    - Uses 90 degree gap but used 45, 135,225 and 315 degree values
+  - Constellation Diagram
+    - Constellation Diagram are used to visualize the phase and amplitude modulation values used for each symbol
+    - Use a Q (quadrature) for Y-AXIS and I (inphase) axis for X-AXIS lines
+    - Phase of the signal is represented by Angle from the I axis
+    - Amplitude of the signal is represented by distance from Origin. Max amplitude is represented by a 1 from the origin point
+  - 16-QAM,64-,256-,1024-QAM
+    - As we use higher QAMs and symbol rates, bad SNR would result into retransmits that would result in bad throughput
+    - Current 10-bits symbols uses 1024-QAM, this makes SNR to be extremely good in order to provide error free data-rate
+    - 64-QAM were used with 802.11a/n/ac
+    - 802.11ac uses 256-QAM
+    - 802.1ax allows us to use 1024-QAM
+    - Calculating num of waveforms to transmit x amount of data
+      - 256-QAM = 2 to power of 8 symbols
+      - 1500byte ~= 12000 bit
+      - 12000 / 8 = 1500 waveforms
+  - Convolution coding
+    - Sending error correction in wireless transmissions to avoid mass retransmissions is called convolution coding
+    - FEC (forward error correction) is aka convolution coding
+    - See 802.11 wiki page, coding rate column
+    - 256-QAM uses 3/4 or 5/6 coding rate which means for every 3 bits of data, 4 bits are sent as FEC bits.
+19: Wireless Bands
+  - Why license the bands: To avoid interference between different industries or functions. In USA, ITU/FCC regulate the frequencies
+  - Licensed Bands: Any organization can license a frequency for a cost.
+  - Unlicensed Bands (later known as ISM Bands): Anyone can use, WI-FI uses these bands. Industrial, Scientific and Medical (ISM) bands were open for use by anyone.
+  - 2.4GHz Band:
+    - Was original 802.11 band
+    - 2401 MHz to 2495MHz, In US mac is 2473MHz. It provides 3x non-overlapping 22 MHz channels
+    - A lot of interference from Microwave, cordless phones, walkie-Talkie, TV remotes, Bluetooth etc
+    - 2.4GHz is here to stay given support on 802.11ax
+  - 5GHz Band:
+    - 5150 - 5990MHz available
+    - upto 25 non-overlapping 20MHz channels
+    - Allows for a higher channel bonding, can get upto 80MHz bond using 6x channels
+    - Unlicensed National Information Infrastructure (UNII):  UNII 4 channels are not allowed for use and UNII 2B is also not permitted for use in WIFI network
+    - Dynamic Frequency System (DFS): If a radar system is detected, WAPs must defer to Radar and stop using the channels allocated to DFS.
+  - 6GHz Band:
+    - WIFI-6E allows for 802.11ax + 6GHz band
+    - Twice the size of 5GHz and allows for 5945-7125 MHz
+    - All frequencies are available for WIFI, which gives us 59x 20MHz channels and max of 7x 160MHz channel bonds
+    - Currently EU allows for UNII-5 frequencies for use which limits the num of channels
+  - 1GHz and 60GHz Bands:
+    - 1GHz - allowed in 802.11ah, Lower frequency allows for better propagation and has a use case for IOT, M2M communication etc
+    - 1GHz also has a use case in RFIDs, Medical sector etc
+    - 60GHz - Allowed in 802.11ad, allows extremely high throughput with very low range. Used for HD streaming with a room, not much APs with support for 60GHz currently.
+20: Fourier Transforms
+  - FT is a math operation capable of separating the different frequencies that may have been combined to create a waveform
+  - 3 types : Forward Fourier Transform, Inverse Fourier Transform and Fast Fourier Transform
+  - WIFI devices always use Fast Fourier Transform and Inverse Fast Fourier Transform
+  - FT converts time domain waveform into frequency domain. Inverse FT is then used to decode this frequency domain waveform
+  - OFDM Transmissions:
+    - Uses 64 Subcarriers, 52 for data, 4 for pilot and 8 unused.
+    - QFDM Uses Inverse FFT to build a combined waveform, this one is transmitted and then the receiver uses FFT to split the signal, filters frequencies to only ones that it needs, performs IFFT to get data.
+  - Symbol Duration: Time for which a waveform signal is sent for to complete a single wavelength or symbol. Calculation is done by dividing 1 by frequency of the waveform.
+  - Ex of Symbol Duration: To send a single waveform of 312.5KHz, you need to send it for 1 divided by that freqency which in this example comes out to 1/312500 == 3.2 micro sec
+  - Guard Interval: Amount of time we wait between sending signals. 802.11n/ac has guard interval set to 400 nanoseconds or 4 microseconds
+21: WLAN Functional Concepts
+  -
 
   
   
