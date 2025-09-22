@@ -1,3 +1,32 @@
+Four Major Sections:
+1. Character sets:
+  - Single Characters: "a" matches a single character, always lowercase "a". "abc", teh first matches "a", the second and third match "b" and "c".
+  - Ranges:
+    - [a] -- matches just a
+    - [abc] -- matches a,b or c
+    - [a-zA-Z] - any lowercase or uppercase characters
+    - [a-zA-Z0-9!@#$%^&*()-] — alphanumeric + any of the symbols: !@#$%^&*()-
+    - Note: ^ can become an operator if it is first character in a set or regex
+    - Boolean logic in Ranges, "ab" means "a AND b" whereas [ab] means "a" OR "b"
+  - Negation (^)
+    - Has to be the first character to have special meaning
+    - [^ab] means EVERYTHING BUT a or b
+2. Repetition:
+  - ? - zero or one, * - zero or more, + - one or more
+  - Repetition ranges, i.e. {1,2}
+3. Groups:
+  - Sub Pattern Repeat: ([0-9][0-9]?[0-9]][.])+ matches one.two or three digits followed by a "." and also matches repeats of that pattern
+  - Extract text
+    - 0 - the entire regex match
+    - 1 to infinity: matches by the 1-indexed group
+    - In python, match.group(1) can be used to extract a group from match object
+    - Read below for look-ahead or look-behind
+4. The |,^and $ operators
+  - | - OR operator
+  - ^ - It is only significant when used as first character
+    - Normally used with $ which signifies end of regex character.
+    - When used within a character set, it works as negation
+
 #dot and asterisk
  . Matches any Single Character, * matches 0 or more of the preceeding characters
 

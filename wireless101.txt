@@ -319,10 +319,204 @@ Wireless Basics:
   - Ex of Symbol Duration: To send a single waveform of 312.5KHz, you need to send it for 1 divided by that freqency which in this example comes out to 1/312500 == 3.2 micro sec
   - Guard Interval: Amount of time we wait between sending signals. 802.11n/ac has guard interval set to 400 nanoseconds or 4 microseconds
 21: WLAN Functional Concepts
-  -
+  - Channel Bonding and Primary channels
+    - When we bond channels, there is a concept of primary and secondary channels.
+    - Primary channels roles: mgmt and control traffic is sent on primary channel only to support legacy clients
+    - Secondary channel: Extra BW available for clients if they are using primary channel.
+    - Offset: There is also a concept of Offset that tells client if the secondary channel is on left (negative offset) of Primary or on the right of primary (positive offset)
+    - Channel bonding allows to get more OFDM subcarriers to transfer data hence better data transfer rates
+    - In case of 80MHz channel bonds, it is basically 2x 40MHz channels which are further 2x 20MHz primary and secondary channels
+  - Non-Overlapping channels
+    - There is normally a 5MHz spacing between each channel, by doing a 20MHz spacing we create non-overlapping channels.
+    - Center Frequency: Frequency in the middle of the sinusoidal wave. For Ex Channel 36 starts from 5170 and ends at 5190, the center frequency for channel 36 is 5180.
+    - Center Frequency for Bonded channels: Ex: Bonded channel for channel 36+40 (sometimes written as channel 38) would fall on 5190 which is the center of the combined waveforms
+  - Data Rate, Throughput and Bandwidth
+    - Data Rate in Wireless is the amount of bits/sec we are trying to transfer over the microwaves
+    - Throughput in wireless is the amount of data that we were successfully able to transfer without errors or retransmits
+    - Wireless is a shared medium that is half duplex, we normally see upto 30-40% retransmits in a semi dense client deployment.
+    - In networking, bandwidth == data rate but in wireless bandwidth == range of frequency or width of channels or num of available OFDM subcarriers
+22:  Wifi Channels and usage
+  - 2.4GHz Band
+    - 2401 to 2473 (In US) and 2483 (rest of world)
+    - US - 11 channels, Rest - 13 channels
+    - 22MHz channels, 1, 6 and 11 are non-overlapping
+    - Note: Channel 14 exits in Japan with only 802.11b
+  - 5 GHz Band
+    - 5150 to 5990 MHz with 20MHz per channel
+    - 5170 to 5190 is only usable
+    - 5GHz is divided in unlicensed national information infrastructure (UNII) bands
+    - Available UNII bands for 5GHz are UNII-1, UNII-2A/C and UNII-3. We do not get UNII-2B and UNII-4
+    - In total we get 25 non-overlapping channels with further restrictions with EIRP limits or defer to radars on some channels if detected
+    - We only get 6x 80MHz channel with the available channels, we only get 2x 160MHz in 5GHz because we cannot create a bond between UNII-2C and UNII-3
+    - In EU, there is no UNII-3 and some channels are missing in UNII-2c. In India, UNII-2C and UNII-3 are not available
+    - 5GHz has a Dynamic Frequency Selection (DFS) concept to detect and avoid interference if radar systems (weather or airport) are detected by the WAP Radio
+    - 5Ghz also have Transmit Power Control, This forces limit on Transmit Power to reduce interference in 5GHz
+    - Both DFS and TPX were introduced in 802.11H
+    - If DFS detect a signal on the channel, it will force WAP to change channel and drop clients from that WAP.
+  - 6Ghz Band
+    - In US, you can get upto 59 non-overlapping channels only for WIFI
+    - 5945 to 7125MHz thats get us 1180MHz with 59x 20MHz non-overlapping channels
+    - UNII-5 to 8, this is not split cleanly but we can bond between UNII bands unlike 5GHz band
+    - In EU, you only have UNII-5 available (24x 20MHz)
+    - 6GHz has max transmit power limited to 30dBm
+23:  General Use cases for WIFI
+  - Wireless LAN: Contains Access Points and some solution also include physical wireless LAN Controllers or cloud controllers
+  - Wireless Ad-Hoc Networks: Independent Basic Service Set (IBSS) that allows clients to talk to each-other without an Access point. Can be used for filesharing, gaming, isolation etc
+  - Wireless Bridging: Wireless WAN that can be used to connect 2 separate LANs usually with a greater geographical distance. AP to AP (bridges) connectivity for a point to point connectivity. Avoid DFS channels in UNII-2A/C.
+  - Wireless Mesh: APs act as Mesh AP as well as client AP, it used 5Ghz for Mesh and 2.4 for client connectivity. It provides backhaul, connectivity, no POE. The AP with wired connection is called Root AP (RAPs) and one with backhaul is called Mesh AP (MAP).
+    - MAP-RAP connectivity: MAPs uses protocol to decided which RAP it should connect to and avoid loops.
+    - MAPs can connect to others MAPs or directly to RAPs.
+24: Wireless Service Set Components:
+  - Access Points:
+    - Radios for RF Bands to support 2.4, 5 and 6 GHz
+    - Num of spatial streams, MIMO which can be 4x4, 8x8 etc
+    - aesthetic design
+    - wired speed 1/2.5/5/10G
+    - internal vs external antennas
+    - indoor vs outdoor purpose
+  - Stations (STAs)
+    - Any device with a radio or a radio itself is considered a station in wireless network
+    - Support 3 services
+      - Station Service: Allows to connect to wifi. Responsible for Authentication, data encryption, DFS, TPS, QoS
+      - Distribution System Service: Allows AP to convert wireless to wired.
+      - PBSS (Personal Basic Service Set) Control Point Service (PCPS): Allows for 60GHz communication between 2 devices, ex conf room TV and Laptop. This services defines the standard for it.
+  - Wireless LAN Controllers (WLCs):
+    - Lightweight AP: Requires WLC to get configuration and allow Clients to connect.
+    - Uses DHCP/DNS/broadcast/manual config to find the controllers or managers.
+    - WLCs can be appliance, cloud application, mini WLC on a WAP, software on VM etc
+    - WLC requires licensing in most cases
+    - should not be single point of failure
+  - Distribution Systems and Media: This is either a wired ethernet network or RAP/MAP in case of Mesh Wireless network.
+    - DS Access Function (DSAF): Allows AP to work as a bridge
+    - DS Medium (DSM): wired or wireless (mesh)
+    - DS Services (DSS): Function that allows AP to associate clients
+  - Service Sets and Identifiers (SSID):
+    - Service sets are identified by SSID name thats can be discovered
+    - Basic Service Set: One AP sharing one SSID to many clients
+    - Extended Service Set: When many APs are sharing same SSID to many clients. They share same distribution system (Wired LAN) in the backend.
+    - Basic SSID: Unique per AP, this allows Clients to identify which AP the SSID originated from in an ESS
+    - Extended SSID: SSID when it shares the Extended Service Set
+    - MBSS (mesh basic service set): Used in Mesh wireless network
+    - IBSS (Independent basic service set): Used mostly in ad-hoc network with client
+    - PBSS (Personal Basic Service Set): Used in 60GHz DMG
+25: 802.11 MAC Mechanics
+  - 802.11 divides into 2 primary roles, PHY which is L1 (Radio Waves to transfer bits) and MAC which is L2 (Ethernet) of OSI.
+  - PHY: Responsible for delivering the bits in ordered way over radio signals
+    - Responsible for modulation and encoding of data in RF
+  - MAC: Responsible for providing structure and integrity to our wireless ethernet data
+    - structure is attained by Frame header and trailer
+    - Intergrity by FCS/CRC
+  - MAC SubLayers
+    - Contain Logical Link Control (LLC) and Media Access Control (MAC)
+    - MSDU: MAC service data unit, Packet (payload containing L3 to 7) handed from Layer3 to layer 2 in wireless. MTU is 2305 Bytes in 802.11 by default.
+    - MPDU: MAC protocol data unit, MSDU with L2 headers included
+  - 802.11 Header and fields: 24B to 56B 802.11 header
+    - 4x addresses within 802.11 header, with 3 mandatory and 1 optional. this makes 4 fields
+      - We need account for WI-FI as well as End to End Ethernet Src/Dst
+      - Address Types: Transmitter (TA), Receiver (RA), Eth Source (SA), Eth Dest (DA) and BSSID (MAC)
+      - 4x addresses, the forth optional address is used in Mesh Wireless Network
+    - Control Fields:
+      - Frame Control: Flags and Type of the frame
+      - Duration/ID: Information for other receivers
+      - Sequence Control: Required in case if Fragmentation
+      - QoS Control  (Optional): Prioritization
+      - High Throughput Control (Optional): Used for transfer beam forming TxBF
+    - Encryption
+    - FCS/CRC
+26: 802.11 PHY and MAC Layers
+  - 802.11 MPDU and Encapsulation
+    - SSID maps to VLAN within 802.11 header
+    - QoS in 802.11 is done based on 802.11e enhancement
+    - WAP is responsible for converting 802.11 to/from 802.3 during communication
+  - MAC MTU
+    - Max MTU on 802.11 is 2304Bytes
+    - Both IP and 802.11 allows for Fragmentation whereas 802.3 drops the frame if it exceeds MTU
+  - PHY Mechanisms -  802.11 Physical Layer is broken into PLCP and PMD
+    - Physcial layer convergence procedure (PLCP):
+      - Converts PSDU to PPDU which is basically taking a 802.11 frame and adding a preamble to it
+      - Clear channel assessment (cca): Listen if anyone is talking on that frequency, otherwise transmit
+      - 802.3 wired preamble: Dummy bits to claim the medium and prepares the receiver about incoming data. On wired, its 7 bytes thats 7x 10101010 which sync the receiver. Start Frame delimiter (SFD) which is 1 byte is 10101011 after which the ethernet signal beings.
+      - 802.11 Wireless Preamble:
+        - OFDM uses 20 microsec for preamble. In 802.11n and onwards, this time increases because of data being sent in preamble.
+        - 802.11 wireless preamble contains MCS index required to understand modulation.
+        - 24bits if this preamble as BPSK as modulation.
+    - Physical Medium Dependant (PMD):It interfaces with RF to provide modulation and demodulation of the frame transmissions.
+27: 802.11 Frame Aggregation
+  - A-MSDU Aggregation: One of 2 methods in 802.11 that allows a transmitter to aggregate many frame at a time.
+    - To improve on efficiency, 802.11n allows for sending multiple MSDU with a single aggregated A-MSDU frame to the receiver.
+    - Given the Dest/Src address can be different, Each MSDU have SA,DA and Length in front of individual MSDU followed by a padding which can be 0-3 bytes.
+    - Padding is needed to make SA_DA+Len+MSDU to be multiple of 4
+    - Multicast and Broadcast cannot be A-MSDU
+    - A-MSDU improves performance by sending multiple MSDU with a single 802.11 frame within the RF access window
+  - A-MPDU
 
-  
-  
+=====================
+Copy from office laptop
+=====================
+28: 802.11 Channel Access Methods
+  - Interframe Spaces (IFS): Minimum Time you have to wait if you detect single in the air. Used to space out and prioritize traffic
+    - RIFS: Reduced IFS (802.11n), not used anymore.
+    - SIFS: Short IFS, used for ACKS and CTRL frames.
+    - PIFS: PRIORITY IFS
+    - DIFS: DCF IFS, standard spacing used normal data frames.
+    - AIFS: Arbitration (QOS) IFS
+    - EIFS: Extended IFS, normally kicks in when you are unable to understand the signal.
+  - Pseudo-Random Backoff Timer: It is used to set a Tx order among multiple stations
+    - Backoff timer is chosen by number of slots where each slot is 9 microsec in OFDM
+    - Timer is only decremented if the medium is not busy and Tx could occur
+  - Contention Window Scaling:
+    - CWmax is calculated as 2^x - 1 (ex 3,7,15,31 etc )
+    - Managed by station dynamically based on channel usage. If station get a retrans then it will increase the value of CWmax otherwise reduce
+    - CWmax can be used in QoS as well, where VOICE packets CWmax is much lower than Data packets
+  - RTS/CTS:
+    - Request to Send / Clear to Send is used to avoid Hidden Node problem.
+    - Hidden node happens when AP can see stations but stations are far away from each other to see each others transmissions
+    - Optionally Enabled on Access Points, reduces Efficiency when enabled.
+- Wi-Fi Quality of Service
+  - QoS Mechanisms
+    - In WIFI, QoS is applied by winning airspace contention
+    - 802.11e introduced QoS features
+  - HCF (Hybrid Coordination Function) and EDCA (Enhanced Distributed Channel Access)
+    -  Access Policy: Classify and Apply policy
+      - Classify into:
+        - Voice : User priority of 6/7, CWmin=3 CWmax=7, AIFSN = 2
+        - Video: User priority of 4/5, CWmin=7 CWmax=15, AIFSN = 2
+        - Best Effort: User priority of 0/3, CWmin=15 CWmax=1023, AIFSN = 3
+        - Background: User priority of 1/2, CWmin=15 CWmax=1023, AIFSN = 7
+      - Uses "User Priority" field in 802.11 header which is 3 Bit in size (8 values in total)
+    - CWmin/CWmax: Upper limit of CWmax different traffic class.
+    - AIFS: HCF leverages Arbitration IFS (AIFS), which uses a variable length that is based on frame priority.
+      - AIFS = SIFS + AIFSN * slot_time
+      - Basically AIFS is SIFS (16 micro sec) + Priority Category times 9 micro sec slot timer
+    - TxOP (Transmit opportunity)
+      - Allows stations to tx as many frames as possible in a time frame during channel access.
+      - Voice : 2080 micro sec
+      - video : 4096 micro sec
+      - Best Effort/Background: 2528 micro sec
+    - TSpec (Transmit Specification)
+      - Reserving throughput with the Access Point
+      - Not used in modern equipment
+- 802.11 MAC Operations
+  - Roaming: When station moves from one AP to another AP.
+    - Use ESS that allows for Reassociation
+    - Overlap between AP signals
+    - Auth, use 802.11r to quickly reauth using Fast Transition (FT)
+  - Fast Secure Roaming
+    - Goal of Fast Secure roaming is to extend auth from one AP to another
+    - Uses 802.11r spec to share keys
+    - During initial 802.1x Auth, a key is generated for auth and encryption plus another AP/STATION specific key is generated,
+      during roaming this key shared to nearby APs or WLC then reauth only requires creation of AP/STATION specific key.
+  - Airtime Fairness
+    - It is about same time to air regardless of what 802.11 spec your station uses.
+    - Not in any 802.11 Spec
+    - It is used for how 802.11g station get access to airtime compared to newer devices (802.11ax/ac etc)
+    - Mostly see newer station get more throughput or improved latency compared to 802.11b/g/n devices.
+  - Protected Mode
+    - NAV : Network allocation vector, timer that tells station airspace is used
+    - 802.11b doesn't under OFDM modulation, in this case, BSS (AP) is enabled to send Beacons that tells presence of 802.11b station,
+      which then enables RTS/CTS in HR-DSSS mode that 802.11b station can understand.
+    - Downside: reduces overall throughput and shouldn't be enabled unless required.
+- 
   
   
   
