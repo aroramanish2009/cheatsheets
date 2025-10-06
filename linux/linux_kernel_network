@@ -476,4 +476,63 @@ Sending IPv4 Packets:
     - MSG_PROBE flag - If set, it means caller is interested only in info like MTU for Path MTU Discovery.
       There is no need to send actual packet and method returns 0
 Fragmentation:
-  - 94
+  - Network Interfaces has a limit of packet size they can transfer without breaking it down into
+    smaller chunks.
+  - ip_fragment() method in net/ipv4/ip_output.c is used for fragmenting a packet
+  - ip_defrag() method is used to reassemble the fragmented packets
+  - ip_fragment() has 2 paths, fast path and slow path
+  - fast path is for packets where frag_list of the SKB is not Null, which means this SKB carries a
+    chain of additional fragments.
+  - frag_list == NULL → kernel must do fragmentation itself (expensive) aka slowpath
+  - rag_list != NULL → fragments are already prepared, kernel just stamps headers and sends (fast).
+    ex by GSO at Layer 4
+  - ip_fragment() method: First check, DF bit set or not. If set, Dest Unreachable ICMP sent back, packet
+    is dropped, IPSTATS_MIB_FRAGFAILS are updated and error code of -EMSGSIZE is returned.
+  - Fast Path:
+    - First -> skb_has_frag_list() method is called to check if skb_shinfo(skb)->frag_list is NuLL or Not
+    - If Null -> Sanity checks are made and fallback to slow path is made by calling goto slow_path
+    - If Not Null, IPv4 header is built for first fragment, frag_off is set to be htons which means more frags
+    - frag_off field of IPv4 header is 16-bit with 13-bit for fragment offset and higher 3 bits are flags
+    - 1st fragment, the offset should be 0 and flag should be IP_MF (more fragments)
+    - all other fragments, IP_MF is set and offset measured in units of 8 bytes is set.
+    - fragment offset tells the receiver where this fragment’s data fits in the original packet,
+      in 8-byte units.
+    - Last Fragment, IP_MF is unset and last 13-bits contains fragment offset
+    - When kernel succeeds in sending a fragment, it increments IPSTATS_MIB_FRAGCREATES
+    - IPSTATS_MIB_FRAGOKS is incremented if the loop creating fragments is terminated successfully
+    - IPSTATS_MIB_FRAGFAILS is incremented if the loop creating fragments is terminated with error
+  - Slow Path:
+    - Kernel creates new SKBs, assigns offsets, copies/clones data, and sets MF/ID.
+    - frag_list == Null
+    - slow path in ip_fragment()
+      - check SKB length vs MTU, if SKB larger than MTU and DF bit not set, proceed with fragmentation
+      - calculate fragment payload size, rounded down to multiple of 8 bytes for fragment offset
+      - Allocate new SKB for fragments, charge memory process owner
+      - copy/clone payload data into fragments, sliced to chunks of MTU size
+      - Set IP header fields with fragment info
+      - update checksums
+      - queue for transmission
+
+Defragmentation:
+  - Process of reassembling all fragments of a packet, which all have same id in ipv4 header, into one buffer
+  - In Rx path, ip_local_deliver() calls ip_defrag() to handle defragmentation process
+  - In ip_local_deliver(), ip_is_fragment() is used to check if packet is fragmented, if it is then ip_defrag()
+    is invoked
+  - ip_defrag() takes 2 argument, first is SKB and second is 32bit field indicating where it was invoked
+  - Full list of possible value is ip_defrag_users enum in include/net/ip.h
+  - ip_is_fragment() returns true if IP_MF flag is set OR The fragment outset is not 0
+  - ip_defrag() process
+    - ip_evictor() is called to check for memory space
+    - uses ip_find() to find "ipq" hash for the SKB
+    - NOTE: "ipq" object is hash function object with 4 argument (frag id, src addr, dst addr and protocol)
+    - Next it calls ip_frag_queue() method to add the fragment to a linked list of fragments based on frag offset
+    - after all frags are added, ip_frag_queue() method calls ip_frag_reasm() to build packet with all fragments
+    - If any error is detected by ip_frag_reasm() or packet size exceeds max of 65535, method updates
+      IPSTATS_MIB_REASMFAILS and returns -E2BIG
+    - packet reassembly needs to be completed in certain time (30 sec by default, set in /proc/sys/net/ipv4/ipfrag_time)
+      otherwise ip_expire() method send ICMPv4 "Time Exceeded" with "Fragment Reassembly Time Exceeded" code
+  - ip_frag_queue() used above is a complicated method as it accounts for lost frags, retransmitted frags etc
+
+Forwarding:
+  - 104
+
