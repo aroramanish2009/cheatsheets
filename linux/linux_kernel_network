@@ -534,5 +534,85 @@ Defragmentation:
   - ip_frag_queue() used above is a complicated method as it accounts for lost frags, retransmitted frags etc
 
 Forwarding:
-  - 104
+  - Main handler method - ip_forward()
+  - Note: Packets with LRO (Large Receive Offload) enabled are dropped by ip_forward() as it will be larger
+    MTU of the outgoing packet. GRO (generic receive offload) design includes the forwarding ability.
+  - LRO = hardware merges packets early; GRO = kernel merges packets later — both reduce RX overhead, but GRO is
+    safer and more widely used.
+  - Other decision points:
+    - router_alert option is set -> ip_call_ra_chain() is invoked. The Router Alert option is used when a packet
+      needs to be intercepted and processed by routers along the path, not just by the destination —
+      most commonly in IGMP and RSVP control protocols. Any raw socket used setsockopt() to set IP_ROUTER_ALERT,
+      is added to ip_call_ra list and packets are delivered to all these raw sockets.
+    - pkt_type check -> Packet is dropped if NOT EQUAL to PACKET_HOST
+    - ttl -> reduced by 1, if zero, packet is dropped and ICMPv4 TTL Count Exceeded is sent
+    - is_strictroute and rt_uses_gateway both flags are set, packet is dropped and SR_FAILED ICMPv4 sent
+    - packet length is checked against outgoing interface MTU:
+      - If DF bit is set and MTU is lower than packet size, packet is dropped and ICMPv4 error is sent.
+        IPSTATS_MIB_FRAGFAILS stat is incremented
+    - ip_decrease_ttl(iph) is used to reduce ttl and recalculate checksum after packet mangling
+    - In ip_forward(), skb->priority is set according to ip_tos2prio as no socket is attched to SKB
+    - If no NF_INET_FORWARD hooks, ip_forward_finish() is invoked
+    - ip_forward_finish()
+      - stats are updated
+      - ipv4 packet is checked for ip_options(), if any, ip_forward_option() is invoked
+      - If no options, dst_output() method is called which invoke skb_dst(skb)->output(skb)
+
+IPv4 Routing Subsystem
+======================
+Forwarding and the FIB:
+  - routing: In simple words, Traffic forwarding between 2 LANs according to data structure called routing table.
+  - default gateway: Every packet not handled by more specific routing table entries, regardless of the dest add
+    is sent to default gateway.
+  - default route: Designated as 0.0.0.0/0 in CIDR notation
+Lookup in the Routing Subsystem:
+  - Every packet in Rx/Tx requires a routing subsystem lookup
+  - Prior to Kernel 3.6:
+    - 2 phases, a lookup in routing cache and in case of cache miss, a lookup in routing table.
+    - lookup is done by fib_lookup(), if it finds correct entry in routing subsystem, it build fib_result_object()
+      and returns 0
+  - fib_lookup() method
+    - Takes network namespace inform and flowi4 object (dst ip, src ip, ports and protocol)
+    - If route found, it builds fib_result object for the lookup and returns 0
+    - If route not found, it returns negative error code (like -ENETUNREACH)
+  - flowi4 (flowi6 for ipv6) is defind in include/net/flow.h
+  - fib_lookup() method searches local FIB, if lookup fails, it looks into main FIB table.
+  - Successfull fib_lookup() in Rx/Tx path leads to dst object that is embedded in rtable structure.
+    The kernel creates a dst_entry (inside an rtable) that stores how to send or receive the packet.
+    The input and output functions tell the kernel what to do next with that packet.
+  - rtable structure detail (represents a full IPv4 routing table entry)
+    - dst_entry struct, which then contains Input/Output function with SKB as parameter
+    - rt_flags: The rtable object flags
+      - RTCF_BROADCAST - If set, dest is broadcast address
+      - RTCF_MULTICAST - If set, dest is multicast address
+      - RTCF_DOREDIRECT - If set, ICMPv4 redirect message should be sent. Other conditions should be ON for
+        this flag such as input/output interface are same
+      - RTCF_LOCAL - If set, dest address is local
+    - rt_is_input: Set when this is an input route aka destined for local machine
+    - rt_uses_gateway: If nexthop is a gateway, this is set to 1. It is set to 0 when nexthop is a direct route.
+      Basically 0 for same subnet host as the machine.
+    - rt_iif: ifindex of incoming packet
+    - rt_pmtu: The Path MTU (the smallest MTU along the route).
+  - Note: rt_spec_dst() was replaced by fib_compute_spec_dst() which is used in special cases such as icmp_reply()
+    where replying to sender uses src addr as dst addr for the reply.
+  - Network Packets and methods:
+    - ip_local_deliver() - incoming unicast packets destined to the local host
+    - ip_forward() - incoming unicast packets that needs to be forwarded
+    - ip_output() - packets generated on local machine, to be sent away
+    - ip_mr_input() - incoming multicast packets
+    - ip_error() - incoming packets when they hit PROHIBIT rule
+  - fib_result Object:
+    - prefixlen - value 0 to 32, 0 for default route. Set in the check_leaf() method
+    - nh_sel - Next hop number, 0 when only 1 nexthop is present.
+    - type:
+      - Most important as it determines next method, example local delivery or forward etc
+      - determined mostly using dest addr of the packet and routing rule set by admins if any
+      - most common are RTN_UNICAST (packet routed via default or direct route) and RTN_LOCAL (local delivery)
+      - Total of 12 route types, ex RTN_MULTICAST, RTN_UNREACHABLE etc
+    - fi - Pointer to fib_info which holds reference to nexthop (fib_nh)
+    - table - pointer to the FIB table on which the lookup is done
+    - fa_head - pointer to fib_alias list.
+FIB Tables:
+  -
+
 
